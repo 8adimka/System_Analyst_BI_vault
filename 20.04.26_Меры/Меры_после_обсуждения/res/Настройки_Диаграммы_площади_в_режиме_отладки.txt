@@ -1,0 +1,298 @@
+{
+  "title": "Диаграмма площади",
+  "chartType": "areaChart",
+  "visualType": "area",
+  "orientation": "v",
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 5,
+    "r": 10,
+    "t": 10,
+    "b": 5,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "name": "filters",
+      "type": "filters",
+      "title": "Фильтры",
+      "fields": [
+        {
+          "ID": 105,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "Регион",
+          "prop": {},
+          "type": "string",
+          "datasetId": 3,
+          "id": "Регион_FJ5JFlFvUxpGsQS8A7mu5",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "categories",
+      "type": "categories",
+      "title": "Категории",
+      "scaleType": "category",
+      "visible": true,
+      "showtitle": false,
+      "showscale": true,
+      "showgrid": false,
+      "showlabels": true,
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "fields": [
+        {
+          "datasetId": 3,
+          "units": null,
+          "type": "string",
+          "name": "Поле 1",
+          "alias": "Поле 1",
+          "title": "",
+          "id": "5y6sWpKqXC98MqGHt2Eqw"
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "series",
+      "type": "series",
+      "title": "Серии",
+      "fields": [
+        {
+          "ID": 95,
+          "alias": "Округ",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "Округ",
+          "prop": {},
+          "type": "string",
+          "datasetId": 3,
+          "id": "Округ_OTQJ_uoSnsXwG9LXoqDgq",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "values",
+      "type": "values",
+      "title": "Значения",
+      "visible": true,
+      "showtitle": false,
+      "showgrid": false,
+      "showscale": true,
+      "showlabels": true,
+      "fields": [
+        {
+          "datasetId": 3,
+          "agg": "avg",
+          "units": null,
+          "type": "number",
+          "name": "Поле 2",
+          "alias": "Поле 2",
+          "title": "",
+          "id": "LJSw5rg7RVsiX8Am_EbEE"
+        },
+        {
+          "datasetId": 3,
+          "agg": "avg",
+          "units": null,
+          "type": "number",
+          "name": "Поле 3",
+          "alias": "Поле 3",
+          "title": "",
+          "id": "D6tTR-xcB_sHHXyGAolKX"
+        }
+      ],
+      "sortable": true,
+      "scrollable": false,
+      "selectedFieldIndex": -2
+    }
+  ],
+  "legend": {
+    "visible": true,
+    "position": "auto",
+    "order": "normal"
+  },
+  "labels": {
+    "visible": false,
+    "position": "auto",
+    "outer": {
+      "fontsize": 12,
+      "color": "rgba(68,68,68,1)"
+    },
+    "inner": {}
+  },
+  "visuals": [],
+  "dirty": false,
+  "unsaved": true,
+  "calculatedField": null,
+  "filters": {},
+  "filtersDefault": {},
+  "axesDefault": [
+    {
+      "name": "filters",
+      "type": "filters",
+      "title": "Фильтры",
+      "fields": [
+        {
+          "ID": 105,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "Регион",
+          "prop": {},
+          "type": "string",
+          "datasetId": 3,
+          "id": "Регион_FJ5JFlFvUxpGsQS8A7mu5",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "categories",
+      "type": "categories",
+      "title": "Категории",
+      "scaleType": "category",
+      "visible": true,
+      "showtitle": false,
+      "showscale": true,
+      "showgrid": false,
+      "showlabels": true,
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "fields": [
+        {
+          "datasetId": 3,
+          "units": null,
+          "type": "string",
+          "name": "Поле 1",
+          "alias": "Поле 1",
+          "title": "",
+          "id": "5y6sWpKqXC98MqGHt2Eqw"
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "series",
+      "type": "series",
+      "title": "Серии",
+      "fields": [
+        {
+          "ID": 95,
+          "alias": "Округ",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "Округ",
+          "prop": {},
+          "type": "string",
+          "datasetId": 3,
+          "id": "Округ_OTQJ_uoSnsXwG9LXoqDgq",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "values",
+      "type": "values",
+      "title": "Значения",
+      "visible": true,
+      "showtitle": false,
+      "showgrid": false,
+      "showscale": true,
+      "showlabels": true,
+      "fields": [
+        {
+          "datasetId": 3,
+          "agg": "avg",
+          "units": null,
+          "type": "number",
+          "name": "Поле 2",
+          "alias": "Поле 2",
+          "title": "",
+          "id": "LJSw5rg7RVsiX8Am_EbEE"
+        },
+        {
+          "datasetId": 3,
+          "agg": "avg",
+          "units": null,
+          "type": "number",
+          "name": "Поле 3",
+          "alias": "Поле 3",
+          "title": "",
+          "id": "D6tTR-xcB_sHHXyGAolKX"
+        }
+      ],
+      "sortable": true,
+      "scrollable": false,
+      "selectedFieldIndex": -2
+    }
+  ],
+  "variables": {
+    "var": {
+      "value": [
+        "Накопительно"
+      ]
+    }
+  }
+}

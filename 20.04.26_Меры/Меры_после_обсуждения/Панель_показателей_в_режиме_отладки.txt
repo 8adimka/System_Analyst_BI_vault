@@ -1,0 +1,135 @@
+{
+  "title": "Панель показателей v2",
+  "subtitle": "Подзаголовок",
+  "chartType": "totalsPanelV2",
+  "orientation": "v",
+  "showtitle": true,
+  "maximizable": false,
+  "autoApply": true,
+  "noexport": false,
+  "nocopy": false,
+  "precision": -1,
+  "percentPrecision": 1,
+  "backgroundColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 10,
+    "r": 10,
+    "t": 10,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "name": "filters",
+      "title": "Фильтры",
+      "type": "filters",
+      "fields": [
+        {
+          "ID": 105,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "Регион",
+          "prop": {},
+          "type": "string",
+          "datasetId": 3,
+          "id": "Регион_O3FhPAM0HVpQjA10J_wxl",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "Категории",
+      "title": "Категории",
+      "type": "categories",
+      "fields": [
+        {
+          "datasetId": 3,
+          "units": null,
+          "type": "string",
+          "name": "Поле 1",
+          "alias": "Поле 1",
+          "title": "",
+          "id": "dg1F5Ci0wg4uzaW7_vCQv"
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "Показатель",
+      "title": "Показатель",
+      "type": "values",
+      "fields": [
+        {
+          "datasetId": 3,
+          "agg": "avg",
+          "units": null,
+          "type": "number",
+          "name": "Поле 2",
+          "alias": "Поле 2",
+          "title": "",
+          "id": "4Vc5WIYsaao4x-LB3yeZw"
+        }
+      ],
+      "sortable": true,
+      "selectedFieldIndex": -2
+    }
+  ],
+  "visuals": [
+    {
+      "anchor": "value",
+      "label": "Значение",
+      "visible": true,
+      "thresholdForPercent": 100,
+      "font": {
+        "size": 2.8,
+        "weight": 600
+      }
+    },
+    {
+      "anchor": "caption",
+      "label": "Заголовок",
+      "visible": true,
+      "font": {
+        "size": 1
+      }
+    },
+    {
+      "anchor": "subcaption",
+      "label": "Подзаголовок",
+      "visible": true,
+      "font": {
+        "size": 0.8
+      }
+    },
+    {
+      "anchor": "trend",
+      "label": "Тренд",
+      "visible": true,
+      "font": {
+        "size": 1.2
+      }
+    }
+  ],
+  "dirty": false,
+  "unsaved": true,
+  "calculatedField": null,
+  "filters": {}
+}

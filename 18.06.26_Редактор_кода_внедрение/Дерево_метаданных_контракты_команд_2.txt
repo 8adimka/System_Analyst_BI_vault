@@ -1,0 +1,78 @@
+h3. metadata.tables.list
+
+Запрос:
+
+{
+  "object": {
+    "name": "datasources",
+    "id": 123
+  },
+  "command": {
+    "name": "metadata.tables.list"
+  }
+}
+
+Ответ:
+
+{
+  "data": [
+    {
+      "table": "fact_sales",
+      "schema": "public",
+      "type": "view"
+    },
+    ...
+  ]
+}
+
+h3. metadata.tables.get
+
+Запрос:
+
+{
+  "object": {
+    "name": "datasources",
+    "id": 123
+  },
+  "command": {
+    "name": "metadata.tables.get"
+  },
+  "data": [
+    {
+      "table": "fact_sales",
+      "schema": "public",
+      "type": "view"
+    },
+    {
+      "table": "dim_customers",
+      "schema": "public",
+      "type": "view"
+    },
+    ...
+  ]
+}
+
+Ответ:
+
+{
+  "data": [
+    {
+      "table": "fact_sales",
+      "schema": "public",
+      "type": "view",
+      "error": null,
+      "fields": [
+        { "name": "salary", "type": "number", "source_type": "UInt32" },
+        ...
+      ]
+    },
+    {
+      "table": "dim_customers",
+      "schema": "public",
+      "type": null,
+      "error": "not_found",
+      "fields": null
+    },
+    ...
+  ]
+}

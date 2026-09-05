@@ -1,0 +1,282 @@
+Ранее я уже осуществлял отправку данных на наш аналитический портал Modus BI в ФВД, при помощи вот такого скрипта - "import json
+import time
+from pathlib import Path
+
+import requests
+
+BASE_URL = "https://dev.modusbi.ru/v1/api/tables"
+
+HEADERS = {
+    "accept": "*/*",
+    "accept-language": "en-US,en;q=0.9,ru;q=0.8,es;q=0.7",
+    "authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6ODc4Nn0.eyJpZCI6NjcsInNlc3Npb25faWQiOiJkYjZhYWM4Yi1kYzVjLTQxYTAtOGMyMy04MDk4YzliMmQ1ZjEiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc3NjAyMDU1NywiZXhwIjoxNzc2MTA2OTU3LCJsYW5ndWFnZSI6InJ1LVJVIn0.oozwfwJfGb3HvCYJu8y3KDEcSbcd-YzF1IheIXpxFm4",
+    "cache-control": "no-cache",
+    "content-type": "application/json; charset=UTF-8",
+    "cookie": "GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d",
+    "dnt": "1",
+    "origin": "https://dev.modusbi.ru",
+    "pragma": "no-cache",
+    "priority": "u=1, i",
+    "referer": "https://dev.modusbi.ru/fvd/form/35",
+    "sec-ch-ua": '"Chromium";v="146", "Not.A.Brand";v="24", "Google Chrome";v="146"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Linux"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+}
+
+OBJECT_BLOCK = {"name": "tables", "id": 68}
+COMMAND_BLOCK = {"name": "data.create"}
+
+START = 17
+END = 6000
+DELAY = 0.3
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+STATE_FILE = SCRIPT_DIR / "last_successful_record.txt"
+
+
+def build_payload(n: int) -> dict:
+    return {
+        "object": OBJECT_BLOCK,
+        "command": COMMAND_BLOCK,
+        "data": [
+            {
+                "values": {
+                    "Name_test": [str(n)],
+                    "Number_test": [n],
+                }
+            }
+        ],
+    }
+
+
+def load_start_number() -> int:
+    if STATE_FILE.exists():
+        try:
+            last_ok = int(STATE_FILE.read_text(encoding="utf-8").strip())
+            return max(START, last_ok + 1)
+        except Exception:
+            pass
+    return START
+
+
+def save_last_successful(n: int) -> None:
+    STATE_FILE.write_text(str(n), encoding="utf-8")
+
+
+def main():
+    session = requests.Session()
+    start_number = load_start_number()
+
+    print(f"Стартуем с записи: {start_number}", flush=True)
+    print(f"Финиш: {END}", flush=True)
+
+    try:
+        for n in range(start_number, END + 1):
+            try:
+                payload = build_payload(n)
+
+                resp = session.post(
+                    BASE_URL,
+                    headers=HEADERS,
+                    data=json.dumps(payload, ensure_ascii=False),
+                    timeout=(10, 60),
+                )
+
+                print(f"[{n}] {resp.status_code} -> {resp.text[:200]}", flush=True)
+
+                if resp.status_code in (401, 403):
+                    print(
+                        "❌ Авторизация не подходит. Нужен новый актуальный curl.",
+                        flush=True,
+                    )
+                    break
+
+                if resp.ok:
+                    save_last_successful(n)
+                    time.sleep(DELAY)
+                else:
+                    time.sleep(2)
+
+            except requests.Timeout:
+                print(
+                    f"[{n}] TIMEOUT: сервер долго не отвечает, повторим позже",
+                    flush=True,
+                )
+                time.sleep(3)
+
+            except requests.RequestException as e:
+                print(f"[{n}] REQUEST ERROR: {e}", flush=True)
+                time.sleep(3)
+
+    except KeyboardInterrupt:
+        print("\nОстановлено вручную. Прогресс сохранён.", flush=True)
+
+    print("Готово.", flush=True)
+
+
+if __name__ == "__main__":
+    main()".
+
+Скрипт оказался работоспособным и теперь мне нужно отправить новые данные, а для этого нужно перенастроить данный скрипт, добавить новый JWT-токен из свежего запроса и т.д.
+
+Данные, которые нужно заносить лежат в той же папке, где будет скрипт, в файле "Список_городов.txt".
+
+Форма данных, которые мы будет отправлять такая - 
+"
+1, Токио, 37115000, 01.01.2023;
+2, Джакарта, 33686000, 01.01.2023;
+3, Дели, 32941000, 01.01.2023;
+4, Гуанчжоу, 26940000, 01.01.2023;
+5, Мумбаи, 25189000, 01.01.2023;
+6, Манила, 24922000, 01.01.2023;
+7, Шанхай, 24890000, 01.01.2023;
+8, Сан-Паулу, 22620000, 01.01.2023;
+9, Сеул, 23100000, 01.01.2023;
+10, Мехико, 22281000, 01.01.2023;
+11, Каир, 22183000, 01.01.2023;
+12, Нью-Йорк, 21900000, 01.01.2023;
+13, Дакка, 21560000, 01.01.2023;
+14, Пекин, 21200000, 01.01.2023;
+15, Бангкок, 21000000, 01.01.2023;
+16, Карачи, 19580000, 01.01.2023;
+17, Лагос, 19463000, 01.01.2023;
+18, Осака, 19013000, 01.01.2023;
+19, Лос-Анджелес, 18313000, 01.01.2023;
+20, Буэнос-Айрес, 16285000, 01.01.2023;
+21, Калькутта, 15846000, 01.01.2023;
+22, Стамбул, 15636000, 01.01.2023;
+23, Тегеран, 15584000, 01.01.2023;
+24, Киншаса, 15477000, 01.01.2023;
+25, Париж, 11345000, 01.01.2023;
+26, Лондон, 11262000, 01.01.2023;
+27, Бангалор, 10634000, 01.01.2023;
+28, Ченнаи, 10265000, 01.01.2023;
+29, Москва, 12635000, 01.01.2023;
+30, Лима, 10424000, 01.01.2023;
+31, Чунцин, 10320000, 01.01.2023;
+32, Ухань, 10150000, 01.01.2023;
+33, Лахор, 10060000, 01.01.2023;
+34, Тяньцзинь, 9980000, 01.01.2023;
+35, Хайдарабад, 9740000, 01.01.2023;
+36, Нанкин, 9520000, 01.01.2023;
+37, Чэнду, 9480000, 01.01.2023;
+38, Ахмадабад, 9350000, 01.01.2023;
+39, Хошимин, 9120000, 01.01.2023;
+40, Дунгуань, 9040000, 01.01.2023;
+41, Рим, 4300000, 01.01.2023;
+42, Богота, 8100000, 01.01.2023;
+43, Луанда, 8050000, 01.01.2023;
+44, Ханчжоу, 7980000, 01.01.2023;
+45, Фошань, 7860000, 01.01.2023;
+46, Шэньян, 7750000, 01.01.2023;
+47, Эр-Рияд, 7680000, 01.01.2023;
+48, Пуна, 7450000, 01.01.2023;
+49, Сурат, 7380000, 01.01.2023;
+50, Сантьяго, 7310000, 01.01.2023;
+51, Сингапур, 7250000, 01.01.2023;
+52, Мадрид, 7200000, 01.01.2023;
+53, Куала-Лумпур, 7150000, 01.01.2023;
+54, Барселона, 5690000, 01.01.2023;
+55, Нанкин, 7000000, 01.01.2023;
+56, Чикаго, 6950000, 01.01.2023;
+57, Сан-Франциско, 6800000, 01.01.2023;
+58, Вашингтон, 6750000, 01.01.2023;
+59, Нагоя, 6700000, 01.01.2023;
+60, Торонто, 6650000, 01.01.2023;
+..." и так далее до 2000 городов.
+
+Все записи из этого файла нужно отправить аналогичным образом как мы уже отправляли данные в этом скрипте.
+
+Вот пример свежих запросов с актуальным JWT-токеном - "
+1) "curl 'https://dev.modusbi.ru/v1/api/tables' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,ru;q=0.8,es;q=0.7' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6OTUwM30.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0YTAzODk2OC1iYTEzLTRlMDYtYTQ0NC0zNzllZTY4MzllOGYiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc3ODEwMTcwMiwiZXhwIjoxNzc4MTg4MTAyLCJsYW5ndWFnZSI6InJ1LVJVIn0.z84GeD-Y2A4V6iOOavhfGOP8kX_PHGCKvwzNAxz19H0' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/fvd/form/50' \
+  -H 'sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Google Chrome";v="146"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36' \
+  --data-raw '{"object":{"name":"tables","id":73},"command":{"name":"data.create"},"data":[{"values":{"number":[1],"name":["Токио"],"population":[37115000],"date":["01.01.2023"]}}]}'"
+
+2) "curl 'https://dev.modusbi.ru/v1/api/tables' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,ru;q=0.8,es;q=0.7' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6OTUwM30.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0YTAzODk2OC1iYTEzLTRlMDYtYTQ0NC0zNzllZTY4MzllOGYiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc3ODEwMTcwMiwiZXhwIjoxNzc4MTg4MTAyLCJsYW5ndWFnZSI6InJ1LVJVIn0.z84GeD-Y2A4V6iOOavhfGOP8kX_PHGCKvwzNAxz19H0' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/fvd/form/50' \
+  -H 'sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Google Chrome";v="146"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36' \
+  --data-raw '{"object":{"name":"tables","id":73},"command":{"name":"data.list"}}'"
+
+3) "curl 'https://dev.modusbi.ru/v1/api/tables' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,ru;q=0.8,es;q=0.7' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6OTUwM30.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0YTAzODk2OC1iYTEzLTRlMDYtYTQ0NC0zNzllZTY4MzllOGYiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc3ODEwMTcwMiwiZXhwIjoxNzc4MTg4MTAyLCJsYW5ndWFnZSI6InJ1LVJVIn0.z84GeD-Y2A4V6iOOavhfGOP8kX_PHGCKvwzNAxz19H0' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/fvd/form/50' \
+  -H 'sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Google Chrome";v="146"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36' \
+  --data-raw '{"object":{"name":"tables","id":73},"command":{"name":"data.create"},"data":[{"values":{"number":[2],"name":["Джакарта"],"population":[33686000],"date":["01.01.2023"]}}]}'"
+
+4) "curl 'https://dev.modusbi.ru/v1/api/tables' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9,ru;q=0.8,es;q=0.7' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6OTUwM30.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0YTAzODk2OC1iYTEzLTRlMDYtYTQ0NC0zNzllZTY4MzllOGYiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc3ODEwMTcwMiwiZXhwIjoxNzc4MTg4MTAyLCJsYW5ndWFnZSI6InJ1LVJVIn0.z84GeD-Y2A4V6iOOavhfGOP8kX_PHGCKvwzNAxz19H0' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/fvd/form/50' \
+  -H 'sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Google Chrome";v="146"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36' \
+  --data-raw '{"object":{"name":"tables","id":73},"command":{"name":"data.list"}}'".
+" - используй его при исправлении и дополнении скрипта.
+
+Таким образом первые две записи из файла у нас уже созданы и нужно создать оставшиеся 1998, пройдя по всем строчкам до конца файла.
+
+Скорректируй и дополни скрипт, обнови в нём JWT-токен, чтобы он отправил все данные из файла "Список_городов.txt". Пришли мне готовый скрипт для добавления остальных записей из файла, в полностью готовом к запуску виде.

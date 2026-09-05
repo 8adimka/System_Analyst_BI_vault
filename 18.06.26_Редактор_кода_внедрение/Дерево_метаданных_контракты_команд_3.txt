@@ -1,0 +1,103 @@
+metadata.object.list
+Ответ:
+$.data[*].name - Строка - Имя объекта метаданных
+$.data[*].type - Строка - Тип объекта метаданных. Пока: table или view
+$.data[*].schema - Строка - Имя схемы размещения объекта метаданных; для источников без схем или объектов уровня БД возвращается пустая строка
+
+
+metadata.object.get
+Запрос:
+$.data[*].name - Строка - Имя объекта метаданных
+$.data[*].schema - Строка - Имя схемы размещения объекта метаданных  
+Ответ для таблиц и представлений:
+$.data[*].name - Строка - Имя таблицы или представления
+$.data[*].schema - Строка - Имя схемы
+$.data[*].type - null, Строка - Фактический тип объекта: table или view; при ошибке содержит null
+$.data[*].error - null, Строка - Код локальной ошибки объекта: not_found, access_denied или internal_error; при успехе содержит null
+$.data[*].fields - null, Массив из Объект - Поля объекта; при локальной ошибке содержит null
+$.data[*].fields[*].name - Строка - Имя поля
+$.data[*].fields[*].type - Строка - Нормализованный тип поля: string, number, date или undefined
+$.data[*].fields[*].source_type - Строка - Исходное описание типа поля в СУБД; если оно отсутствует, возвращается undefined
+
+
+
+h3. metadata.object.list
+
+Запрос:
+
+{
+  "object": {
+    "name": "datasources",
+    "id": 123
+  },
+  "command": {
+    "name": "metadata.object.list"
+  }
+}
+
+Ответ:
+
+{
+  "data": [
+    {
+      "name": "fact_sales",
+      "schema": "public",
+      "type": "view"
+    },
+    ...
+  ]
+}
+
+h3. metadata.object.get
+
+Запрос:
+
+{
+  "object": {
+    "name": "datasources",
+    "id": 123
+  },
+  "command": {
+    "name": "metadata.object.get"
+  },
+  "data": [
+    {
+      "name": "fact_sales",
+      "schema": "public"
+    },
+    {
+      "name": "dim_customers",
+      "schema": "public"
+    },
+    ...
+  ]
+}
+
+Ответ:
+
+{
+  "data": [
+    {
+      "name": "fact_sales",
+      "schema": "public",
+      "type": "view",
+      "error": null,
+      "fields": [
+        {
+          "name": "salary",
+          "type": "number",
+          "source_type": "UInt32"
+        },
+        ...
+      ]
+    },
+    {
+      "name": "dim_customers",
+      "schema": "public",
+      "type": null,
+      "error": "not_found",
+      "fields": null
+    },
+    ...
+  ]
+}

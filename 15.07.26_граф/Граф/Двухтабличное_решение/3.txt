@@ -1,0 +1,820 @@
+Проанализируй обновлённую постановку - "Постановка_две_таблицы_new2.txt".
+
+Эта постановка расчитана на доработку уже существующей системы вот данные по ней.
+
+В качестве ссылок на поля набора данных мы используем name (т.е. наименование поля набора данных (также у поля может быть ещё человекочитаемое наименование "Алиас", не путаем с этим).
+Так вот name -уникален в рамках набора данных. Получается, что этим ключом для набора данных "Узлы" может быть это самое name, так?
+
+Вот ряд curl, отправляемых с фронта при загрузке дашборда с визуализацией Граф (старая реализация, один набор данных):
+1) curl 'https://dev.modusbi.ru/v1/api/recordsets/430' \
+-H 'accept: */*' \
+-H 'accept-language: ru-RU' \
+-H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+-H 'cache-control: no-cache' \
+-H 'content-type: application/json; charset=UTF-8' \
+-b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+-H 'dnt: 1' \
+-H 'origin: https://dev.modusbi.ru' \
+-H 'pragma: no-cache' \
+-H 'priority: u=1, i' \
+-H 'referer: https://dev.modusbi.ru/report/756' \
+-H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+-H 'sec-ch-ua-mobile: ?0' \
+-H 'sec-ch-ua-platform: "Linux"' \
+-H 'sec-fetch-dest: empty' \
+-H 'sec-fetch-mode: cors' \
+-H 'sec-fetch-site: same-origin' \
+-H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+--data-raw '{"group":[],"order":[{"name":"UZ_Osnovnoj","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"UZ_Osnovnoj","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'
+
+2) curl 'https://dev.modusbi.ru/v1/api/recordsets/430' \
+-H 'accept: */*' \
+-H 'accept-language: ru-RU' \
+-H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+-H 'cache-control: no-cache' \
+-H 'content-type: application/json; charset=UTF-8' \
+-b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+-H 'dnt: 1' \
+-H 'origin: https://dev.modusbi.ru' \
+-H 'pragma: no-cache' \
+-H 'priority: u=1, i' \
+-H 'referer: https://dev.modusbi.ru/report/756' \
+-H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+-H 'sec-ch-ua-mobile: ?0' \
+-H 'sec-ch-ua-platform: "Linux"' \
+-H 'sec-fetch-dest: empty' \
+-H 'sec-fetch-mode: cors' \
+-H 'sec-fetch-site: same-origin' \
+-H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+--data-raw '{"group":[{"name":"Tip_svjazi","calc":"","alias":"[categories]","id":"Tip_svjazi_Aco1jFiUmU3bIk3b3jx2D","fieldAlias":"Тип связи","direction":null},{"name":"Узлы","calc":"","alias":"[node]","id":"Узлы_v8-bbbQyYzUMQIdKpqWEC","fieldAlias":"Узлы","direction":null},{"name":"UZ_Priemnik","calc":"","alias":"[linkage]","id":"UZ_Priemnik_Rc_n_k_wQKv9NLvD6zcTh","fieldAlias":"УЗ_Приемник","direction":null}],"order":[],"select":[{"name":"Tip_svjazi","calc":"","aggr":"","alias":"[values][2]","id":"Tip_svjazi_1xg9lLmoCidxxT0LZENnb","fieldAlias":"Тип связи","export":{"subAgg":null,"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Gorod","calc":"","aggr":"max","alias":"[values][1]","id":"Gorod_PbUJ9FNru_-_hTO4SG9Z2","fieldAlias":"Город","export":{"subAgg":"max","fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Znachenie","calc":"","aggr":"max","alias":"[values][0]","id":"Znachenie_AhbrfHvEbUxF7SZ8MKMSx","fieldAlias":"Значение","export":{"subAgg":"max","fieldType":"number","prop":{}},"lvl":0,"valueType":"radius"},{"name":"UZ_Priemnik","calc":"","aggr":"","alias":"[linkage]","id":"UZ_Priemnik_Rc_n_k_wQKv9NLvD6zcTh","fieldAlias":"УЗ_Приемник","export":{"subAgg":null,"fieldType":"string","prop":{}}},{"name":"Узлы","calc":"","aggr":"","alias":"[node]","id":"Узлы_v8-bbbQyYzUMQIdKpqWEC","fieldAlias":"Узлы","export":{"subAgg":null,"fieldType":"string","prop":{}}},{"name":"Tip_svjazi","calc":"","aggr":"","alias":"[categories]","id":"Tip_svjazi_Aco1jFiUmU3bIk3b3jx2D","fieldAlias":"Тип связи","export":{"fieldType":"string","prop":{}}}],"where":[],"having":{"condition":""},"series":{"enable":0}}'
+
+3) curl 'https://dev.modusbi.ru/v1/api/datasets' \
+-H 'accept: */*' \
+-H 'accept-language: ru-RU' \
+-H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+-H 'cache-control: no-cache' \
+-H 'content-type: application/json; charset=UTF-8' \
+-b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+-H 'dnt: 1' \
+-H 'origin: https://dev.modusbi.ru' \
+-H 'pragma: no-cache' \
+-H 'priority: u=1, i' \
+-H 'referer: https://dev.modusbi.ru/report/756' \
+-H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+-H 'sec-ch-ua-mobile: ?0' \
+-H 'sec-ch-ua-platform: "Linux"' \
+-H 'sec-fetch-dest: empty' \
+-H 'sec-fetch-mode: cors' \
+-H 'sec-fetch-site: same-origin' \
+-H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+--data-raw '{"command":{"name":"get.full"},"object":{"name":"datasets","id":430}}'
+
+4) curl 'https://dev.modusbi.ru/v1/api/recordsets/430' \
+-H 'accept: */*' \
+-H 'accept-language: ru-RU' \
+-H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+-H 'cache-control: no-cache' \
+-H 'content-type: application/json; charset=UTF-8' \
+-b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+-H 'dnt: 1' \
+-H 'origin: https://dev.modusbi.ru' \
+-H 'pragma: no-cache' \
+-H 'priority: u=1, i' \
+-H 'referer: https://dev.modusbi.ru/report/756' \
+-H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+-H 'sec-ch-ua-mobile: ?0' \
+-H 'sec-ch-ua-platform: "Linux"' \
+-H 'sec-fetch-dest: empty' \
+-H 'sec-fetch-mode: cors' \
+-H 'sec-fetch-site: same-origin' \
+-H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+--data-raw '{"group":[],"order":[],"select":[{"name":"Tip_svjazi","calc":"","aggr":"","alias":"[values][4]","id":"Tip_svjazi_RjdDJqzMJAORbX2lfnMYz","fieldAlias":"Тип связи","export":{"subAgg":null,"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Gorod","calc":"","aggr":"","alias":"[values][3]","id":"Gorod_49H--jmiEks5rDIOiaIad","fieldAlias":"Город","export":{"subAgg":null,"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Znachenie","calc":"","aggr":"","alias":"[values][2]","id":"Znachenie_SdxB-5N30LPKAYm3W0Wf4","fieldAlias":"Значение","export":{"subAgg":null,"fieldType":"number","prop":{}},"lvl":0,"valueType":"value"},{"name":"UZ_Priemnik","calc":"","aggr":"","alias":"[values][1]","id":"UZ_Priemnik_fZQPFiiCOboL_k1tGXFlm","fieldAlias":"УЗ_Приемник","export":{"subAgg":null,"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"UZ_Osnovnoj","calc":"","aggr":"","alias":"[values][0]","id":"UZ_Osnovnoj_tg8JN4y5a53rrwQ3zo2v2","fieldAlias":"УЗ_Основной","export":{"subAgg":null,"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"}],"where":[{"name":"Check","lvl":0,"values":["1"]}],"having":{"condition":""},"series":{"enable":0}}'
+
+
+
+А вот структура, которая храниться в текущей реализации диаграммы "Граф": "{
+  "title": "Диаграмма Граф (EChart)",
+  "titleTemplate": null,
+  "titleFieldId": null,
+  "roam": true,
+  "draggable": true,
+  "dateFormat": "-",
+  "subtitle": "",
+  "subtitleTemplate": null,
+  "subtitleFieldId": null,
+  "chartType": "graphECharts",
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "filterMode": false,
+  "bigNumberClasses": [],
+  "bgColor": null,
+  "margin": {
+    "l": 15,
+    "r": 15,
+    "t": 15,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "color": null,
+    "enabled": false,
+    "width": 1
+  },
+  "balloonTemplate": "[[node]]: [[value]]",
+  "balloon": {
+    "visible": true,
+    "fontsize": 12,
+    "color": null,
+    "bgcolor": null,
+    "fieldId": null,
+    "textStyle": [],
+    "textAlign": "left"
+  },
+  "balloonLinkTemplate": "[[tooltip]]",
+  "balloonLink": {
+    "visible": false,
+    "fontsize": 12,
+    "color": null,
+    "bgcolor": null,
+    "fieldId": "Tip_svjazi_qgAIOA2ZEtOFRTmv3OOg2",
+    "textStyle": [],
+    "textAlign": "left"
+  },
+  "labels": {
+    "visible": true,
+    "fontSize": 16,
+    "template": "[[node]]",
+    "position": "inside",
+    "bgColor": null,
+    "fieldId": "Gorod_PbUJ9FNru_-_hTO4SG9Z2",
+    "textStyle": []
+  },
+  "legend": {
+    "visible": false,
+    "fontSize": 12,
+    "position": "bottom-center",
+    "align": "auto",
+    "bgColor": null,
+    "textStyle": []
+  },
+  "hideSpinner": true,
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 3312,
+          "agg": null,
+          "alias": "УЗ_Основной",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "UZ_Osnovnoj_v88fdb0_MI7zpHeCUchS5",
+          "inactive": null,
+          "name": "UZ_Osnovnoj",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3313,
+          "agg": null,
+          "alias": "УЗ_Приемник",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "UZ_Priemnik_XvduH8t-wnmp4fw2TQkms",
+          "inactive": null,
+          "name": "UZ_Priemnik",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3314,
+          "agg": null,
+          "alias": "Значение",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Znachenie_9RFT3QhDt0Pi6l-xMBcMC",
+          "inactive": null,
+          "name": "Znachenie",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3316,
+          "agg": null,
+          "alias": "Город",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Gorod_dyLTsLIujjaCRb1vJX-KG",
+          "inactive": null,
+          "name": "Gorod",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3315,
+          "agg": null,
+          "alias": "Тип связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Tip_svjazi_QDP8HpWSB_v2ZruBb4ziA",
+          "inactive": null,
+          "name": "Tip_svjazi",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 3317,
+          "agg": null,
+          "alias": "Узлы",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Узлы_v8-bbbQyYzUMQIdKpqWEC",
+          "inactive": null,
+          "name": "Узлы",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Узел",
+      "selectedFieldIndex": 0,
+      "title": "Узел",
+      "type": "node",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3313,
+          "agg": null,
+          "alias": "УЗ_Приемник",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "UZ_Priemnik_Rc_n_k_wQKv9NLvD6zcTh",
+          "inactive": null,
+          "name": "UZ_Priemnik",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Связь",
+      "selectedFieldIndex": 0,
+      "title": "Связь",
+      "type": "linkage",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3315,
+          "alias": "Тип связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Tip_svjazi_Aco1jFiUmU3bIk3b3jx2D",
+          "inactive": null,
+          "name": "Tip_svjazi",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3314,
+          "agg": "max",
+          "alias": "Значение",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Znachenie_AhbrfHvEbUxF7SZ8MKMSx",
+          "inactive": null,
+          "name": "Znachenie",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "radius"
+        },
+        {
+          "ID": 3316,
+          "agg": "max",
+          "alias": "Город",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Gorod_PbUJ9FNru_-_hTO4SG9Z2",
+          "inactive": null,
+          "name": "Gorod",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3315,
+          "agg": null,
+          "alias": "Тип связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Tip_svjazi_1xg9lLmoCidxxT0LZENnb",
+          "inactive": null,
+          "name": "Tip_svjazi",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": -2,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 3312,
+          "agg": null,
+          "alias": "УЗ_Основной",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "UZ_Osnovnoj_v88fdb0_MI7zpHeCUchS5",
+          "inactive": null,
+          "name": "UZ_Osnovnoj",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3313,
+          "agg": null,
+          "alias": "УЗ_Приемник",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "UZ_Priemnik_XvduH8t-wnmp4fw2TQkms",
+          "inactive": null,
+          "name": "UZ_Priemnik",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3314,
+          "agg": null,
+          "alias": "Значение",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Znachenie_9RFT3QhDt0Pi6l-xMBcMC",
+          "inactive": null,
+          "name": "Znachenie",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3316,
+          "agg": null,
+          "alias": "Город",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Gorod_dyLTsLIujjaCRb1vJX-KG",
+          "inactive": null,
+          "name": "Gorod",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3315,
+          "agg": null,
+          "alias": "Тип связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Tip_svjazi_QDP8HpWSB_v2ZruBb4ziA",
+          "inactive": null,
+          "name": "Tip_svjazi",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 3317,
+          "agg": null,
+          "alias": "Узлы",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Узлы_v8-bbbQyYzUMQIdKpqWEC",
+          "inactive": null,
+          "name": "Узлы",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Узел",
+      "selectedFieldIndex": 0,
+      "title": "Узел",
+      "type": "node",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3313,
+          "agg": null,
+          "alias": "УЗ_Приемник",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "UZ_Priemnik_Rc_n_k_wQKv9NLvD6zcTh",
+          "inactive": null,
+          "name": "UZ_Priemnik",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Связь",
+      "selectedFieldIndex": 0,
+      "title": "Связь",
+      "type": "linkage",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3315,
+          "alias": "Тип связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Tip_svjazi_Aco1jFiUmU3bIk3b3jx2D",
+          "inactive": null,
+          "name": "Tip_svjazi",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3314,
+          "agg": "max",
+          "alias": "Значение",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Znachenie_AhbrfHvEbUxF7SZ8MKMSx",
+          "inactive": null,
+          "name": "Znachenie",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "radius"
+        },
+        {
+          "ID": 3316,
+          "agg": "max",
+          "alias": "Город",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Gorod_PbUJ9FNru_-_hTO4SG9Z2",
+          "inactive": null,
+          "name": "Gorod",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 3315,
+          "agg": null,
+          "alias": "Тип связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 430,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Tip_svjazi_1xg9lLmoCidxxT0LZENnb",
+          "inactive": null,
+          "name": "Tip_svjazi",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": -2,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "filtersDefault": {},
+  "title__ru": "Граф с фильтрацией"
+}".
+
+Вот это старая структура, которую мы будем дорабатывать и на которую мы вынужденны ориентироваться как исходная точка.
+
+В файле во вложении короткое обсуждение с коллегой как происходит получение данных визуализациями, изучи транскрипцию этого обсуждения в файле ./Обсуждение_получения_данных_визуализациями.txt
+
+Теперь проанализируй текущую постановку и приложенные данные, как системный аналитик с большим стажем, и укажи на ошибки и несоответствия в текущей версии постановки.
+
+Для каждого проблемного места аргументируй почему текущая формулировка некорректна или неполна, если аргументация будет убедительна, то отметь где именно в статье находится проблемый участок (которому требуется доработка или исправление). Сформулируй исправленный вариант для данного отрывка текущей постановки, который полностью исправляет проблему или дополняет формулировку. Это напиши прямо в чат для обработки мной.

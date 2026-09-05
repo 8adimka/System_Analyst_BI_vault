@@ -1,0 +1,60 @@
+  metadata.tables.list:
+
+  {
+    "object": {
+      "name": "datasources",
+      "id": 123
+    },
+    "command": {
+      "name": "metadata.tables.list"
+    }
+  }
+
+  Ответ:
+
+  {
+    "data": [
+      {
+        "table": "fact_sales",
+        "schema": "public",
+	"type": "view"
+      }
+    ]
+  }
+
+  metadata.tables.get:
+
+  {
+    "object": {
+      "name": "datasources",
+      "id": 123
+    },
+    "command": {
+      "name": "metadata.tables.get"
+    },
+    "data": [
+      {
+        "table": "fact_sales",
+        "schema": "public"
+      },
+	  ...
+    ]
+  }
+
+  Ответ:
+
+  {
+    "data": [
+      {
+        "table": "fact_sales",
+        "schema": "public",
+	"type": "view",
+	"error": null,
+        "fields": [
+          { "name": "salary", "type": "number", "source_type": "UInt32" },
+           ...
+         ]
+       },
+       ...
+     ]
+  }

@@ -1,0 +1,63 @@
+select 
+MAX("Тип_связи") as "[values][0]",
+"НазваниеУзлаПриемника" as "[linkage]",
+"НазваниеУзла" as "[node]"
+from
+(select
+    partner_id as "Узел",
+    deal_partner as "НазваниеУзла",
+    partner_revenue as "Годовой_оборот_партнёра",
+    deal_company_id as "УзелПриемник",
+    deal_company_title as "НазваниеУзлаПриемника",
+    null::text as "Сфера_деятельности", -- Явно привели к тексту, чтобы UNION не падал
+    deal_status_general as "Статусы_сделок",
+    deal_amount as "Количество_сделок" ,
+    connect_status as "Тип_связи",
+    size_partner_revenue as "РазмерУзла",
+    1 as t
+ from graph_datamart
+ WHERE 
+-- Исправлено: cardinality внутри фигурных скобок BI-системы
+(cardinality(ARRAY['1762']) = 0 and 0 = 0) OR 
+"partner_id" IN ('1762') OR 
+ false
+ 
+UNION ALL 
+select
+    deal_company_id as "Узел",
+    deal_company_title as "НазваниеУзла",
+    deal_company_revenue as "Годовой_оборот_клиента",
+    null as "УзелПриемник",
+    null as "НазваниеУзлаПриемника",
+    deal_company_industry as "Сфера_деятельности",
+    null as "Статусы_сделок",
+    null as "Количество_сделок" ,
+    null as "Тип_связи",
+    size_company_revenue as "РазмерУзла",
+    2 as t
+ from graph_datamart
+WHERE
+-- Исправлено: аналогично первому блоку
+(cardinality(ARRAY['1762']) = 0 and 0 = 0) OR 
+  false
+ 
+ UNION ALL 
+
+select
+    deal_company_id as "Узел",
+    deal_company_title as "НазваниеУзла",
+    deal_company_revenue as "Годовой_оборот_клиента",
+    null as "УзелПриемник",
+    null as "НазваниеУзлаПриемника",
+    deal_company_industry as "Сфера_деятельности",
+    null as "Статусы_сделок",
+    null as "Количество_сделок" ,
+    null as "Тип_связи",
+    size_company_revenue as "РазмерУзла",
+    3 as t
+ from graph_datamart
+WHERE
+-- Исправлено: аналогично первому блоку
+(cardinality(ARRAY['1762']) = 0 and 0 = 0) OR 
+ "partner_id" IN  ('1762')
+) as "#table" LIMIT 5000

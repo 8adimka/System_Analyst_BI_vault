@@ -1,0 +1,222 @@
+WITH filtered_edges AS (
+    SELECT
+        t."UZ_Osnovnoj",
+        t."UZ_Priemnik",
+        t."Znachenie",
+        t."Tip_svjazi",
+        t."Gorod",
+        -- Свойства узла-приёмника (как было раньше)
+        (
+            SELECT p."Znachenie"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = t."UZ_Priemnik"
+            LIMIT 1
+        ) AS "Znachenie_UZ_Priemnik",
+        (
+            SELECT p."Gorod"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = t."UZ_Priemnik"
+            LIMIT 1
+        ) AS "Gorod_UZ_Priemnik"
+    FROM "xls_medintsev_dataset_graf" t
+    WHERE 
+        -- Здесь используется переменная фильтра
+        (t."UZ_Osnovnoj" IN ({!env.uz_filter!; ''}) OR {!env.uz_filter!; ''} = '')
+        -- Если фильтр по другим полям (например Gorod), добавьте сюда свои условия
+),
+
+-- Все узлы, которые должны быть в графе после фильтра
+all_nodes AS (
+    SELECT DISTINCT "UZ_Osnovnoj" AS node FROM filtered_edges
+    UNION
+    SELECT DISTINCT "UZ_Priemnik" AS node FROM filtered_edges 
+    WHERE "UZ_Priemnik" IS NOT NULL
+),
+
+-- Недостающие узлы (те, что есть только как «Потомок»)
+missing_nodes AS (
+    SELECT 
+        n.node AS "UZ_Osnovnoj",
+        NULL::text AS "UZ_Priemnik",           -- dummy, чтобы не создавать лишних связей
+        NULL::int  AS "Znachenie",
+        NULL::text AS "Tip_svjazi",
+        (
+            SELECT p."Gorod"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = n.node
+            LIMIT 1
+        ) AS "Gorod",
+        -- Свойства самого узла (на случай, если визуализация их использует)
+        (
+            SELECT p."Znachenie"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = n.node
+            LIMIT 1
+        ) AS "Znachenie_UZ_Priemnik",
+        (
+            SELECT p."Gorod"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = n.node
+            LIMIT 1
+        ) AS "Gorod_UZ_Priemnik"
+    FROM all_nodes n
+    LEFT JOIN filtered_edges f ON f."UZ_Osnovnoj" = n.node
+    WHERE f."UZ_Osnovnoj" IS NULL
+)
+
+-- Финальный результат: отфильтрованные связи + недостающие узлы
+SELECT * FROM filtered_edges
+UNION ALL
+SELECT * FROM missing_nodes
+ORDER BY "UZ_Osnovnoj", "UZ_Priemnik" NULLS LAST;
+
+
+
+
+
+
+_____________________
+
+
+
+
+
+
+WITH filtered AS (
+    -- Отфильтрованные связи (то, что осталось после фильтров дашборда)
+    SELECT
+        "UZ_Osnovnoj",
+        "UZ_Priemnik",
+        "Znachenie",
+        "Tip_svjazi",
+        "Gorod",
+        (
+            SELECT p."Znachenie"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = t."UZ_Priemnik"
+            LIMIT 1
+        ) AS "Znachenie_UZ_Priemnik",
+        (
+            SELECT p."Gorod"
+            FROM "xls_medintsev_dataset_graf" p
+            WHERE p."UZ_Osnovnoj" = t."UZ_Priemnik"
+            LIMIT 1
+        ) AS "Gorod_UZ_Priemnik"
+    FROM "xls_medintsev_dataset_graf" t
+    WHERE 
+        -- Здесь подставляйте ваши текущие условия фильтрации (или используйте переменную {!env.uz_filter!; ''})
+        1=1  -- замените на реальные WHERE-условия дашборда
+),
+
+-- Все уникальные узлы, которые должны быть в графе
+all_nodes AS (
+    SELECT DISTINCT "UZ_Osnovnoj" AS node FROM filtered
+    UNION
+    SELECT DISTINCT "UZ_Priemnik" AS node FROM filtered
+    WHERE "UZ_Priemnik" IS NOT NULL
+)
+
+-- Финальный датасет: 
+-- 1. Все реальные связи
+-- 2. + Недостающие узлы (как отдельные строки с заполненным UZ_Osnovnoj)
+SELECT 
+    node AS "UZ_Osnovnoj",
+    NULL::text AS "UZ_Priemnik",
+    NULL::int  AS "Znachenie",
+    NULL::text AS "Tip_svjazi",
+    (
+        SELECT p."Gorod"
+        FROM "xls_medintsev_dataset_graf" p
+        WHERE p."UZ_Osnovnoj" = all_nodes.node
+        LIMIT 1
+    ) AS "Gorod",
+    (
+        SELECT p."Znachenie"
+        FROM "xls_medintsev_dataset_graf" p
+        WHERE p."UZ_Osnovnoj" = all_nodes.node
+        LIMIT 1
+    ) AS "Znachenie_UZ_Priemnik",
+    (
+        SELECT p."Gorod"
+        FROM "xls_medintsev_dataset_graf" p
+        WHERE p."UZ_Osnovnoj" = all_nodes.node
+        LIMIT 1
+    ) AS "Gorod_UZ_Priemnik"
+FROM all_nodes
+
+UNION ALL
+
+SELECT 
+    "UZ_Osnovnoj",
+    "UZ_Priemnik",
+    "Znachenie",
+    "Tip_svjazi",
+    "Gorod",
+    "Znachenie_UZ_Priemnik",
+    "Gorod_UZ_Priemnik"
+FROM filtered
+
+ORDER BY "UZ_Osnovnoj", "UZ_Priemnik" NULLS LAST;
+
+
+
+Нам нужно добавить вычисляемое поле в диаграмму на поле узла вместо UZ_Osnovnoj.
+Чтобы вместо простого запроса столбца узлов (UZ_Osnovnoj) мы собирали из отфильтрованных данных новый столбец. В этот столбец должны попадать все узлы полученные в процессе фильтрации из UZ_Osnovnoj и UZ_Priemnik, образуя единый общий список. Тогда рисоваться диаграмма будет с учётом всех отфильтрованных узлов. Напиши SQL запрос для этого вычисляемого поля.
+
+В диаграмме мы должны заменить простое добавление поля, на добавление вычисляемого поля, которое получил все DISTINCT узлы упомянутые в UZ_Osnovnoj и в UZ_Priemnik и объединит их в общий "список" всех узлов, которые нужно отрисовать. И Именно этот список мы и отдадим диаграмме.
+Что-то типа -
+SELECT DISTINCT "UZ_Osnovnoj", "UZ_Priemnik" FROM xls_medintsev_dataset_graf
+Напиши исправленный и верный SQL запрос для вычисляемого поля.
+
+Пример кода из вычисляемого поля - "sum(case when "ordersouce" = 'Бумажные' then "csampleid" else 0 end)"
+
+Или "sum(case when medal = 'Gold' then "medal_cnt" else 0 end)".
+
+Запрос нужно написать в подходящей форме для вычисляемых полей аналитической платформы Modus BI.
+
+
+
+
+_______________________________________________________________________
+
+Дельная теория, то есть ты решил физически задвоить все строки из датасета (кроме строк где отсутствует "UZ_Priemnik") и в новой колонке (назовём её "Узлы") ты в одной строчке пишешь узел-источник, а в другой стройке пишешь узел-приёмник. И в итоге после любой фильтрации в колонке "Узлы" у нас будет полный набор узлом. Тогда имеет смысл добавить ещё одну колонку Check где мы отметим одну строчку (оригинальную) как "1" то есть реальная, а другую строчку (задублированную) как "0" т.е. как фейковая. Это поможет вывести в таблицы локальный фильтр, чтобы выводить только "реальные" строки по "1" и не выводить дубли. А фильтрацию мы будем проводить как обычно и отрисовывать узлы в диаграмме по новой колонке "Узлы".
+
+Но наблюдаются некоторые сложности - во первых, в диаграмме Граф у нас есть только следующие полки для полей со значениями:
+1) Узел (сюда мы кладём нашу новую колонку со всеми узлами "Узлы")
+2) Связь (тут должен указываться Узел-приёмник - оставляем "UZ_Priemnik")
+3) Значения (сюда попадают "Значения", "Город")
+4) Категории (сюда пойдёт "Тип связи")
+5) Фильтры (фильтровать будет по "UZ_Osnovnoj", "UZ_Priemnik", "Znachenie" и "Gorod")
+
+В прошлой версие sql-запроса появилась проблема, что стал отрисовываться "пустой" узел и некоторые значения по Узлам на диаграмме стали очень большими.
+
+Надо подправить запрос к оригинальному датасету:
+
+-- Строки с узлом-источником
+SELECT
+    "UZ_Osnovnoj"      AS "UZ_Node",
+    "UZ_Osnovnoj"      AS "UZ_Osnovnoj",
+    "UZ_Priemnik"      AS "UZ_Priemnik",
+    "Znachenie"        AS "Znachenie",
+    "Tip_svjazi"       AS "Tip_svjazi",
+    "Gorod"            AS "Gorod",
+    'Check'           AS "node_role"
+FROM "xls_medintsev_dataset_graf"
+
+UNION ALL
+
+-- Строки с узлом-приёмником (дублируем строку)
+SELECT
+    "UZ_Priemnik"      AS "UZ_Node",
+    "UZ_Osnovnoj"      AS "UZ_Osnovnoj",
+    "UZ_Priemnik"      AS "UZ_Priemnik",
+    "Znachenie"        AS "Znachenie",
+    "Tip_svjazi"       AS "Tip_svjazi",
+    "Gorod"            AS "Gorod",
+    'target'           AS "node_role"
+FROM "xls_medintsev_dataset_graf"
+WHERE "UZ_Priemnik" IS NOT NULL
+
+
+Важно дублировать только строки, где у нас заполнен UZ_Priemnik (строки без него дублировать нельзя).
+Напиши исправленный SQL-запрос для создания верного датасета.

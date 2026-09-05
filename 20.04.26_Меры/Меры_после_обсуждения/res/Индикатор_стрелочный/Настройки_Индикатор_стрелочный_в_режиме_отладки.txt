@@ -1,0 +1,454 @@
+{
+  "title": "Стрелочный индикатор v.2",
+  "chartType": "speedometer_v2",
+  "visualType": "gauge",
+  "autoApply": true,
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 10,
+    "r": 10,
+    "t": 5,
+    "b": 10,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_5eC0tAA9uM1dNyRb5TIrf",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_F9ughQkFgJdxCLA0ac7W6",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_wFxKQPLNTbEQlOfdusX9f",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_QkSbQ5xwmzpCIe0U9rqHC",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Категории",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\") + 8000000\n  ELSE SUM(\"summa_rub\")\nEND",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\") + 8000000\n  ELSE SUM(\"summa_rub\")\nEND",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_fafDJ5U59FEwa2yS1KS1J",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_fafDJ5U59FEwa2yS1KS1J_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Вычисляемая сумма",
+          "title__ru": "Вычисляемая сумма",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1594,
+          "agg": "sum",
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "summa_rub_yumZLgzA4-d0WavNi4CMb",
+          "inactive": null,
+          "name": "summa_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Показатель",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Показатель",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "legend": {
+    "visible": true,
+    "position": "top-center",
+    "order": "normal"
+  },
+  "grid": {
+    "visible": true,
+    "width": 20,
+    "minimum": 0,
+    "maximum": 100,
+    "tickCount": 5,
+    "minorTickCount": 4,
+    "labelFrequency": 0,
+    "palette": {
+      "gradeCount": 2,
+      "gradientMode": false,
+      "invert": false,
+      "colors": [
+        "rgba(167,46,1,1)",
+        "#FF5433"
+      ]
+    },
+    "color": "rgba(41,80,3,1)",
+    "position": "inside"
+  },
+  "labels": {
+    "visible": true,
+    "position": "inside",
+    "outer": {
+      "fontsize": 12,
+      "color": "rgba(68,68,68,1)"
+    },
+    "inner": {
+      "fontsize": 12,
+      "color": "rgba(68,68,68,1)"
+    }
+  },
+  "usePrefixes": false,
+  "visuals": [
+    {
+      "anchor": "{Вычисляемое поле}_fafDJ5U59FEwa2yS1KS1J",
+      "color": "rgba(1,145,19,1)",
+      "labelsEnabled": true,
+      "lineWidth": 6
+    },
+    {
+      "anchor": "Сумма, руб (sum)",
+      "color": "rgba(212,14,14,1)",
+      "labelsEnabled": true,
+      "lineWidth": 6
+    }
+  ],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_5eC0tAA9uM1dNyRb5TIrf",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_F9ughQkFgJdxCLA0ac7W6",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_wFxKQPLNTbEQlOfdusX9f",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_QkSbQ5xwmzpCIe0U9rqHC",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Категории",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\") + 8000000\n  ELSE SUM(\"summa_rub\")\nEND",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\") + 8000000\n  ELSE SUM(\"summa_rub\")\nEND",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_fafDJ5U59FEwa2yS1KS1J",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_fafDJ5U59FEwa2yS1KS1J_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Вычисляемая сумма",
+          "title__ru": "Вычисляемая сумма",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1594,
+          "agg": "sum",
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "summa_rub_yumZLgzA4-d0WavNi4CMb",
+          "inactive": null,
+          "name": "summa_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Показатель",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Показатель",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "filtersDefault": {},
+  "variables": {
+    "month": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "var": {
+      "value": [
+        "Накопительно"
+      ]
+    },
+    "фо": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "фо1": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    }
+  },
+  "unsaved": true
+}

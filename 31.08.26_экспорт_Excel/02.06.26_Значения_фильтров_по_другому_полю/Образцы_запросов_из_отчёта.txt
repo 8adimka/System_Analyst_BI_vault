@@ -1,0 +1,2906 @@
+В данном файле будут образцы запросов и объектов при использовании нашего портала Modus BI на Dev-портале из отчёта [https://dev.modusbi.ru/report/796].
+
+Образцы запросов из отчёта [https://dev.modusbi.ru/report/796] с вкладки Network, Payload:
+
+1) "curl 'https://dev.modusbi.ru/v1/api/datasets' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"list.full"},"object":{"name":"datasets"}}'";
+2) "curl 'https://dev.modusbi.ru/v1/api/options' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"get.use_cloud"},"object":{"name":"options"}}'";
+3) "curl 'https://dev.modusbi.ru/v1/api/reports' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"object":{"name":"reports","id":796},"command":{"name":"get"}}'";
+4) "curl 'https://dev.modusbi.ru/v1/api/exports' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"user.format.list"},"object":{"name":"exports"}}'";
+5) "curl 'https://dev.modusbi.ru/v1/api/about' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"get"},"object":{"name":"about"}}'";
+6) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"year","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"year","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+7) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"month_num","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"month_num","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+8) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"product","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"product","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+9) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"region","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"region","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+10) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"product_type","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"product_type","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+11) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"fed_okrug_full_name","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"fed_okrug_full_name","aggr":"","alias":"[values][0]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+12) "curl 'https://dev.modusbi.ru/v1/api/filtersets' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"list"},"object":{"name":"filtersets"},"data":[{"reportID":796}]}'";
+13) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"fed_okrug_short_name","calc":"","alias":"[categories]","id":"fed_okrug_short_name_1ku1dmbvJIOFL3VJtsNpD","fieldAlias":"ФО","direction":null}],"order":[{"name":"amount","calc":"","direction":"desc","alias":"[values][0]","id":"amount_iutJ8g1Vxd8IvW8SmRQdk","fieldAlias":"Количество, шт"}],"select":[{"name":"amount","calc":"","aggr":"sum","alias":"[values][0]","id":"amount_iutJ8g1Vxd8IvW8SmRQdk","fieldAlias":"Количество, шт","export":{"subAgg":"sum","fieldType":"number","prop":{}},"lvl":0,"valueType":"value"},{"name":"fed_okrug_short_name","calc":"","aggr":"","alias":"[categories]","id":"fed_okrug_short_name_1ku1dmbvJIOFL3VJtsNpD","fieldAlias":"ФО","export":{"fieldType":"string","prop":{}}}],"where":[{"name":"fed_okrug_full_name","lvl":0,"values":["Центральный федеральный округ","Уральский федеральный округ","Сибирский федеральный округ"]},{"name":"region","lvl":0,"values":["Москва","Московская область","Ярославская область","Алтайский край","Тюменская область"]},{"name":"product_type","lvl":0,"values":["Корпусная мебель"]},{"name":"product","lvl":0,"values":["Шкаф-купе"]},{"name":"year","lvl":0,"values":["2021","2022"]},{"name":"month_num","lvl":0,"values":["2","3"]}],"having":{"condition":""},"series":{"enable":0}}'";
+14) "curl 'https://dev.modusbi.ru/v1/api/datasets' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"get.full"},"object":{"name":"datasets","id":244}}'";
+15) "curl 'https://dev.modusbi.ru/v1/api/datasets' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"command":{"name":"get.full"},"object":{"name":"datasets","id":244}}'";
+  
+16) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"month_name","alias":"[values][0]","calc":""}],"order":[{"name":"month_num","alias":"[values][0]","calc":""}],"distinct":1,"select":[{"name":"month_num","aggr":"max","alias":"[values][0]","calc":""},{"name":"month_name","aggr":"","alias":"[name]"}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'";
+17) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"fed_okrug_full_name","calc":"","alias":"[series][0]","id":"fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA","fieldAlias":"Федеральный округ","direction":null},{"name":"region","calc":"","alias":"[series][1]","id":"region_ZwBY5KN2uOzR4CjdpX0_o","fieldAlias":"Регион","direction":null},{"name":"product_type","calc":"","alias":"[series][2]","id":"product_type_W1RCI7PZsYC4Jd4fD4Qc9","fieldAlias":"Тип продукции","direction":null},{"name":"product","calc":"","alias":"[series][3]","id":"product_VqCfZB6N885qjrXVTZV01","fieldAlias":"Продукция","direction":null},{"name":"year","calc":"","alias":"[categories]","id":"year_RYsidIzLJ6AZt00C6dGl5","fieldAlias":"Год","direction":null}],"order":[],"select":[{"name":"summa_rub","calc":"","aggr":"sum","alias":"[values][6]","id":"summa_rub_saD1e4r6oiSW0bzeDfAlf","fieldAlias":"Сумма, руб","export":{"subAgg":"sum","fieldType":"number","precision":2,"prop":{}},"lvl":0,"valueType":"value"},{"name":"amount","calc":"","aggr":"sum","alias":"[values][5]","id":"amount_mWadEDnzzesUyEP42qTj5","fieldAlias":"Количество, шт","export":{"subAgg":"sum","fieldType":"number","prop":{}},"lvl":0,"valueType":"value"},{"name":"product","calc":"","aggr":"","alias":"[values][4]","id":"product_VqCfZB6N885qjrXVTZV01","fieldAlias":"Продукция","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"product_type","calc":"","aggr":"","alias":"[values][3]","id":"product_type_W1RCI7PZsYC4Jd4fD4Qc9","fieldAlias":"Тип продукции","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"region","calc":"","aggr":"","alias":"[values][2]","id":"region_ZwBY5KN2uOzR4CjdpX0_o","fieldAlias":"Регион","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"fed_okrug_full_name","calc":"","aggr":"","alias":"[values][1]","id":"fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA","fieldAlias":"Федеральный округ","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"year","calc":"","aggr":"","alias":"[values][0]","id":"year_RYsidIzLJ6AZt00C6dGl5","fieldAlias":"Год","export":{"fieldType":"number","prop":{}},"lvl":0,"valueType":"value"}],"where":[{"name":"fed_okrug_full_name","lvl":0,"values":["Центральный федеральный округ","Уральский федеральный округ","Сибирский федеральный округ"]},{"name":"month_num","lvl":0,"values":["2","3"]},{"name":"product","lvl":0,"values":["Шкаф-купе"]},{"name":"product_type","lvl":0,"values":["Корпусная мебель"]},{"name":"region","lvl":0,"values":["Москва","Московская область","Ярославская область","Алтайский край","Тюменская область"]},{"name":"year","lvl":0,"values":["2021","2022"]}],"having":{"condition":""},"series":{"enable":0}}'";
+18) "curl 'https://dev.modusbi.ru/v1/api/recordsets/244' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyNTF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI0MTBlMzkzMC0wMjQ5LTRjZmMtYmY3NS1mMzRiZDViNGMxYmMiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDQwMjQ4NCwiZXhwIjoxNzgwNDg4ODg0LCJsYW5ndWFnZSI6InJ1LVJVIn0.AjIPfYpTPM3klNYhpmTXYZKpxIN9dmCAGqCHkhtCwx0' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/796' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"fed_okrug_full_name","calc":"","alias":"[series][0]","id":"fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA","fieldAlias":"Федеральный округ","direction":null},{"name":"region","calc":"","alias":"[series][1]","id":"region_ZwBY5KN2uOzR4CjdpX0_o","fieldAlias":"Регион","direction":null},{"name":"product_type","calc":"","alias":"[series][2]","id":"product_type_W1RCI7PZsYC4Jd4fD4Qc9","fieldAlias":"Тип продукции","direction":null},{"name":"product","calc":"","alias":"[series][3]","id":"product_VqCfZB6N885qjrXVTZV01","fieldAlias":"Продукция","direction":null},{"name":"year","calc":"","alias":"[categories]","id":"year_RYsidIzLJ6AZt00C6dGl5","fieldAlias":"Год","direction":null}],"order":[],"select":[{"name":"summa_rub","calc":"","aggr":"sum","alias":"[values][6]","id":"summa_rub_saD1e4r6oiSW0bzeDfAlf","fieldAlias":"Сумма, руб","export":{"subAgg":"sum","fieldType":"number","precision":2,"prop":{}},"lvl":0,"valueType":"value"},{"name":"amount","calc":"","aggr":"sum","alias":"[values][5]","id":"amount_mWadEDnzzesUyEP42qTj5","fieldAlias":"Количество, шт","export":{"subAgg":"sum","fieldType":"number","prop":{}},"lvl":0,"valueType":"value"},{"name":"product","calc":"","aggr":"","alias":"[values][4]","id":"product_VqCfZB6N885qjrXVTZV01","fieldAlias":"Продукция","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"product_type","calc":"","aggr":"","alias":"[values][3]","id":"product_type_W1RCI7PZsYC4Jd4fD4Qc9","fieldAlias":"Тип продукции","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"region","calc":"","aggr":"","alias":"[values][2]","id":"region_ZwBY5KN2uOzR4CjdpX0_o","fieldAlias":"Регион","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"fed_okrug_full_name","calc":"","aggr":"","alias":"[values][1]","id":"fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA","fieldAlias":"Федеральный округ","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"year","calc":"","aggr":"","alias":"[values][0]","id":"year_RYsidIzLJ6AZt00C6dGl5","fieldAlias":"Год","export":{"fieldType":"number","prop":{}},"lvl":0,"valueType":"value"}],"where":[{"name":"month_num","lvl":0,"values":["2","3"]},{"name":"year","lvl":0,"values":["2021","2022"]},{"name":"fed_okrug_full_name","lvl":0,"values":["Центральный федеральный округ","Уральский федеральный округ","Сибирский федеральный округ"]},{"name":"region","lvl":0,"values":["Москва","Московская область","Ярославская область","Алтайский край","Тюменская область"]},{"name":"product_type","lvl":0,"values":["Корпусная мебель"]},{"name":"product","lvl":0,"values":["Шкаф-купе"]}],"having":{"condition":""},"series":{"enable":0}}'".
+  
+  
+Образцы запросов из отчёта [https://dev.modusbi.ru/report/796] с вкладки Network, Preview:
+
+1) "[
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 104,
+        "[values][6]": 1851881.77
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 52,
+        "[values][6]": 770898.68
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Уральский федеральный округ",
+        "[values][2]": "Тюменская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 27,
+        "[values][6]": 355826.02
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Уральский федеральный округ",
+        "[values][2]": "Тюменская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 26,
+        "[values][6]": 427912.64
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Москва",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 455,
+        "[values][6]": 11702233.7
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Москва",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 425,
+        "[values][6]": 11809427.38
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Московская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 13,
+        "[values][6]": 124891.01
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Московская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 11,
+        "[values][6]": 125779.24
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Ярославская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 15,
+        "[values][6]": 248375.76
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Ярославская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 9,
+        "[values][6]": 117632.49
+    }
+]".
+
+Структуры объектов отчёта:
+1) Контейнер с фильтрами, Федеральный округ, имя по другому полю - не активно - "{
+  "title": "Панель фильтров",
+  "chartType": "FilterControlPanel",
+  "showtitle": true,
+  "maximizable": false,
+  "multipleChoice": true,
+  "noexport": true,
+  "nocopy": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 5,
+    "r": 5,
+    "t": 0,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_79kS7nL79aak1rrWC1xuM",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "searchInBaseMinNumber": "1",
+  "updateOnCloseDropdown": true,
+  "visuals": [],
+  "filters": {
+    "fed_okrug_full_name": {
+      "global": true
+    }
+  },
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_79kS7nL79aak1rrWC1xuM",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "dateFormat": "-",
+  "dirty": false,
+  "filtersDefault": {
+    "fed_okrug_full_name": {
+      "global": true
+    }
+  }
+}";
+2) Контейнер с фильтрами, Месяц_номер, имя по другому полю - активно (выбрано поле "Месяц_название") - "{
+  "title": "Панель фильтров",
+  "chartType": "FilterControlPanel",
+  "showtitle": true,
+  "maximizable": false,
+  "multipleChoice": true,
+  "noexport": true,
+  "nocopy": false,
+  "bgColor": "transparent",
+  "margin": {
+    "l": 5,
+    "r": 5,
+    "t": 0,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": true,
+    "width": 2,
+    "color": "rgba(126,197,118,1)"
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_xrwM6xeejn-PAnkZ6G5DY",
+          "inactive": null,
+          "name": "month_num",
+          "nameBy": "month_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц (значения по другому полю)",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "searchInBaseMinNumber": "1",
+  "updateOnCloseDropdown": true,
+  "visuals": [],
+  "filters": {
+    "month_num": {
+      "global": true
+    }
+  },
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_xrwM6xeejn-PAnkZ6G5DY",
+          "inactive": null,
+          "name": "month_num",
+          "nameBy": "month_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц (значения по другому полю)",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "calculatedField": null,
+  "dateFormat": "-",
+  "dirty": false,
+  "filtersDefault": {
+    "month_num": {
+      "global": true
+    }
+  },
+  "labels": {
+    "inner": {},
+    "outer": {}
+  }
+}";
+3) Таблица, настроен Шаблон экспорта для Таблицы: Фильтры в одну строку - "{
+  "title": {
+    "text": "Таблица (Reactabular)",
+    "text__ru": "Продажи по регионам (фильтры в одну строку)"
+  },
+  "chartType": "table",
+  "visualType": "table",
+  "showtitle": true,
+  "showNumberLineInHeader": true,
+  "noexport": false,
+  "nocopy": false,
+  "precision": 0,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "t": 0,
+    "l": 0,
+    "b": 0,
+    "r": 0
+  },
+  "resultAtTop": false,
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_Iw6dVgJdwEa7KZ6cUh9vK",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nFkK0kQT772HQJAWm1gNo",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_uxsZNO5DvFUsahxHfBIKr",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_mRbMvhy2fw3XUkj6DtIi1",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_iWP2_7-CznnPocyvBPC3F",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_4A0nz1AM_UUZbdl0sx1cr",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1581,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_RYsidIzLJ6AZt00C6dGl5",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_VqCfZB6N885qjrXVTZV01",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_mWadEDnzzesUyEP42qTj5",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1594,
+          "agg": "sum",
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "summa_rub_saD1e4r6oiSW0bzeDfAlf",
+          "inactive": null,
+          "name": "summa_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "settings": {
+    "AllowResizable": true,
+    "AllowResponsible": false,
+    "AllowSort": true,
+    "AllowSearch": false,
+    "AllowTree": false,
+    "AllowPagination": false,
+    "AllowColumnDnD": true,
+    "AllowVirtualization": true,
+    "AllowFixedWidth": false,
+    "AllowExport": false,
+    "AllowToggleVisibility": false,
+    "AllowAutoWidth": true,
+    "AllowMultilineHeader": true
+  },
+  "massUpdate": {
+    "enabled": false,
+    "keyField": null,
+    "formURL": null,
+    "rowLimit": 0,
+    "limitWarn": false,
+    "isDisableByField": false,
+    "disableField": null,
+    "disableFieldName": null,
+    "disableFieldMessage": null
+  },
+  "allowMultivalues": true,
+  "allowNoCategories": true,
+  "visuals": [],
+  "filters": {
+    "month_num": {
+      "autofilter": null,
+      "nonglobal": false,
+      "selected": []
+    },
+    "year": {
+      "nonglobal": false,
+      "selected": []
+    }
+  },
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_Iw6dVgJdwEa7KZ6cUh9vK",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nFkK0kQT772HQJAWm1gNo",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_uxsZNO5DvFUsahxHfBIKr",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_mRbMvhy2fw3XUkj6DtIi1",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_iWP2_7-CznnPocyvBPC3F",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_4A0nz1AM_UUZbdl0sx1cr",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1581,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_RYsidIzLJ6AZt00C6dGl5",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_VqCfZB6N885qjrXVTZV01",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_mWadEDnzzesUyEP42qTj5",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1594,
+          "agg": "sum",
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "summa_rub_saD1e4r6oiSW0bzeDfAlf",
+          "inactive": null,
+          "name": "summa_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "calculatedField": null,
+  "columns": {
+    "amount_mWadEDnzzesUyEP42qTj5": {
+      "valueSeparator": true
+    },
+    "deQmJF_c_kRoyVLO5LT2z": {
+      "valueSeparator": true
+    },
+    "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA": {
+      "valueSeparator": true
+    },
+    "product_VqCfZB6N885qjrXVTZV01": {
+      "valueSeparator": true
+    },
+    "product_type_W1RCI7PZsYC4Jd4fD4Qc9": {
+      "valueSeparator": true
+    },
+    "region_ZwBY5KN2uOzR4CjdpX0_o": {
+      "valueSeparator": true
+    },
+    "summa_rub_saD1e4r6oiSW0bzeDfAlf": {
+      "precision": 2,
+      "valueSeparator": true
+    },
+    "year_RYsidIzLJ6AZt00C6dGl5": {
+      "valueSeparator": false
+    }
+  },
+  "dirty": false,
+  "drill": {
+    "hierarchy": []
+  },
+  "filtersDefault": {
+    "month_num": {
+      "autofilter": null,
+      "nonglobal": false,
+      "selected": []
+    },
+    "year": {
+      "nonglobal": false,
+      "selected": []
+    }
+  },
+  "rules": [],
+  "subAllMode": true,
+  "template": {
+    "id": 61,
+    "name": "Шаблон экспорта_Таблица_фильтры в одну строку.xlsx"
+  }
+}";
+4) Таблица, настроен Шаблон экспорта для Таблицы: Фильтры по строкам - "{
+  "title": {
+    "text": "Таблица (Reactabular)",
+    "text__ru": "Продажи по регионам (фильтры по строкам)"
+  },
+  "chartType": "table",
+  "visualType": "table",
+  "showtitle": true,
+  "showNumberLineInHeader": true,
+  "noexport": false,
+  "nocopy": false,
+  "precision": 0,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "t": 0,
+    "l": 0,
+    "b": 0,
+    "r": 0
+  },
+  "resultAtTop": false,
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_Iw6dVgJdwEa7KZ6cUh9vK",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nFkK0kQT772HQJAWm1gNo",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_uxsZNO5DvFUsahxHfBIKr",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_mRbMvhy2fw3XUkj6DtIi1",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_iWP2_7-CznnPocyvBPC3F",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_4A0nz1AM_UUZbdl0sx1cr",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1581,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_RYsidIzLJ6AZt00C6dGl5",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_VqCfZB6N885qjrXVTZV01",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_mWadEDnzzesUyEP42qTj5",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1594,
+          "agg": "sum",
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "summa_rub_saD1e4r6oiSW0bzeDfAlf",
+          "inactive": null,
+          "name": "summa_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "settings": {
+    "AllowResizable": true,
+    "AllowResponsible": false,
+    "AllowSort": true,
+    "AllowSearch": false,
+    "AllowTree": false,
+    "AllowPagination": false,
+    "AllowColumnDnD": true,
+    "AllowVirtualization": true,
+    "AllowFixedWidth": false,
+    "AllowExport": false,
+    "AllowToggleVisibility": false,
+    "AllowAutoWidth": true,
+    "AllowMultilineHeader": true
+  },
+  "massUpdate": {
+    "enabled": false,
+    "keyField": null,
+    "formURL": null,
+    "rowLimit": 0,
+    "limitWarn": false,
+    "isDisableByField": false,
+    "disableField": null,
+    "disableFieldName": null,
+    "disableFieldMessage": null
+  },
+  "allowMultivalues": true,
+  "allowNoCategories": true,
+  "visuals": [],
+  "filters": {
+    "fed_okrug_full_name": {
+      "all": null,
+      "autofilter": null,
+      "filterMode": "by value",
+      "selected": [
+        "Центральный федеральный округ"
+      ],
+      "unselected": null
+    },
+    "month_num": {
+      "all": null,
+      "autofilter": null,
+      "filterMode": "by value",
+      "selected": [
+        "2",
+        "3"
+      ],
+      "unselected": null
+    },
+    "product": {
+      "all": null,
+      "autofilter": null,
+      "filterBy": [
+        {
+          "expression": [],
+          "name": "Тип продукции",
+          "value": "product_type",
+          "valueAlias": "Тип продукции"
+        }
+      ],
+      "filterMode": "by value",
+      "selected": [
+        "Шкаф-купе"
+      ],
+      "unselected": null
+    },
+    "product_type": {
+      "all": null,
+      "autofilter": null,
+      "filterMode": "by value",
+      "selected": [
+        "Корпусная мебель"
+      ],
+      "unselected": null
+    },
+    "region": {
+      "all": null,
+      "autofilter": null,
+      "filterBy": [
+        {
+          "expression": [],
+          "name": "Федеральный округ",
+          "value": "fed_okrug_full_name",
+          "valueAlias": "Федеральный округ"
+        }
+      ],
+      "filterMode": "by value",
+      "selected": [
+        "Москва",
+        "Московская область",
+        "Ярославская область"
+      ],
+      "unselected": null
+    },
+    "year": {
+      "filterMode": "by value"
+    }
+  },
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_Iw6dVgJdwEa7KZ6cUh9vK",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nFkK0kQT772HQJAWm1gNo",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_uxsZNO5DvFUsahxHfBIKr",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_mRbMvhy2fw3XUkj6DtIi1",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_iWP2_7-CznnPocyvBPC3F",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_4A0nz1AM_UUZbdl0sx1cr",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1581,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_RYsidIzLJ6AZt00C6dGl5",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_VqCfZB6N885qjrXVTZV01",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_mWadEDnzzesUyEP42qTj5",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1594,
+          "agg": "sum",
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "summa_rub_saD1e4r6oiSW0bzeDfAlf",
+          "inactive": null,
+          "name": "summa_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "calculatedField": null,
+  "columns": {
+    "amount_mWadEDnzzesUyEP42qTj5": {
+      "valueSeparator": true
+    },
+    "deQmJF_c_kRoyVLO5LT2z": {
+      "valueSeparator": true
+    },
+    "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA": {
+      "valueSeparator": true
+    },
+    "product_VqCfZB6N885qjrXVTZV01": {
+      "valueSeparator": true
+    },
+    "product_type_W1RCI7PZsYC4Jd4fD4Qc9": {
+      "valueSeparator": true
+    },
+    "region_ZwBY5KN2uOzR4CjdpX0_o": {
+      "valueSeparator": true
+    },
+    "summa_rub_saD1e4r6oiSW0bzeDfAlf": {
+      "precision": 2,
+      "valueSeparator": true
+    },
+    "year_RYsidIzLJ6AZt00C6dGl5": {
+      "valueSeparator": false
+    }
+  },
+  "dirty": false,
+  "drill": {
+    "hierarchy": []
+  },
+  "filtersDefault": {
+    "fed_okrug_full_name": {
+      "all": null,
+      "autofilter": null,
+      "filterMode": "by value",
+      "selected": [
+        "Центральный федеральный округ"
+      ],
+      "unselected": null
+    },
+    "month_num": {
+      "all": null,
+      "autofilter": null,
+      "filterMode": "by value",
+      "selected": [
+        "2",
+        "3"
+      ],
+      "unselected": null
+    },
+    "product": {
+      "all": null,
+      "autofilter": null,
+      "filterBy": [
+        {
+          "expression": [],
+          "name": "Тип продукции",
+          "value": "product_type",
+          "valueAlias": "Тип продукции"
+        }
+      ],
+      "filterMode": "by value",
+      "selected": [
+        "Шкаф-купе"
+      ],
+      "unselected": null
+    },
+    "product_type": {
+      "all": null,
+      "autofilter": null,
+      "filterMode": "by value",
+      "selected": [
+        "Корпусная мебель"
+      ],
+      "unselected": null
+    },
+    "region": {
+      "all": null,
+      "autofilter": null,
+      "filterBy": [
+        {
+          "expression": [],
+          "name": "Федеральный округ",
+          "value": "fed_okrug_full_name",
+          "valueAlias": "Федеральный округ"
+        }
+      ],
+      "filterMode": "by value",
+      "selected": [
+        "Москва",
+        "Московская область",
+        "Ярославская область"
+      ],
+      "unselected": null
+    },
+    "year": {
+      "filterMode": "by value"
+    }
+  },
+  "rules": [],
+  "subAllMode": true,
+  "template": {
+    "id": 70,
+    "name": "Шаблон экспорта_Таблица_фильтры по строкам.xlsx"
+  }
+}";
+5) Столбчатая диаграмма, для экспорта используется общий шаблон экспорта "{
+  "title": "Столбчатая диаграмма",
+  "chartType": "barChart",
+  "visualType": "column",
+  "orientation": "v",
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 5,
+    "r": 10,
+    "t": 10,
+    "b": 5,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_b6ct1QyQNClu7pQGI5F4q",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nLlA6Bg6TIbmZjow0RdCv",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_5CePqxKwKhBZ54f4OtrnV",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_1mUVZ_aDX7oXG10Klg3xx",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_4MoyJ2OC0jxXlmcUsdSnP",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_CQCF1Mf0h-YGXM3eap1_G",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1585,
+          "alias": "ФО",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_short_name_1ku1dmbvJIOFL3VJtsNpD",
+          "inactive": null,
+          "name": "fed_okrug_short_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_iutJ8g1Vxd8IvW8SmRQdk",
+          "inactive": null,
+          "name": "amount",
+          "order": "desc",
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "legend": {
+    "visible": true,
+    "position": "auto",
+    "order": "normal"
+  },
+  "labels": {
+    "visible": false,
+    "position": "auto",
+    "inner": {},
+    "outer": {}
+  },
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_b6ct1QyQNClu7pQGI5F4q",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nLlA6Bg6TIbmZjow0RdCv",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_5CePqxKwKhBZ54f4OtrnV",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_1mUVZ_aDX7oXG10Klg3xx",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_4MoyJ2OC0jxXlmcUsdSnP",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_CQCF1Mf0h-YGXM3eap1_G",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1585,
+          "alias": "ФО",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_short_name_1ku1dmbvJIOFL3VJtsNpD",
+          "inactive": null,
+          "name": "fed_okrug_short_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_iutJ8g1Vxd8IvW8SmRQdk",
+          "inactive": null,
+          "name": "amount",
+          "order": "desc",
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "filtersDefault": {}
+}".

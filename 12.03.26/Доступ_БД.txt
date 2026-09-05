@@ -1,0 +1,2 @@
+xfreerdp /v:dev-rdp.modusbi.ru /u:'bp\v.medintsev' /p:'Med$Mds41VD3' +fonts /floatbar
+

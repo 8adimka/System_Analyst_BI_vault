@@ -1,0 +1,1467 @@
+Проанализируй обновлённую постановку по реализации Мер на нашем портале - файл ./Постановка_меры_new.txt
+
+Эта постановка расчитана на доработку уже существующей системы, поэтому важно учитывать текущее состояние системы и используемые стандарты при формировании данной постановки и связанных постановок.
+
+В качестве ссылок на поля набора данных мы используем name (т.е. наименование поля набора данных).
+Так вот name - уникален в рамках одного набора данных.
+
+Вот ряд curl, отправляемых с фронта при загрузке дашборда с визуализацией Граф (текущая реализация, один набор данных):
+1) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[{"name":"Категория","alias":"[values][0]","calc":""},{"name":"Наименование","alias":"[values][1]","calc":""}],"distinct":1,"select":[{"name":"Категория","aggr":"","alias":"[values][0]","calc":""},{"name":"Наименование","aggr":"","alias":"[values][1]","calc":""}],"where":[],"having":{"condition":""},"series":{"enable":0},"limit":0}'",
+
+2) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"Категория","calc":"","alias":"1/0"}],"order":[],"select":[{"name":"Категория","calc":"","alias":"1/0"},{"name":"Значение","calc":"","alias":"2/0","aggr":"sum"},{"name":"Поле 2","calc":"","alias":"2/1","aggr":"sum"},{"name":"{Вычисляемое поле}_v9Rj2V4wGIynG42_zxN_9_name","calc":"SUM( \"Значение\" - \"Поле 2\")","alias":"2/2"}],"where":[{"name":"Категория","values":["Машины подметально-уборочные"]},{"name":"Наименование","values":["Подметальная машина в комплекте со щеткой"]}]}'",
+
+3) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[],"select":[{"name":"Значение","calc":"","alias":"2/0","aggr":"sum"},{"name":"Поле 2","calc":"","alias":"2/1","aggr":"sum"},{"name":"{Вычисляемое поле}_v9Rj2V4wGIynG42_zxN_9_name","calc":"SUM( \"Значение\" - \"Поле 2\")","alias":"2/2"}],"where":[{"name":"Категория","values":["Машины подметально-уборочные"]},{"name":"Наименование","values":["Подметальная машина в комплекте со щеткой"]}]}'",
+
+4) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"Регион","calc":"","alias":"0/0"},{"name":"Категория","calc":"","alias":"1/0"}],"order":[],"select":[{"name":"Регион","calc":"","alias":"0/0"},{"name":"Категория","calc":"","alias":"1/0"},{"name":"Значение","calc":"","alias":"2/0","aggr":"sum"}],"where":[{"name":"Категория","values":["Машины подметально-уборочные"]}]}'",
+
+5) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"Регион","calc":"","alias":"0/0"}],"order":[],"select":[{"name":"Регион","calc":"","alias":"0/0"},{"name":"Значение","calc":"","alias":"2/0","aggr":"sum"}],"where":[{"name":"Категория","values":["Машины подметально-уборочные"]}]}'",
+
+6) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"Категория","calc":"","alias":"1/0"}],"order":[],"select":[{"name":"Категория","calc":"","alias":"1/0"},{"name":"Значение","calc":"","alias":"2/0","aggr":"sum"}],"where":[{"name":"Категория","values":["Машины подметально-уборочные"]}]}'",
+
+7) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[],"order":[],"select":[{"name":"Значение","calc":"","alias":"2/0","aggr":"sum"}],"where":[{"name":"Категория","values":["Машины подметально-уборочные"]}]}'",
+  
+8) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw '{"group":[{"name":"Категория","calc":"","alias":"[categories]","id":"Категория_C28zFn89cYqZPyrtFiPC9","fieldAlias":"Категория","direction":null}],"order":[],"select":[{"name":"Цвет","calc":"","aggr":"max","alias":"[values][2]","id":"Цвет_eMr6xoe7P9qGEdm0V3ACx","fieldAlias":"Цвет","export":{"subAgg":"max","fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Наименование","calc":"","aggr":"max","alias":"[values][1]","id":"Наименование_Bjgeul1shIDxJkr9fvYfN","fieldAlias":"Наименование","export":{"subAgg":"max","fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Категория","calc":"","aggr":"","alias":"[values][0]","id":"Категория_C28zFn89cYqZPyrtFiPC9","fieldAlias":"Категория","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"}],"where":[{"name":"Наименование","lvl":0,"values":["Подметальная машина в комплекте со щеткой"]}],"having":{"condition":""},"series":{"enable":0}}'",
+
+9) "curl 'https://dev.modusbi.ru/v1/api/recordsets/3' \
+  -H 'accept: */*' \
+  -H 'accept-language: ru-RU' \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTAyMjF9.eyJpZCI6NjcsInNlc3Npb25faWQiOiJjMjQwYmExMS01YzBhLTRlMDItYWFiNS1iYjcyYzdjMzZmYTciLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MDMwNjQyNSwiZXhwIjoxNzgwMzkyODI1LCJsYW5ndWFnZSI6InJ1LVJVIn0.CN9wVtoCqXOV9fQTlAWZOYDEpzi4Yi0utLM2zx57K9w' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json; charset=UTF-8' \
+  -b 'GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332; _ym_isad=1' \
+  -H 'dnt: 1' \
+  -H 'origin: https://dev.modusbi.ru' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://dev.modusbi.ru/report/748' \
+  -H 'sec-ch-ua: "Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36' \
+  --data-raw $'{"group":[{"name":"Наименование","calc":"","alias":"[categories]","id":"Наименование_sVrSpxbaMhEZoLtuMa1F1","fieldAlias":"Наименование","direction":null}],"order":[],"select":[{"name":"{Вычисляемое поле}_PG5G0ylnovoh0pMARAqPW_name","calc":"SUM(\\"Значение\\" - \\"Поле 2\\")","aggr":"","alias":"[values][5]","id":"{Вычисляемое поле}_PG5G0ylnovoh0pMARAqPW","fieldAlias":"Прибыль","export":{"subAgg":null,"fieldType":"calculated"},"lvl":0,"valueType":"value"},{"name":"Поле 2","calc":"","aggr":"sum","alias":"[values][4]","id":"Поле 2_vlkB0PNWwm61q5AIMTg8h","fieldAlias":"Себестоимость","export":{"subAgg":"sum","fieldType":"number","prop":{}},"lvl":0,"valueType":"value"},{"name":"Значение","calc":"","aggr":"sum","alias":"[values][3]","id":"Значение_4pMCdMZRR23Y_dVlP6ilh","fieldAlias":"Цена продажи","export":{"subAgg":"sum","fieldType":"number","prop":{}},"lvl":0,"valueType":"value"},{"name":"Цвет","calc":"","aggr":"max","alias":"[values][2]","id":"Цвет_0jnBU-c_TcZyeWq-E7NBh","fieldAlias":"Цвет","export":{"subAgg":"max","fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Категория","calc":"","aggr":"max","alias":"[values][1]","id":"Категория_q1xhguteClqvF8uOTQdcb","fieldAlias":"Категория","export":{"subAgg":"max","fieldType":"string","prop":{}},"lvl":0,"valueType":"value"},{"name":"Наименование","calc":"","aggr":"","alias":"[values][0]","id":"Наименование_sVrSpxbaMhEZoLtuMa1F1","fieldAlias":"Наименование","export":{"fieldType":"string","prop":{}},"lvl":0,"valueType":"value"}],"where":[{"name":"Категория","lvl":0,"values":["Машины подметально-уборочные"]},{"name":"Наименование","lvl":0,"values":["Подметальная машина в комплекте со щеткой"]}],"having":{"condition":"( SUM( \\"Значение\\" - \\"Поле 2\\") > \'0\' )"},"series":{"enable":0}}'".
+
+
+
+А вот структура, которая храниться в текущей реализации визуализации "Таблица": "{
+  "title": {
+    "text": "Таблица (Reactabular)"
+  },
+  "chartType": "table",
+  "visualType": "table",
+  "showtitle": true,
+  "showNumberLineInHeader": true,
+  "noexport": false,
+  "nocopy": false,
+  "precision": 0,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "t": 0,
+    "l": 0,
+    "b": 0,
+    "r": 0
+  },
+  "resultAtTop": false,
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "SUM( \"Значение\" - \"Поле 2\")",
+          "calc": "SUM( \"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": "having",
+          "id": "{Вычисляемое поле}_IyLOYJoVvoHZf_37wAZzb",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_IyLOYJoVvoHZf_37wAZzb_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "ВП115",
+          "title__ru": "Фильтр по Прибыльности",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 91,
+          "agg": null,
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_V8uGoRcynqppEux1Ploi2",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 90,
+          "agg": null,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_Qpg3FSLdF06TsAf-WFhdh",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 90,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_sVrSpxbaMhEZoLtuMa1F1",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 91,
+          "agg": "max",
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_q1xhguteClqvF8uOTQdcb",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 102,
+          "agg": "max",
+          "alias": "Цвет",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Цвет_0jnBU-c_TcZyeWq-E7NBh",
+          "inactive": null,
+          "name": "Цвет",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 92,
+          "agg": "sum",
+          "alias": "Значение",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Значение_4pMCdMZRR23Y_dVlP6ilh",
+          "inactive": null,
+          "name": "Значение",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Цена продажи",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 10,
+          "agg": "sum",
+          "alias": "Поле 2",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Поле 2_vlkB0PNWwm61q5AIMTg8h",
+          "inactive": null,
+          "name": "Поле 2",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Себестоимость",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "SUM(\"Значение\" - \"Поле 2\")",
+          "calc": "SUM(\"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_PG5G0ylnovoh0pMARAqPW",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_PG5G0ylnovoh0pMARAqPW_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "ВП27",
+          "title__ru": "Прибыль",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "settings": {
+    "AllowResizable": true,
+    "AllowResponsible": false,
+    "AllowSort": true,
+    "AllowSearch": false,
+    "AllowTree": false,
+    "AllowPagination": false,
+    "AllowColumnDnD": true,
+    "AllowVirtualization": true,
+    "AllowFixedWidth": false,
+    "AllowExport": false,
+    "AllowToggleVisibility": false,
+    "AllowAutoWidth": true,
+    "AllowMultilineHeader": true
+  },
+  "massUpdate": {
+    "enabled": false,
+    "keyField": null,
+    "formURL": null,
+    "rowLimit": 0,
+    "limitWarn": false,
+    "isDisableByField": false,
+    "disableField": null,
+    "disableFieldName": null,
+    "disableFieldMessage": null
+  },
+  "allowMultivalues": true,
+  "allowNoCategories": true,
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "SUM( \"Значение\" - \"Поле 2\")",
+          "calc": "SUM( \"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": "having",
+          "id": "{Вычисляемое поле}_IyLOYJoVvoHZf_37wAZzb",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_IyLOYJoVvoHZf_37wAZzb_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "ВП115",
+          "title__ru": "Фильтр по Прибыльности",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 91,
+          "agg": null,
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_V8uGoRcynqppEux1Ploi2",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 90,
+          "agg": null,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_Qpg3FSLdF06TsAf-WFhdh",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 90,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_sVrSpxbaMhEZoLtuMa1F1",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 91,
+          "agg": "max",
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_q1xhguteClqvF8uOTQdcb",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 102,
+          "agg": "max",
+          "alias": "Цвет",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Цвет_0jnBU-c_TcZyeWq-E7NBh",
+          "inactive": null,
+          "name": "Цвет",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 92,
+          "agg": "sum",
+          "alias": "Значение",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Значение_4pMCdMZRR23Y_dVlP6ilh",
+          "inactive": null,
+          "name": "Значение",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Цена продажи",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 10,
+          "agg": "sum",
+          "alias": "Поле 2",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Поле 2_vlkB0PNWwm61q5AIMTg8h",
+          "inactive": null,
+          "name": "Поле 2",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Себестоимость",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "SUM(\"Значение\" - \"Поле 2\")",
+          "calc": "SUM(\"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_PG5G0ylnovoh0pMARAqPW",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_PG5G0ylnovoh0pMARAqPW_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "ВП27",
+          "title__ru": "Прибыль",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "calculatedField": null,
+  "columns": {
+    "jDB5uA2sASNwQ5YNaM4ah": {
+      "valueSeparator": true
+    },
+    "Категория_CWp3znNgHVkpIytsT4TE8": {
+      "valueSeparator": true
+    },
+    "Категория_q1xhguteClqvF8uOTQdcb": {
+      "valueSeparator": true
+    },
+    "Цвет_0jnBU-c_TcZyeWq-E7NBh": {
+      "valueSeparator": true
+    }
+  },
+  "dirty": false,
+  "filtersDefault": {}
+}".
+
+А вот структура, которая храниться в текущей реализации визуализации "Сводная таблица": "{
+  "title": "Сводная таблица",
+  "chartType": "pivotChart",
+  "showtitle": true,
+  "bottomSubtitle": false,
+  "noexport": false,
+  "nocopy": false,
+  "autoHeightEnabled": true,
+  "headerHorWordWrapEnabled": true,
+  "nullVisible": false,
+  "precision": 0,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 0,
+    "r": 0,
+    "t": 0,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "SUM( \"Значение\" - \"Поле 2\")",
+          "calc": "SUM( \"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_qKS1REjjAE4luIa8sSLYb",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_qKS1REjjAE4luIa8sSLYb_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Фильтр по Прибыльности",
+          "title__ru": "Фильтр по Прибыльности",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 91,
+          "agg": null,
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_NlIjOIMRgH3UDQf7XhGya",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 90,
+          "agg": null,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_wpDYqNFOAng9hztSIKJmX",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 91,
+          "agg": null,
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_Iqyrcr0P0fFgaP89C-7FD",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 102,
+          "agg": null,
+          "alias": "Цвет",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Цвет_V82NY9G2JI7-3jKXjAQ8u",
+          "inactive": null,
+          "name": "Цвет",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Строки",
+      "selectedFieldIndex": 0,
+      "title": "Строки",
+      "type": "rows"
+    },
+    {
+      "fields": [
+        {
+          "ID": 90,
+          "agg": null,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_x9BhW-A3jZbJ2MfcfiWGw",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Детализация",
+      "selectedFieldIndex": -2,
+      "title": "Детализация",
+      "type": "details"
+    },
+    {
+      "fields": [],
+      "name": "Столбцы",
+      "selectedFieldIndex": 0,
+      "title": "Столбцы",
+      "type": "columns"
+    },
+    {
+      "fields": [],
+      "name": "Поля источника",
+      "selectedFieldIndex": 0,
+      "title": "Поля источника",
+      "type": "spares"
+    },
+    {
+      "fields": [
+        {
+          "ID": 92,
+          "agg": null,
+          "alias": "Значение",
+          "axisName": "Значения",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "fieldIndex": 1,
+          "filterSqlType": null,
+          "id": "Значение_ykl7yG8qd8sh9NX-iVMMn",
+          "inactive": null,
+          "name": "Значение",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": "sum",
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Цена продажи",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 10,
+          "agg": null,
+          "alias": "Поле 2",
+          "axisName": "Значения",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "fieldIndex": 2,
+          "filterSqlType": null,
+          "id": "Поле 2_wCOCzEFMDiMen_kefs9EJ",
+          "inactive": null,
+          "name": "Поле 2",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": "sum",
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Себестоимость",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "SUM( \"Значение\" - \"Поле 2\")",
+          "calc": "SUM( \"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_v9Rj2V4wGIynG42_zxN_9",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_v9Rj2V4wGIynG42_zxN_9_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": "count",
+          "pivotOrder": null,
+          "title": "Прибыль",
+          "title__ru": "Прибыль",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Значения",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "decoding": {
+    "mode": "link",
+    "modal": {
+      "fields": []
+    }
+  },
+  "pivotLink": {
+    "default": {
+      "target": "_blank",
+      "url": "",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      }
+    },
+    "bU7zDqsMHggHbZ3J7l4O8": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "city_k-bTx2gQAg0FXTtp8mBzA": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "country_dmprpJmDS5AfR7txYgEaZ": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "region_E7YdxXrN-2UEwP9vP7ECw": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "value_Kq8yfe2iGBccWlSkJUiZs": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "value_NbfgkkviO7gyRbRA2C7Nn": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "{Вычисляемое поле}_JUbgJ25v6Q9Z7o1x7hnP6": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "{Вычисляемое поле}_Yr8pUBv1WgJzhBQUcoqVh": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    },
+    "Значение_ykl7yG8qd8sh9NX-iVMMn": {
+      "target": "_blank",
+      "title": {
+        "name__ru": "Перейти к детализации"
+      },
+      "url": null
+    }
+  },
+  "visuals": [],
+  "filters": {},
+  "autoWidthEnabled": true,
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "SUM( \"Значение\" - \"Поле 2\")",
+          "calc": "SUM( \"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_qKS1REjjAE4luIa8sSLYb",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_qKS1REjjAE4luIa8sSLYb_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Фильтр по Прибыльности",
+          "title__ru": "Фильтр по Прибыльности",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 91,
+          "agg": null,
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_NlIjOIMRgH3UDQf7XhGya",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 90,
+          "agg": null,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_wpDYqNFOAng9hztSIKJmX",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 91,
+          "agg": null,
+          "alias": "Категория",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Категория_Iqyrcr0P0fFgaP89C-7FD",
+          "inactive": null,
+          "name": "Категория",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 102,
+          "agg": null,
+          "alias": "Цвет",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Цвет_V82NY9G2JI7-3jKXjAQ8u",
+          "inactive": null,
+          "name": "Цвет",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Строки",
+      "selectedFieldIndex": 0,
+      "title": "Строки",
+      "type": "rows"
+    },
+    {
+      "fields": [
+        {
+          "ID": 90,
+          "agg": null,
+          "alias": "Наименование",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Наименование_x9BhW-A3jZbJ2MfcfiWGw",
+          "inactive": null,
+          "name": "Наименование",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Детализация",
+      "selectedFieldIndex": -2,
+      "title": "Детализация",
+      "type": "details"
+    },
+    {
+      "fields": [],
+      "name": "Столбцы",
+      "selectedFieldIndex": 0,
+      "title": "Столбцы",
+      "type": "columns"
+    },
+    {
+      "fields": [],
+      "name": "Поля источника",
+      "selectedFieldIndex": 0,
+      "title": "Поля источника",
+      "type": "spares"
+    },
+    {
+      "fields": [
+        {
+          "ID": 92,
+          "agg": null,
+          "alias": "Значение",
+          "axisName": "Значения",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "fieldIndex": 1,
+          "filterSqlType": null,
+          "id": "Значение_ykl7yG8qd8sh9NX-iVMMn",
+          "inactive": null,
+          "name": "Значение",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": "sum",
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Цена продажи",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 10,
+          "agg": null,
+          "alias": "Поле 2",
+          "axisName": "Значения",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 3,
+          "draft": null,
+          "expression": [],
+          "fieldIndex": 2,
+          "filterSqlType": null,
+          "id": "Поле 2_wCOCzEFMDiMen_kefs9EJ",
+          "inactive": null,
+          "name": "Поле 2",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": "sum",
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Себестоимость",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "SUM( \"Значение\" - \"Поле 2\")",
+          "calc": "SUM( \"Значение\" - \"Поле 2\")",
+          "conditionMode": true,
+          "datasetId": 3,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_v9Rj2V4wGIynG42_zxN_9",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_v9Rj2V4wGIynG42_zxN_9_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": "count",
+          "pivotOrder": null,
+          "title": "Прибыль",
+          "title__ru": "Прибыль",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Значения",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "expands": [
+    [],
+    [
+      [
+        "root"
+      ]
+    ]
+  ],
+  "filtersDefault": {},
+  "unsaved": true
+}".
+
+Изучи примеры отправляемых запросов и получаемых ответов в файле ./Образцы_запросов_из_отчёта.txt
+
+Это та структура, которую мы будем дорабатывать и на которую мы вынужденны ориентироваться как на исходную точку.
+
+Изучи актуальные контракты для Мер в файле ./Контракты_мер.txt
+
+При реализации постановок придерживайся данных контрактов для Мер.
+
+Изучи транскрипцию обсуждения с коллегами данной постановки в файле ./Транскрипция_Меры_в_наборах2.txt
+
+Дополнительно изучи две подчинённые постановки, которые разделяют реализацию данных доработок портала на два первых этапа:
+1) ./Меры_в_наборе_данных_Шаг_1.txt
+2) ./Меры_в_наборе_данных_Шаг_2.txt
+
+
+Теперь проанализируй текущую постановку и приложенные данные, как системный аналитик с большим стажем, и составь грамотную постановку именно для оценки трудозатрат для фронтенд части работ по реализации данной задачи (внедрение Мер в нашей аналитической платформе).
+
+При формировании постановки для оценки трудозатрат понятно отделяй для разработчика необходимые доработки на первые два этапа реализации (Шаг_1 и Шаг_2), а также последующие (если они потребуются).
+
+Как системный аналитик с большим стажем, сформулируй необходимые доработки логики фронтенда и доработок визуальной части нашего аналитического портала и напиши оптимальную и корректную постановку для оценки разработчиками трудозатрат для реализации этих необходимых доработок в рамках данной задачи. Сохрани оригинальную разметку и структуру оригинальной постановки.
+
+Запиши постановку для оценки трудозатрат фронтенда в новый файл Меры_frontend_оценка_трудозатрат.txt
+
+Постановка должна достаточно компактно, декларативно и в легко-читаемой форме давать разработчикам фронтендерам информацию о необходимых доработках, постановка не должна фокусироваться на изменениях внесенных в постановку, разработчики не должны касаться старых версий постановки, обсуждений и прочих некритичных деталей в рамках реализации данной постановки.

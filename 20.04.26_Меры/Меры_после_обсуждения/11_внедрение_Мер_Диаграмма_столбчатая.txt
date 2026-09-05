@@ -1,0 +1,416 @@
+Ранее были созданы следующие постановки и материалы по внедрению концепции Мер в нашем аналитическом портале:
+1) ./Постановка_меры_new3.txt
+2) ./Меры_в_наборе_данных_Шаг_1.txt
+3) ./Меры_frontend_реализация_Шаг_1.txt
+4) ./Меры_backend_реализация_Шаг_1
+5) ./Контракты_мер.txt
+6) ./Интерфейс_Мер.txt
+7) ./Меры_в_наборе_данных_Шаг_2.txt
+8) ./Меры_backend_реализация_Шаг_2.txt
+9) ./Меры_backend_реализация_Шаг_3.txt
+
+С коллегами прошла встреча обсуждение касательно начала внедрения мер и, в особенности, их внедрение для использования в конкретных визуализациях - ./Транскрипция_Внедрение_Мер_в_визуализациях_Шаг_2.txt
+
+Изучи все упомянутые материалы.
+
+Начать внедрение мер было решено с "диаграммы столбчатой".
+При работе с этой диаграммой нам доступна стандартная левая боковая панель (как и во всех других визуализациях) в которой должна появится дополнительная секция "Меры".
+Для размещения полей, вычисляемых полей и Мер в данной диаграмме доступны полки:
+# Значения - позволяет выбрать значения, которые будут визуализироваться в диаграмме при помощи столбцов различного размера. -> На полке есть настройка-тумблер с двумя положениями: 
+#* "Первое" - тогда для отображения на визуализации используется только первая пилюля, размещенная на этой полке.
+#* "Все" - тогда для отображения на диаграмме используются все пилюли, размещенные на этой полке.
+# Категории - позволяет задать по каким категориям дробить значения для отображения (активно используется только первая пилюля, размещённая на этой полке).
+# Серии - выделяем и групируем значения по заданным категориям, а уже в рамках каждой категории делим по сериям. -> На полке есть настройка-тумблер с двумя положениями: 
+#* "Вкл" - пилюли размещённые на полке "серии" используются и влияют на визуализацию, увеличивая колличество отображаемых на диаграмме столбцов, расширяя и детализируя получаемую из визуализации информацию.
+#* "Выкл" - "серии" не используются и не влияют на визуализацию.
+# Фильтры - полка "Фильтры" позволяет задать как будет происходить фильтрация данных для отображения в визуализации.
+
+Вот пример настройки "диаграммы столбчатой" в режиме отладки - "
+{
+  "title": "Столбчатая диаграмма",
+  "chartType": "barChart",
+  "visualType": "column",
+  "orientation": "v",
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 5,
+    "r": 5,
+    "t": 5,
+    "b": 5,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "region",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "region_QFctqS_d3aP-ppA5UO7A3",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "color": "",
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_i8FwJr8eJDB0G7pOfzVYU",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value",
+          "pivotAgg": null
+        }
+      ],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "fontSize": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "scrollable": false,
+      "selectedFieldIndex": 0,
+      "showFirstTick": true,
+      "showgrid": false,
+      "showlabels": false,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "product",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "product_crLkqLqbsQG-DjA1cyiCY",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "color": "",
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_stwI5EILHgxmtGHn0efhx",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "`<div style=\"display:flex; align-items:center; gap:12px; margin-bottom:8px;\">` ||\n    `<img src=\"https://img.freepik.com/free-vector/colorful-letter-gradient-logo-design_474888-2309.jpg?semt=ais_hybrid&w=740&q=80\" ` ||\n         `width=\"80\" alt=\"Логотип\" style=\"flex-shrink:0;\">` ||\n    `<h2 style=\"color: #1e3a8a; margin:0;\">Отчёт по продажам:</h2>` ||\n`</div>` ||\n`<p><b>Федеральный округ:</b><br> ` || \"fed_okrug_full_name\" || `</p>` ||\n`<p><b>Сумма продаж:</b><br> ` || TO_CHAR(SUM(\"summa_rub\"), `FM9G999G999G999G999`) || ` руб.</p>` ||\n`<b>Количество:</b> ` || SUM(\"amount\") || ` шт.<br>` ||\n`<b>Средний чек:</b> ` || ROUND(AVG(\"summa_rub\" / \"amount\"), 2) || ` руб.<br>` ||\n`<hr>`",
+          "calc": "!hs_quote!<div style=\"display:flex; align-items:center; gap:12px; margin-bottom:8px;\">!hs_quote! ||\n    !hs_quote!<img src=\"https://img.freepik.com/free-vector/colorful-letter-gradient-logo-design_474888-2309.jpg?semt=ais_hybrid&w=740&q=80\" !hs_quote! ||\n         !hs_quote!width=\"80\" alt=\"Логотип\" style=\"flex-shrink:0;\">!hs_quote! ||\n    !hs_quote!<h2 style=\"color: #1e3a8a; margin:0;\">Отчёт по продажам:</h2>!hs_quote! ||\n!hs_quote!</div>!hs_quote! ||\n!hs_quote!<p><b>Федеральный округ:</b><br> !hs_quote! || \"fed_okrug_full_name\" || !hs_quote!</p>!hs_quote! ||\n!hs_quote!<p><b>Сумма продаж:</b><br> !hs_quote! || TO_CHAR(SUM(\"summa_rub\"), !hs_quote!FM9G999G999G999G999!hs_quote!) || !hs_quote! руб.</p>!hs_quote! ||\n!hs_quote!<b>Количество:</b> !hs_quote! || SUM(\"amount\") || !hs_quote! шт.<br>!hs_quote! ||\n!hs_quote!<b>Средний чек:</b> !hs_quote! || ROUND(AVG(\"summa_rub\" / \"amount\"), 2) || !hs_quote! руб.<br>!hs_quote! ||\n!hs_quote!<hr>!hs_quote!",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_GiiajrWKM5U2orSpp0InV",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_GiiajrWKM5U2orSpp0InV_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Инфо",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "tooltip"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": -2,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    },
+    {
+      "enabled": false,
+      "fields": [],
+      "name": "valuesExtra",
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Дополнительная ось значений",
+      "type": "valuesExtra",
+      "visible": true,
+      "selectedFieldIndex": 0
+    }
+  ],
+  "legend": {
+    "visible": true,
+    "position": "auto",
+    "order": "normal"
+  },
+  "labels": {
+    "visible": true,
+    "position": "auto",
+    "inner": {},
+    "outer": {}
+  },
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "color": "",
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_i8FwJr8eJDB0G7pOfzVYU",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "fontSize": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "scrollable": false,
+      "selectedFieldIndex": 0,
+      "showFirstTick": true,
+      "showgrid": false,
+      "showlabels": false,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "color": "",
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_stwI5EILHgxmtGHn0efhx",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "`<div style=\"display:flex; align-items:center; gap:12px; margin-bottom:8px;\">` ||\n    `<img src=\"https://img.freepik.com/free-vector/colorful-letter-gradient-logo-design_474888-2309.jpg?semt=ais_hybrid&w=740&q=80\" ` ||\n         `width=\"80\" alt=\"Логотип\" style=\"flex-shrink:0;\">` ||\n    `<h2 style=\"color: #1e3a8a; margin:0;\">Отчёт по продажам:</h2>` ||\n`</div>` ||\n`<p><b>Федеральный округ:</b><br> ` || \"fed_okrug_full_name\" || `</p>` ||\n`<p><b>Сумма продаж:</b><br> ` || TO_CHAR(SUM(\"summa_rub\"), `FM9G999G999G999G999`) || ` руб.</p>` ||\n`<b>Количество:</b> ` || SUM(\"amount\") || ` шт.<br>` ||\n`<b>Средний чек:</b> ` || ROUND(AVG(\"summa_rub\" / \"amount\"), 2) || ` руб.<br>` ||\n`<hr>`",
+          "calc": "!hs_quote!<div style=\"display:flex; align-items:center; gap:12px; margin-bottom:8px;\">!hs_quote! ||\n    !hs_quote!<img src=\"https://img.freepik.com/free-vector/colorful-letter-gradient-logo-design_474888-2309.jpg?semt=ais_hybrid&w=740&q=80\" !hs_quote! ||\n         !hs_quote!width=\"80\" alt=\"Логотип\" style=\"flex-shrink:0;\">!hs_quote! ||\n    !hs_quote!<h2 style=\"color: #1e3a8a; margin:0;\">Отчёт по продажам:</h2>!hs_quote! ||\n!hs_quote!</div>!hs_quote! ||\n!hs_quote!<p><b>Федеральный округ:</b><br> !hs_quote! || \"fed_okrug_full_name\" || !hs_quote!</p>!hs_quote! ||\n!hs_quote!<p><b>Сумма продаж:</b><br> !hs_quote! || TO_CHAR(SUM(\"summa_rub\"), !hs_quote!FM9G999G999G999G999!hs_quote!) || !hs_quote! руб.</p>!hs_quote! ||\n!hs_quote!<b>Количество:</b> !hs_quote! || SUM(\"amount\") || !hs_quote! шт.<br>!hs_quote! ||\n!hs_quote!<b>Средний чек:</b> !hs_quote! || ROUND(AVG(\"summa_rub\" / \"amount\"), 2) || !hs_quote! руб.<br>!hs_quote! ||\n!hs_quote!<hr>!hs_quote!",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_GiiajrWKM5U2orSpp0InV",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_GiiajrWKM5U2orSpp0InV_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Инфо",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "tooltip"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": -2,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    },
+    {
+      "enabled": false,
+      "fields": [],
+      "name": "valuesExtra",
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Дополнительная ось значений",
+      "type": "valuesExtra",
+      "visible": true
+    }
+  ],
+  "balloon": {
+    "allSeriesPop": false,
+    "fontsize": 11,
+    "visible": true
+  },
+  "balloonTemplate": "[[tooltip]]",
+  "calculatedField": null,
+  "dirty": false,
+  "filtersDefault": {},
+  "groupMode": "group",
+  "subtitle__ru": "Имеет проблемы с форматированием больших чисел (нужны разделители для читаемости)",
+  "title__ru": "Настроенная всплывающая подсказка"
+}
+".
+
+Также изучи актуальный черновик данной постановки ./Меры_внедрение_Шаг_2_Диаграмма_столбчатая4.txt
+Но учитывай, что в черновике могут быть неточности и ошибки. 
+
+Важно учитывать последние согласования и уточнения:
+1) на данный момент решено отображать пилюли с мерами на полках визуалиаций светло-синим цветом (#3491F7).
+2) новые секции в левой боковой панеле визуализации пока делаем не сворачиваемыми (отображаем развёрнутыми, без аккордеона).
+3) Единственный дополнительный селектор, в котором могут использоваться поля или меры - это вкладка "Стиль элементов" из правой боковой панели визуализации "Диаграмма столбчатая", на этой вкладке есть селектор "Объект данных" - данный селектор доступен только если для полки визуализации "Серии" тумблер находится в положении "Выкл", т.е. серии не задействованы для отображения в диаграмме. Если для полки визуализации "Серии" тумблер находится в положении "Вкл" - этот селектор недоступен.
+
+В селекторе "Объект данных" (если он доступен) мы можем выбрать как обычное, так и вычисляемое поле, а следовательно для этого селектора мы должны поддержать возможность выбрать Меру. Других дополнительных мест для примерения Мер в данной визуализации нет (за исключением стандартных полок визуализации) - это важно отметить для разработчиков, чтобы точно определить скоуп внедрения мер в данной визуализации.
+
+Подготовлен макет отображения мер в настройках визуализации Диаграмма столбчатая ./Макет_Меры_Столбчатая2.png
+
+Как системный аналитик с большим стажем, опираясь на уже реализованные постановки, изученные материалы и общий контекст задачи, подготовь постановку Шага 2 для внедрения Мер в первую конкретную визуализацию - "Диаграмму столбчатую". Важно качественно и грамотно проработать внедрение мер в этой конкретной визуализации, продумать все необходимые сценарии использования мер в настройках визуализации, используя описанные доработки бэкенда для полноценного внедрения и использования мер в рамках визуализации "Диаграмма столбчатая". Нужно подробно описать целевой интерфейс для работы с мерами в рамках этой визуализации и какие доработки текущего интерфейса потребуются для комфортной работы пользователя с мерами в рамках данной визуализации.
+
+Использование Мер допускается везде, где допускается использование вычисляемых полей, но в текущем сценарии это только селектор "Объект данных" во вкладке "Стиль элементов" из правой боковой панели визуализации "Диаграмма столбчатая". В целом, использование Мер в данной визуализации согласуется с уже описанными общими механизмами использования мер.
+
+Новая постановка должна полностью согласовываться с уже созданными постановками, но в первую очередь мы должны согласовываться с последними согласованиями и уточнениями. В открытых вопросах в новой постановке можно подчеркнуть возможные расхождения новой постановки со старыми. Важно понятно давать разработчику информацию о требуемых доработках. Постановка для внедрения мер в визуализации "Диаграмма столбчатая" должна быть верной, согласованной и давать разработчику достаточно информации и полную картину сценариев внедрения и использования мер в рамках данной визуализации. Сохраняй оптимальную разметку и структуру документов, которая уже используется в существующих постановках, для публикации в Jira.
+
+Постановка должна декларативно давать разработчикам информацию о необходимых доработках и не фокусироваться на изменениях внесенных в постановку, обсуждениях, согласованиях и прочих некритичных деталях в рамках реализации данной функциональности. Очень важно минимизировать дублирование информации, сделать объём задачи ограниченным (для лёгкости изучения постановки разработчиками), а задачу легко-читаемой. Разработчик не должен знать о том, что ему не нужно реализовывать, но должен понимать, что нужно.
+
+Запиши новую постановку по данной теме в файл ./Меры_внедрение_Шаг_2_Диаграмма_столбчатая2.txt
+
+
+

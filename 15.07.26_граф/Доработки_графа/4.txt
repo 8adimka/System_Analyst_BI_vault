@@ -1,0 +1,465 @@
+Транскрипция обсуждения с коллегой доработок диаграммы "Граф" на нашем аналитическом портале - ./Транскрипция_Обсуждение_доработок_графа.txt
+
+Диаграмма "Граф" в режиме отладки выглядит так - "{
+  "title": "Диаграмма Граф (EChart)",
+  "titleTemplate": null,
+  "titleFieldId": null,
+  "roam": true,
+  "draggable": true,
+  "dateFormat": "-",
+  "subtitle": "",
+  "subtitleTemplate": null,
+  "subtitleFieldId": null,
+  "chartType": "graphECharts",
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "filterMode": false,
+  "bigNumberClasses": [],
+  "bgColor": "rgba(255,255,255,1)",
+  "margin": {
+    "l": 15,
+    "r": 15,
+    "t": 15,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "color": null,
+    "enabled": false,
+    "width": 1
+  },
+  "balloonTemplate": null,
+  "balloon": {
+    "visible": false,
+    "fontsize": 12,
+    "color": null,
+    "bgcolor": null,
+    "fieldId": null,
+    "textStyle": [],
+    "textAlign": "left"
+  },
+  "balloonLinkTemplate": "[[tooltip]]",
+  "balloonLink": {
+    "visible": true,
+    "fontsize": 12,
+    "color": null,
+    "bgcolor": null,
+    "fieldId": "Тип_связи_msFEOBHpsIRTNaS0Fbwdq",
+    "textStyle": [],
+    "textAlign": "left"
+  },
+  "labels": {
+    "visible": true,
+    "fontSize": 16,
+    "template": "[[tooltip]]",
+    "position": "inside",
+    "bgColor": null,
+    "fieldId": "НазваниеУзла_bMQee5W197xXKbzV-4RFz",
+    "textStyle": []
+  },
+  "legend": {
+    "visible": false,
+    "fontSize": 12,
+    "position": "bottom-center",
+    "align": "auto",
+    "bgColor": null,
+    "textStyle": []
+  },
+  "hideSpinner": true,
+  "axes": [
+    {
+      "fields": [],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 3692,
+          "agg": null,
+          "alias": "Узел",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Узел_m4rT2Z9F-VRcNa0Co2v7t",
+          "inactive": null,
+          "name": "Узел",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Узел",
+      "selectedFieldIndex": 0,
+      "title": "Узел",
+      "type": "node",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3694,
+          "agg": null,
+          "alias": "УзелПриемник",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "УзелПриемник_aYE4FREPAZu-xmfKLhsyc",
+          "inactive": null,
+          "name": "УзелПриемник",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Связь",
+      "selectedFieldIndex": 0,
+      "title": "Связь",
+      "type": "linkage",
+      "visible": true
+    },
+    {
+      "fields": [],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3693,
+          "agg": "max",
+          "alias": "НазваниеУзла",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "НазваниеУзла_bMQee5W197xXKbzV-4RFz",
+          "inactive": null,
+          "name": "НазваниеУзла",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "lgamma(MAX(\"Годовой_оборот_партнёра\"))",
+          "calc": "lgamma(MAX(\"Годовой_оборот_партнёра\"))",
+          "conditionMode": true,
+          "datasetId": 498,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_IpbgqWjf-H9RalhHbA6Vi",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_IpbgqWjf-H9RalhHbA6Vi_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "ВП331",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "radius"
+        },
+        {
+          "ID": 3698,
+          "agg": "max",
+          "alias": "Тип_связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Тип_связи_msFEOBHpsIRTNaS0Fbwdq",
+          "inactive": null,
+          "name": "Тип_связи",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": -2,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 3692,
+          "agg": null,
+          "alias": "Узел",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Узел_m4rT2Z9F-VRcNa0Co2v7t",
+          "inactive": null,
+          "name": "Узел",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Узел",
+      "selectedFieldIndex": 0,
+      "title": "Узел",
+      "type": "node",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3694,
+          "agg": null,
+          "alias": "УзелПриемник",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "УзелПриемник_aYE4FREPAZu-xmfKLhsyc",
+          "inactive": null,
+          "name": "УзелПриемник",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Связь",
+      "selectedFieldIndex": 0,
+      "title": "Связь",
+      "type": "linkage",
+      "visible": true
+    },
+    {
+      "fields": [],
+      "fixedZoom": false,
+      "fixedZoomValue": 10,
+      "name": "categories",
+      "scaleType": "category",
+      "selectedFieldIndex": 0,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "title": "Категории",
+      "type": "categories",
+      "visible": true
+    },
+    {
+      "fields": [
+        {
+          "ID": 3693,
+          "agg": "max",
+          "alias": "НазваниеУзла",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "НазваниеУзла_bMQee5W197xXKbzV-4RFz",
+          "inactive": null,
+          "name": "НазваниеУзла",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "lgamma(MAX(\"Годовой_оборот_партнёра\"))",
+          "calc": "lgamma(MAX(\"Годовой_оборот_партнёра\"))",
+          "conditionMode": true,
+          "datasetId": 498,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_IpbgqWjf-H9RalhHbA6Vi",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_IpbgqWjf-H9RalhHbA6Vi_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "ВП331",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "radius"
+        },
+        {
+          "ID": 3698,
+          "agg": "max",
+          "alias": "Тип_связи",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 498,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "Тип_связи_msFEOBHpsIRTNaS0Fbwdq",
+          "inactive": null,
+          "name": "Тип_связи",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "values",
+      "selectedFieldIndex": -2,
+      "showgrid": false,
+      "showlabels": true,
+      "showscale": true,
+      "showtitle": false,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values",
+      "visible": true
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "filtersDefault": {},
+  "variables": {
+    "ключ_узла": {
+      "value": []
+    }
+  }
+}".
+
+Пилюли (т.е. колонки из набора данных, с которым работает данная диаграмма) размещены в приведённой настройке на трёх полках: 
+1) Полка "Узел" - определяет общий список узлов, которые будут отображены на диаграмме.
+2) Полка "Связь" - определяет построение связи на диаграмме - связь строится между значениями приведёнными в пилюле (колонке набора данных), выбранной на полке "Узел", и связь идёт к значениям из пилюли (другой колонки набора данных) выбранной на полке "Связь".
+3) Полка "Значения" - тут мы располагаем пилюли, содержащие значения, которые определяют свойства узла или свойства связи - такие как, например, радиус узла или тип связи.
+
+Также в диаграмме "Граф" есть ещё полки "Категории" и "Фильтры" на которые мы также можем разместить пилюли из набора данных, но в приложенной спецификации они не заполнены.
+
+Ранее мной была подготовлена следующая постановка - ./Граф_свойства_на_полке_Значения2.txt 
+
+Данная постановка уже была реализована как первый шаг для сегрегации и корректной обработки свойств узлов и свойств связей, размещённых на полке "Значения".
+
+Нужно продумать следующие доработки для надёжного определения свойства ли узлов или свойства связей должна характиризовывать пилюля добавленная на полку "Значения", чтобы точно определить по какой логике обрабатывать значения этой пилюли.
+
+Предлагаю добавить новый тумблер в настройки пилюли, добавленной на полку "Значения", который по умолчанию будет стоять в положении "Свойства узла", но его можно будет переключить в положение "Свойства связи" для определения по какой логике обрабатывать данную пилюлю.
+
+Также нужно продумать другие настройки в правой боковой панеле диаграммы, чтобы применять значения этих пилюль для отображения заложенных в них свойств на диаграмме.
+
+Я подготовил черновик постановки по данной тематике в файле ./Граф_свойства_связи_Цвет_Тип_линии.txt
+
+Как системный аналитик с большим стажем, опираясь на изученные материалы и контекст, сформулируй логику работы и необходимые доработки нашего аналитического портала и визуализации диаграмма "Граф" для реализации описанных доработок и приведении диаграммы "Граф" в работоспособное состояние с возможностью корректно отображать свойства связей и свойста узлов. 
+
+Сформулируй и подготовь понятную финальную версию постановки, в ней не нужно упоминать факты и обсуждения не касающиеся именно текущей доработки, но нужно дать разработчикам достаточно информации для реализации необходимых доработок и внедрения описанной функциональности визуализации и управления цветами связей и типами линий в диаграмме "Граф" с помощью размещения пилюль на полке "Значения", включения в их настройках режима "Свойста связи" и установления соответствующего типа данной пилюли - тип "Цвет" для применения данной пилюли для отображения цвета связи и тип "Тип линии" для отображения, по данным этой пилюли, корректный тип линии для связи.
+
+Постановка должна декларативно давать разработчикам информацию о необходимых доработках и не фокусироваться на изменениях внесенных в постановку, обсуждениях, согласованиях, других постановках и прочих некритичных деталях в рамках реализации данной функциональности.
+
+Постановка должна быть компактной, легко и приятно-читаемой, но при этом достаночной, верной и согласованной. Сохраняй оптимальную разметку и структуру документов, которая уже используется в постановках, для публикации в Jira.
+
+Запиши финальную постановку по данной теме в файл ./Граф_свойства_связи_Цвет_Тип_линии2.txt

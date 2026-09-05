@@ -1,0 +1,1436 @@
+Чтобы подготовить бэкенд для правильной обработки отправляемых Фронтендом запросов, нам нужно определиться какой сейчас механизм используется фронтендом для обычных полей (и вычисляемых полей) и адаптировать его для использования с Мерами на полках визуализаций в дополнение к обычным полям. Для изучения отправляемых фронтендом запросов, мы изучим отправляемые запросы в визуализации "Таблица", при размещении на различных полках визуализации как обычных полей так и вычисляемых полей.
+
+В данный момент для визуализации "Таблица":
+* На полке "Значения" с включенным параметром "Все" (при выключении параметра таблица обрабатывает только "Первую" пилюлю размещённую на этой полке) у нас размещается -
+1) пилюля обычного поля "Колличество, шт" ("amount"), агрегация SUM, без сортировки.
+2) вычисляемое поле, без сортировки, наименование вычисляемого поля "Сумма", содержит код -> 
+"CASE {!env.var!;''}
+  WHEN 'Накопительно'
+    THEN SUM(SUM("summa_rub")) OVER (PARTITION BY "region" ORDER BY "year" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+  WHEN 'По регионам'
+    THEN SUM("summa_rub")
+  ELSE SUM("summa_rub")
+END"
+
+* На полке "Категории" у нас размещается -
+1) пилюля обычного поля "Год" ("year"), без сортировки.
+
+* На полке "Серии" с включенным параметром "Вкл" (выключение параметра позволяет отключить учёт серий) у нас размещается -
+1) пилюля обычного поля "Федеральный округ" ("fed_okrug_full_name"), без сортировки.
+2) пилюля обычного поля "Регион" ("region"), без сортировки.
+3) пилюля обычного поля "Тип продукции" ("product_type"), без сортировки.
+4) пилюля обычного поля "Продукция" ("product"), без сортировки.
+
+* На полке "Фильтры" у нас размещается -
+1) пилюля обычного поля "Федеральный округ" ("fed_okrug_full_name").
+2) пилюля обычного поля "Регион" ("region"), без сортировки.
+3) пилюля обычного поля "Тип продукции" ("product_type").
+4) пилюля обычного поля "Продукция" ("product").
+5) пилюля обычного поля "Год" ("year").
+6) пилюля обычного поля "Месяц_номер" ("month_num"), для этого фильтра задан параметр "значение по другому полю" чтобы брать наименование месяца по его номеру из колонки набора данных "Месяц_название" ("month_name"), название пилюли "Месяц".
+7) вычисляемое поле, наименование вычисляемого поля "Сумма_фильтр", содержит код -> 
+"CASE {!env.var!;''}
+  WHEN 'Накопительно'
+    THEN SUM(SUM("summa_rub")) OVER (PARTITION BY "region" ORDER BY "year" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+  WHEN 'По регионам'
+    THEN SUM("summa_rub")
+  ELSE SUM("summa_rub")
+END"
+Для всех фильтров выбран тип "По значению".
+
+Отладка для визуализации таблицы даёт нам такую схему - 
+"
+{
+  "title": {
+    "text": "Таблица (Reactabular)",
+    "text__ru": "Продажи по регионам (фильтры в одну строку)"
+  },
+  "chartType": "table",
+  "visualType": "table",
+  "showtitle": true,
+  "showNumberLineInHeader": true,
+  "noexport": false,
+  "nocopy": false,
+  "precision": 0,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "t": 0,
+    "l": 0,
+    "b": 0,
+    "r": 0
+  },
+  "resultAtTop": false,
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_Iw6dVgJdwEa7KZ6cUh9vK",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nFkK0kQT772HQJAWm1gNo",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_uxsZNO5DvFUsahxHfBIKr",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_mRbMvhy2fw3XUkj6DtIi1",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_iWP2_7-CznnPocyvBPC3F",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_4A0nz1AM_UUZbdl0sx1cr",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1581,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_RYsidIzLJ6AZt00C6dGl5",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_VqCfZB6N885qjrXVTZV01",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_mWadEDnzzesUyEP42qTj5",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (PARTITION BY \"region\" ORDER BY \"year\" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (PARTITION BY \"region\" ORDER BY \"year\" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_iCAlmdYALbUsXTpBTmJ5l",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_iCAlmdYALbUsXTpBTmJ5l_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "title": "Сумма",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "settings": {
+    "AllowResizable": true,
+    "AllowResponsible": false,
+    "AllowSort": true,
+    "AllowSearch": false,
+    "AllowTree": false,
+    "AllowPagination": false,
+    "AllowColumnDnD": true,
+    "AllowVirtualization": true,
+    "AllowFixedWidth": false,
+    "AllowExport": false,
+    "AllowToggleVisibility": false,
+    "AllowAutoWidth": true,
+    "AllowMultilineHeader": true
+  },
+  "massUpdate": {
+    "enabled": false,
+    "keyField": null,
+    "formURL": null,
+    "rowLimit": 0,
+    "limitWarn": false,
+    "isDisableByField": false,
+    "disableField": null,
+    "disableFieldName": null,
+    "disableFieldMessage": null
+  },
+  "allowMultivalues": true,
+  "allowNoCategories": true,
+  "visuals": [],
+  "filters": {
+    "month_num": {
+      "autofilter": null,
+      "nonglobal": false,
+      "selected": []
+    },
+    "year": {
+      "nonglobal": false,
+      "selected": []
+    }
+  },
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "agg": null,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_Iw6dVgJdwEa7KZ6cUh9vK",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_nFkK0kQT772HQJAWm1gNo",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "agg": null,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_uxsZNO5DvFUsahxHfBIKr",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "agg": null,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_mRbMvhy2fw3XUkj6DtIi1",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1581,
+          "agg": null,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_iWP2_7-CznnPocyvBPC3F",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_4A0nz1AM_UUZbdl0sx1cr",
+          "inactive": null,
+          "name": "month_num",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1581,
+          "alias": "Год",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "year_RYsidIzLJ6AZt00C6dGl5",
+          "inactive": null,
+          "name": "year",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "categories",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1590,
+          "alias": "Тип продукции",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+          "inactive": null,
+          "name": "product_type",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "product_VqCfZB6N885qjrXVTZV01",
+          "inactive": null,
+          "name": "product",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "series",
+      "selectedFieldIndex": 0,
+      "title": "Серии",
+      "type": "series"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1592,
+          "agg": "sum",
+          "alias": "Количество, шт",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "amount_mWadEDnzzesUyEP42qTj5",
+          "inactive": null,
+          "name": "amount",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "agg": null,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (PARTITION BY \"region\" ORDER BY \"year\" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (PARTITION BY \"region\" ORDER BY \"year\" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_iCAlmdYALbUsXTpBTmJ5l",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_iCAlmdYALbUsXTpBTmJ5l_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "title": "Сумма",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "y",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Значения",
+      "type": "values"
+    }
+  ],
+  "calculatedField": null,
+  "columns": {
+    "amount_mWadEDnzzesUyEP42qTj5": {
+      "valueSeparator": true
+    },
+    "deQmJF_c_kRoyVLO5LT2z": {
+      "valueSeparator": true
+    },
+    "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA": {
+      "valueSeparator": true
+    },
+    "product_VqCfZB6N885qjrXVTZV01": {
+      "valueSeparator": true
+    },
+    "product_type_W1RCI7PZsYC4Jd4fD4Qc9": {
+      "valueSeparator": true
+    },
+    "region_ZwBY5KN2uOzR4CjdpX0_o": {
+      "valueSeparator": true
+    },
+    "summa_rub_saD1e4r6oiSW0bzeDfAlf": {
+      "precision": 2,
+      "valueSeparator": true
+    },
+    "year_RYsidIzLJ6AZt00C6dGl5": {
+      "valueSeparator": false
+    }
+  },
+  "dirty": true,
+  "drill": {
+    "hierarchy": []
+  },
+  "filtersDefault": {
+    "month_num": {
+      "autofilter": null,
+      "nonglobal": false,
+      "selected": []
+    },
+    "year": {
+      "nonglobal": false,
+      "selected": []
+    }
+  },
+  "rules": [],
+  "subAllMode": true,
+  "template": {
+    "id": 71,
+    "name": "Пример_шаблона_экспорта_Таблицы.xlsx"
+  },
+  "variables": {
+    "var": {
+      "value": [
+        "Накопительно"
+      ]
+    }
+  }
+}
+".
+
+
+
+При загрузке предпросмотра данной визуализации (в панеле разработчика на F12) мы видим следующий запрос:
+1) Во вкладке Payload такой объект -> "{
+    "group": [
+        {
+            "name": "fed_okrug_full_name",
+            "calc": "",
+            "alias": "[series][0]",
+            "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+            "fieldAlias": "Федеральный округ",
+            "direction": null
+        },
+        {
+            "name": "region",
+            "calc": "",
+            "alias": "[series][1]",
+            "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+            "fieldAlias": "Регион",
+            "direction": null
+        },
+        {
+            "name": "product_type",
+            "calc": "",
+            "alias": "[series][2]",
+            "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+            "fieldAlias": "Тип продукции",
+            "direction": null
+        },
+        {
+            "name": "product",
+            "calc": "",
+            "alias": "[series][3]",
+            "id": "product_VqCfZB6N885qjrXVTZV01",
+            "fieldAlias": "Продукция",
+            "direction": null
+        },
+        {
+            "name": "year",
+            "calc": "",
+            "alias": "[categories]",
+            "id": "year_RYsidIzLJ6AZt00C6dGl5",
+            "fieldAlias": "Год",
+            "direction": null
+        }
+    ],
+    "order": [],
+    "select": [
+        {
+            "name": "{Вычисляемое поле}_iCAlmdYALbUsXTpBTmJ5l_name",
+            "calc": "CASE {!env.var!;''}\n  WHEN 'Накопительно'\n    THEN SUM(SUM(\"summa_rub\")) OVER (PARTITION BY \"region\" ORDER BY \"year\" ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n  WHEN 'По регионам'\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+            "aggr": "",
+            "alias": "[values][6]",
+            "id": "{Вычисляемое поле}_iCAlmdYALbUsXTpBTmJ5l",
+            "fieldAlias": "Сумма",
+            "export": {
+                "subAgg": null,
+                "fieldType": "calculated"
+            },
+            "lvl": 0,
+            "valueType": "value"
+        },
+        {
+            "name": "amount",
+            "calc": "",
+            "aggr": "sum",
+            "alias": "[values][5]",
+            "id": "amount_mWadEDnzzesUyEP42qTj5",
+            "fieldAlias": "Количество, шт",
+            "export": {
+                "subAgg": "sum",
+                "fieldType": "number",
+                "prop": {}
+            },
+            "lvl": 0,
+            "valueType": "value"
+        },
+        {
+            "name": "product",
+            "calc": "",
+            "aggr": "",
+            "alias": "[values][4]",
+            "id": "product_VqCfZB6N885qjrXVTZV01",
+            "fieldAlias": "Продукция",
+            "export": {
+                "fieldType": "string",
+                "prop": {}
+            },
+            "lvl": 0,
+            "valueType": "value"
+        },
+        {
+            "name": "product_type",
+            "calc": "",
+            "aggr": "",
+            "alias": "[values][3]",
+            "id": "product_type_W1RCI7PZsYC4Jd4fD4Qc9",
+            "fieldAlias": "Тип продукции",
+            "export": {
+                "fieldType": "string",
+                "prop": {}
+            },
+            "lvl": 0,
+            "valueType": "value"
+        },
+        {
+            "name": "region",
+            "calc": "",
+            "aggr": "",
+            "alias": "[values][2]",
+            "id": "region_ZwBY5KN2uOzR4CjdpX0_o",
+            "fieldAlias": "Регион",
+            "export": {
+                "fieldType": "string",
+                "prop": {}
+            },
+            "lvl": 0,
+            "valueType": "value"
+        },
+        {
+            "name": "fed_okrug_full_name",
+            "calc": "",
+            "aggr": "",
+            "alias": "[values][1]",
+            "id": "fed_okrug_full_name_vuqJHGHf5E4IqEtp45FMA",
+            "fieldAlias": "Федеральный округ",
+            "export": {
+                "fieldType": "string",
+                "prop": {}
+            },
+            "lvl": 0,
+            "valueType": "value"
+        },
+        {
+            "name": "year",
+            "calc": "",
+            "aggr": "",
+            "alias": "[values][0]",
+            "id": "year_RYsidIzLJ6AZt00C6dGl5",
+            "fieldAlias": "Год",
+            "export": {
+                "fieldType": "number",
+                "prop": {}
+            },
+            "lvl": 0,
+            "valueType": "value"
+        }
+    ],
+    "where": [],
+    "having": {
+        "condition": ""
+    },
+    "variables": [
+        {
+            "name": "var",
+            "values": [
+                "Накопительно"
+            ]
+        }
+    ],
+    "series": {
+        "enable": 0
+    }
+}".
+
+2) Во вкладке Response такой объект ->
+"[
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 673,
+        "[values][6]": 10313661.27
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 358,
+        "[values][6]": 17951465.46
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 361,
+        "[values][6]": 26119731.74
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 1175,
+        "[values][6]": 32209491.25
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 360,
+        "[values][6]": 40035972.07
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 1030,
+        "[values][6]": 45073196.71
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 533,
+        "[values][6]": 51945230.95
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 427,
+        "[values][6]": 60144291.60
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 170,
+        "[values][6]": 63902967.78
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 418,
+        "[values][6]": 65966692.78
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 197,
+        "[values][6]": 68754593.11
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Сибирский федеральный округ",
+        "[values][2]": "Алтайский край",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 155,
+        "[values][6]": 71524608.30
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 1639,
+        "[values][6]": 8329790.06
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 573,
+        "[values][6]": 20758403.89
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 728,
+        "[values][6]": 30482670.50
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 611,
+        "[values][6]": 43561325.10
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 564,
+        "[values][6]": 56427528.47
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 903,
+        "[values][6]": 68214921.14
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 543,
+        "[values][6]": 80372664.10
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 1636,
+        "[values][6]": 89001067.10
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 692,
+        "[values][6]": 92890410.33
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 231,
+        "[values][6]": 97392362.23
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 339,
+        "[values][6]": 102560382.58
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Дальневосточный федеральный округ",
+        "[values][2]": "Амурская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 232,
+        "[values][6]": 108253710.76
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 46,
+        "[values][6]": 963468.50
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 43,
+        "[values][6]": 1765179.89
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 65,
+        "[values][6]": 2634544.41
+    },
+    {
+        "[values][0]": 2021,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 121,
+        "[values][6]": 3225446.71
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 122,
+        "[values][6]": 3845406.19
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 40,
+        "[values][6]": 4561735.84
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 42,
+        "[values][6]": 5373845.69
+    },
+    {
+        "[values][0]": 2022,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 61,
+        "[values][6]": 6126931.72
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Шкаф-купе",
+        "[values][5]": 26,
+        "[values][6]": 6454336.73
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Диван",
+        "[values][5]": 15,
+        "[values][6]": 6792754.76
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Мягкая мебель",
+        "[values][4]": "Кресло",
+        "[values][5]": 19,
+        "[values][6]": 7151039.71
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Северо-Западный федеральный округ",
+        "[values][2]": "Архангельская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 41,
+        "[values][6]": 7355257.58
+    },
+    {
+        "[values][0]": 2023,
+        "[values][1]": "Центральный федеральный округ",
+        "[values][2]": "Ярославская область",
+        "[values][3]": "Корпусная мебель",
+        "[values][4]": "Стол приставной",
+        "[values][5]": 84,
+        "[values][6]": 11369053.77
+    }
+]
+
+3) Во вкладке Headers такая информация ->
+"Request URL
+https://dev.modusbi.ru/v1/api/recordsets/244
+Request Method
+POST
+Status Code
+200 OK
+Remote Address
+87.228.71.135:443
+Referrer Policy
+strict-origin-when-cross-origin
+access-control-allow-origin
+*
+cache-control
+no-cache, no-store
+call-id
+1782307240093699304
+content-encoding
+gzip
+content-type
+application/json; charset=utf-8
+date
+Wed, 24 Jun 2026 13:20:40 GMT
+server
+nginx/1.27.5
+strict-transport-security
+max-age=31536000; includeSubDomains
+x-content-type-options
+nosniff
+x-frame-options
+SAMEORIGIN
+:authority
+dev.modusbi.ru
+:method
+POST
+:path
+/v1/api/recordsets/244
+:scheme
+https
+accept
+*/*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+ru-RU
+authorization
+Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6MTE3MTJ9.eyJpZCI6NjcsInNlc3Npb25faWQiOiI1YTZiYzBlMi1hNDE3LTQzMDgtOTk2OS1mODhlY2IyZDRhMjIiLCJ1c2VybmFtZSI6InYubWVkaW50c2V2Iiwicm9sZSI6ImFkbSIsImlhdCI6MTc4MjMwNTcwNywiZXhwIjoxNzgyMzkyMTA3LCJsYW5ndWFnZSI6InJ1LVJVIn0.S9BiAcAJ2srKKM6QNj-YGQ-snUi59cbn_es8pitQVXg
+content-length
+2711
+content-type
+application/json; charset=UTF-8
+cookie
+GUEST_LANGUAGE_ID=ru_RU; COMPANY_ID=20102; ID=47594762526f716e443852347568576e6f65787347413d3d; _ym_uid=1772609270436068878; _ym_d=1780312332
+dnt
+1
+origin
+https://dev.modusbi.ru
+priority
+u=1, i
+referer
+https://dev.modusbi.ru/report/809
+sec-ch-ua
+"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Linux"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-origin
+user-agent
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36".
