@@ -1,0 +1,753 @@
+{
+  "title": "Временные ряды",
+  "chartType": "stock",
+  "visualType": "stock",
+  "showtitle": true,
+  "noexport": false,
+  "nocopy": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 5,
+    "r": 5,
+    "t": 5,
+    "b": 5,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "name": "filters",
+      "title": "Фильтры",
+      "type": "filters",
+      "fields": [
+        {
+          "ID": 1593,
+          "alias": "Цена, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "price_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "price_rub_tdPKAPGAbBBwZfZ4RuJU6",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1594,
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "summa_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "summa_rub_rNYSlH9A8urXIW35DWS6f",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "product",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "product_YnZh8E4BTTMw5gDtfSzHQ",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1583,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "month_num",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "month_num_Zuju0J9dvYE_7FnT-U1Al",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "region",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "region_O07vSTiwlbIKusyzmQZu6",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "categories",
+      "title": "Категории",
+      "type": "categories",
+      "scaleType": "category",
+      "visible": true,
+      "showscale": true,
+      "showtitle": false,
+      "showgrid": false,
+      "showlabels": true,
+      "fields": [
+        {
+          "ID": 1579,
+          "alias": "Дата заказа",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [
+            {
+              "ID": 34
+            },
+            {
+              "ID": 48
+            },
+            {
+              "ID": 49
+            },
+            {
+              "ID": 47
+            },
+            {
+              "ID": 54
+            },
+            {
+              "ID": 51
+            },
+            {
+              "ID": 63
+            },
+            {
+              "ID": 37
+            },
+            {
+              "ID": 39
+            }
+          ],
+          "name": "order_date",
+          "prop": {},
+          "type": "date",
+          "datasetId": 244,
+          "id": "order_date_QcQletM9ocJsTUxRNbwc-",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": "asc",
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1580,
+          "alias": "Дата отгрузки",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [
+            {
+              "ID": 51
+            },
+            {
+              "ID": 48
+            }
+          ],
+          "name": "shipping_date",
+          "prop": {},
+          "type": "date",
+          "datasetId": 244,
+          "id": "shipping_date_uiQbST_4kbkU0sLHYOGYd",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": "asc",
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "values",
+      "title": "Значения",
+      "type": "values",
+      "visible": true,
+      "showtitle": false,
+      "showscale": true,
+      "showgrid": false,
+      "showlabels": true,
+      "selectedFieldIndex": -2,
+      "fields": [
+        {
+          "type": "calculated",
+          "lvl": 0,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "name": "{Вычисляемое поле}_7ZK2_riSxqRBcMBFuoTs1_name",
+          "datasetId": 244,
+          "id": "{Вычисляемое поле}_7ZK2_riSxqRBcMBFuoTs1",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "draft": true,
+          "tree": null,
+          "title": "Вычисляемая сумма",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null,
+          "conditionMode": true
+        },
+        {
+          "ID": 1593,
+          "alias": "Цена, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "price_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "price_rub_zDRZds7ETsMXc-HyNPtl_",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": "sum",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1592,
+          "alias": "Количество, шт",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "amount",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "amount_rSy6sEKx9VdM3s-gEanE0",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": "sum",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "sortable": true
+    }
+  ],
+  "legend": {
+    "visible": true,
+    "position": "auto",
+    "order": "normal"
+  },
+  "labels": {
+    "visible": true,
+    "position": "auto",
+    "outer": {
+      "fontsize": 12,
+      "color": "rgba(68,68,68,1)"
+    },
+    "inner": {}
+  },
+  "visuals": [
+    {
+      "anchor": "{Вычисляемое поле}_7ZK2_riSxqRBcMBFuoTs1",
+      "type": "ColumnSeries",
+      "lineColor": "rgba(124,74,155,1)",
+      "labelsEnabled": true
+    },
+    {
+      "anchor": "Количество, шт (sum)",
+      "fillColor": "rgba(6,185,29,1)",
+      "type": "LineSeries",
+      "columnWidth": 5
+    }
+  ],
+  "dirty": false,
+  "unsaved": true,
+  "axesDefault": [
+    {
+      "name": "filters",
+      "title": "Фильтры",
+      "type": "filters",
+      "fields": [
+        {
+          "ID": 1593,
+          "alias": "Цена, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "price_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "price_rub_tdPKAPGAbBBwZfZ4RuJU6",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1594,
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "summa_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "summa_rub_rNYSlH9A8urXIW35DWS6f",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1591,
+          "alias": "Продукция",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "product",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "product_YnZh8E4BTTMw5gDtfSzHQ",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1583,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "month_num",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "month_num_Zuju0J9dvYE_7FnT-U1Al",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "region",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "region_O07vSTiwlbIKusyzmQZu6",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "categories",
+      "title": "Категории",
+      "type": "categories",
+      "scaleType": "category",
+      "visible": true,
+      "showscale": true,
+      "showtitle": false,
+      "showgrid": false,
+      "showlabels": true,
+      "fields": [
+        {
+          "ID": 1579,
+          "alias": "Дата заказа",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [
+            {
+              "ID": 34
+            },
+            {
+              "ID": 48
+            },
+            {
+              "ID": 49
+            },
+            {
+              "ID": 47
+            },
+            {
+              "ID": 54
+            },
+            {
+              "ID": 51
+            },
+            {
+              "ID": 63
+            },
+            {
+              "ID": 37
+            },
+            {
+              "ID": 39
+            }
+          ],
+          "name": "order_date",
+          "prop": {},
+          "type": "date",
+          "datasetId": 244,
+          "id": "order_date_QcQletM9ocJsTUxRNbwc-",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": "asc",
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1580,
+          "alias": "Дата отгрузки",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [
+            {
+              "ID": 51
+            },
+            {
+              "ID": 48
+            }
+          ],
+          "name": "shipping_date",
+          "prop": {},
+          "type": "date",
+          "datasetId": 244,
+          "id": "shipping_date_uiQbST_4kbkU0sLHYOGYd",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "order": "asc",
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "selectedFieldIndex": 0
+    },
+    {
+      "name": "values",
+      "title": "Значения",
+      "type": "values",
+      "visible": true,
+      "showtitle": false,
+      "showscale": true,
+      "showgrid": false,
+      "showlabels": true,
+      "selectedFieldIndex": -2,
+      "fields": [
+        {
+          "type": "calculated",
+          "lvl": 0,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "name": "{Вычисляемое поле}_7ZK2_riSxqRBcMBFuoTs1_name",
+          "datasetId": 244,
+          "id": "{Вычисляемое поле}_7ZK2_riSxqRBcMBFuoTs1",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "draft": true,
+          "tree": null,
+          "title": "Вычисляемая сумма",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null,
+          "conditionMode": true
+        },
+        {
+          "ID": 1593,
+          "alias": "Цена, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "price_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "price_rub_zDRZds7ETsMXc-HyNPtl_",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": "sum",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1592,
+          "alias": "Количество, шт",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "amount",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "amount_rSy6sEKx9VdM3s-gEanE0",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": "sum",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "sortable": true
+    }
+  ],
+  "filters": {},
+  "variables": {
+    "3": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1231": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "123456": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "фо1": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "фо2": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "year": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "year1": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "month": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "var": {
+      "value": [
+        "По регионам"
+      ]
+    }
+  },
+  "filtersDefault": {},
+  "calculatedField": null,
+  "altAxis": {
+    "enabled": false
+  },
+  "scrollbar": {
+    "disabled": false
+  }
+}
