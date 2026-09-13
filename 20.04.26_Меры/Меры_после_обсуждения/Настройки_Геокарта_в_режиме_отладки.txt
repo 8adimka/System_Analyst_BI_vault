@@ -1,0 +1,594 @@
+{
+  "title": "Геокарта",
+  "chartType": "mapChart",
+  "annotation": "",
+  "description": "",
+  "showtitle": true,
+  "showannotation": true,
+  "showdescription": false,
+  "noexport": false,
+  "nocopy": false,
+  "annotationOpacity": 0.5,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 0,
+    "r": 0,
+    "t": 0,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "background": {
+    "allowTiles": true,
+    "backgroundColor": "gray",
+    "tileUrl": "{s}.tile.osm.org/{z}/{x}/{y}.png",
+    "allowTiles2": true
+  },
+  "scale": {
+    "startColor": "blue",
+    "endColor": "red"
+  },
+  "legend": {
+    "positionX": "right",
+    "positionY": "bottom",
+    "visible": true,
+    "position": "topright"
+  },
+  "bounds": {
+    "allowDynamicBounds": false
+  },
+  "geokeys": {
+    "__83ad520f-f92b-461c-884f-762bfe566690": {
+      "type": "ao.geojson.json",
+      "geofield": "ABBREV",
+      "datafield": "Округ",
+      "geodataId": 5
+    },
+    "fed_okrug_short_name_xg2aEXLi7HLtFF3BovFcL": {
+      "datafield": "fed_okrug_short_name",
+      "geodataId": 12,
+      "geofield": "SHORTNAME"
+    },
+    "region_5XeobucK0S7-9165Lt4Au": {
+      "datafield": "region",
+      "geodataId": 10,
+      "geofield": "NAME"
+    },
+    "region_GmO8L9P17hCakEICZVL-l": {
+      "datafield": "region",
+      "geodataId": 10,
+      "geofield": "ADM3_NAME"
+    },
+    "fed_okrug_full_name_0zT9HFaIrfxysuV92YJsD": {
+      "geodataId": 12,
+      "datafield": "fed_okrug_full_name",
+      "geofield": "NAME"
+    }
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "fed_okrug_full_name",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "fed_okrug_full_name_hedY6WWArfjWpGnGEZHOi",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "region",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "region_23yQ3kPZjmNVBM1dnveoo",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1594,
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "summa_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "summa_rub_-W-MRYhr4kca9ilLJeEuA",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_5XeobucK0S7-9165Lt4Au",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value",
+          "pivotAgg": null
+        },
+        {
+          "ID": 1585,
+          "alias": "ФО",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_short_name_xg2aEXLi7HLtFF3BovFcL",
+          "inactive": null,
+          "name": "fed_okrug_short_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_0zT9HFaIrfxysuV92YJsD",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value",
+          "pivotAgg": null
+        }
+      ],
+      "name": "Категории",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_gi1vVomxPnsfftzB5uLBY",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_gi1vVomxPnsfftzB5uLBY_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Вычисляемая сумма",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1593,
+          "agg": "sum",
+          "alias": "Цена, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "price_rub_N_87sSaMLgXQ24NwgJqKO",
+          "inactive": null,
+          "name": "price_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Показатель",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Показатель",
+      "type": "values"
+    }
+  ],
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "fed_okrug_full_name",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "fed_okrug_full_name_hedY6WWArfjWpGnGEZHOi",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "region",
+          "prop": {},
+          "type": "string",
+          "datasetId": 244,
+          "id": "region_23yQ3kPZjmNVBM1dnveoo",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        },
+        {
+          "ID": 1594,
+          "alias": "Сумма, руб",
+          "bk": 0,
+          "correctable": 0,
+          "expression": [],
+          "name": "summa_rub",
+          "prop": {},
+          "type": "number",
+          "datasetId": 244,
+          "id": "summa_rub_-W-MRYhr4kca9ilLJeEuA",
+          "calc": "",
+          "draft": null,
+          "tree": null,
+          "title": "",
+          "valueType": "value",
+          "units": null,
+          "agg": null,
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "filterSqlType": null,
+          "inactive": null
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    },
+    {
+      "fields": [
+        {
+          "ID": 1587,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_5XeobucK0S7-9165Lt4Au",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value",
+          "pivotAgg": null
+        },
+        {
+          "ID": 1585,
+          "alias": "ФО",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_short_name_xg2aEXLi7HLtFF3BovFcL",
+          "inactive": null,
+          "name": "fed_okrug_short_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1586,
+          "alias": "Федеральный округ",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_full_name_0zT9HFaIrfxysuV92YJsD",
+          "inactive": null,
+          "name": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value",
+          "pivotAgg": null
+        }
+      ],
+      "name": "Категории",
+      "selectedFieldIndex": 0,
+      "title": "Категории",
+      "type": "categories"
+    },
+    {
+      "fields": [
+        {
+          "agg": null,
+          "alias": "CASE {!env.var!;``}\n  WHEN `Накопительно`\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN `По регионам`\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "calc": "CASE {!env.var!;!hs_quote!!hs_quote!}\n  WHEN !hs_quote!Накопительно!hs_quote!\n    THEN SUM(SUM(\"summa_rub\")) OVER (\n           PARTITION BY MAX(\"region\")\n           ORDER BY MAX(\"year\")\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         )\n  WHEN !hs_quote!По регионам!hs_quote!\n    THEN SUM(\"summa_rub\")\n  ELSE SUM(\"summa_rub\")\nEND",
+          "conditionMode": true,
+          "datasetId": 244,
+          "draft": true,
+          "filterSqlType": null,
+          "id": "{Вычисляемое поле}_gi1vVomxPnsfftzB5uLBY",
+          "inactive": null,
+          "lvl": 0,
+          "name": "{Вычисляемое поле}_gi1vVomxPnsfftzB5uLBY_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "title": "Вычисляемая сумма",
+          "tree": null,
+          "type": "calculated",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1593,
+          "agg": "sum",
+          "alias": "Цена, руб",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "price_rub_N_87sSaMLgXQ24NwgJqKO",
+          "inactive": null,
+          "name": "price_rub",
+          "order": null,
+          "orderIndex": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "Показатель",
+      "selectedFieldIndex": -2,
+      "sortable": true,
+      "title": "Показатель",
+      "type": "values"
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "drill": {
+    "hierarchy": []
+  },
+  "filtersDefault": {},
+  "markers": {
+    "isLinearScale": false
+  },
+  "previewPanels": true,
+  "variables": {
+    "3": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1231": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "123456": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "month": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "var": {
+      "value": [
+        "Накопительно"
+      ]
+    },
+    "year": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "year1": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "фо1": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "фо2": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    }
+  },
+  "unsaved": true
+}
