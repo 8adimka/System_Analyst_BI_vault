@@ -1,0 +1,205 @@
+{
+  "title": "Панель фильтров",
+  "chartType": "FilterControlPanel",
+  "showtitle": true,
+  "maximizable": false,
+  "multipleChoice": true,
+  "noexport": true,
+  "nocopy": false,
+  "bgColor": "transparent",
+  "margin": {
+    "l": 5,
+    "r": 5,
+    "t": 0,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": true,
+    "width": 2,
+    "color": "rgba(126,197,118,1)"
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_xrwM6xeejn-PAnkZ6G5DY",
+          "inactive": null,
+          "name": "month_num",
+          "nameBy": "month_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц (значения по другому полю)",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "searchInBaseMinNumber": "1",
+  "updateOnCloseDropdown": true,
+  "visuals": [],
+  "filters": {
+    "month_num": {
+      "global": true
+    }
+  },
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1583,
+          "agg": null,
+          "alias": "Месяц_номер",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "month_num_xrwM6xeejn-PAnkZ6G5DY",
+          "inactive": null,
+          "name": "month_num",
+          "nameBy": "month_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "title__ru": "Месяц (значения по другому полю)",
+          "tree": null,
+          "type": "number",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "calculatedField": null,
+  "dateFormat": "-",
+  "dirty": false,
+  "filtersDefault": {
+    "month_num": {
+      "global": true
+    }
+  },
+  "labels": {
+    "inner": {},
+    "outer": {}
+  },
+  "variables": {
+    "3": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1231": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "123456": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "month": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "var": {
+      "value": [
+        "По регионам"
+      ]
+    },
+    "year": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "year1": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "фо1": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    },
+    "фо2": {
+      "value": [
+        "Центральный федеральный округ",
+        "Уральский федеральный округ",
+        "Сибирский федеральный округ",
+        "Дальневосточный федеральный округ",
+        "Северо-Кавказский федеральный округ",
+        "Северо-Западный федеральный округ"
+      ]
+    }
+  },
+  "variablesCopyLists": {
+    "month_num_xrwM6xeejn-PAnkZ6G5DY": [
+      {
+        "value": "month"
+      },
+      {
+        "value": "1231"
+      },
+      {
+        "value": "3"
+      }
+    ]
+  }
+}
