@@ -1,0 +1,222 @@
+{
+  "title": "Панель иерархического фильтра",
+  "chartType": "HierarchicalFilterPanel",
+  "showtitle": true,
+  "maximizable": false,
+  "multipleChoice": true,
+  "bothChoice": true,
+  "inversed": false,
+  "noexport": true,
+  "nocopy": false,
+  "hideTitle": false,
+  "filterTitle": "Иерархический фильтр",
+  "headerWidth": 0,
+  "sortSelectedOptionsToTop": false,
+  "searchInBaseMode": false,
+  "bgColor": "rgba(255, 255, 255, 1)",
+  "margin": {
+    "l": 5,
+    "r": 5,
+    "t": 0,
+    "b": 0,
+    "pad": 0
+  },
+  "outline": {
+    "enabled": false,
+    "width": 4
+  },
+  "axes": [
+    {
+      "fields": [
+        {
+          "ID": 1585,
+          "agg": null,
+          "alias": "ФО",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_short_name_-fa8IGXvDZIOcq2rioK4c",
+          "inactive": null,
+          "name": "fed_okrug_short_name",
+          "nameBy": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "sortByFieldName": "Федеральный округ",
+          "sortByFieldValue": "fed_okrug_full_name",
+          "title": "",
+          "tooltipBy": "fed_okrug_short_name",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_g9Qjbj3DxD424J5mdEyzG",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tooltipBy": "fed_okrug_full_name",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "searchInBaseMinNumber": 1,
+  "updateOnCloseDropdown": true,
+  "updateOnApply": false,
+  "noLoadOptions": true,
+  "visuals": [],
+  "filters": {},
+  "axesDefault": [
+    {
+      "fields": [
+        {
+          "ID": 1585,
+          "agg": null,
+          "alias": "ФО",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "fed_okrug_short_name_-fa8IGXvDZIOcq2rioK4c",
+          "inactive": null,
+          "name": "fed_okrug_short_name",
+          "nameBy": "fed_okrug_full_name",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "sortByFieldName": "Федеральный округ",
+          "sortByFieldValue": "fed_okrug_full_name",
+          "title": "",
+          "tooltipBy": "fed_okrug_short_name",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        },
+        {
+          "ID": 1587,
+          "agg": null,
+          "alias": "Регион",
+          "bk": 0,
+          "calc": "",
+          "correctable": 0,
+          "datasetId": 244,
+          "draft": null,
+          "expression": [],
+          "filterSqlType": null,
+          "id": "region_g9Qjbj3DxD424J5mdEyzG",
+          "inactive": null,
+          "name": "region",
+          "order": null,
+          "orderIndex": null,
+          "pivotAgg": null,
+          "pivotOrder": null,
+          "prop": {},
+          "title": "",
+          "tooltipBy": "fed_okrug_full_name",
+          "tree": null,
+          "type": "string",
+          "units": null,
+          "valueType": "value"
+        }
+      ],
+      "name": "filters",
+      "selectedFieldIndex": 0,
+      "title": "Фильтры",
+      "type": "filters"
+    }
+  ],
+  "calculatedField": null,
+  "dirty": false,
+  "filtersDefault": {},
+  "variables": {
+    "3": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "1231": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "123456": {
+      "value": []
+    },
+    "month": {
+      "value": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ]
+    },
+    "var": {
+      "value": [
+        "По регионам"
+      ]
+    },
+    "year": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "year1": {
+      "value": [
+        "2022",
+        "2021"
+      ]
+    },
+    "фо1": {
+      "value": []
+    },
+    "фо2": {
+      "value": []
+    }
+  }
+}
