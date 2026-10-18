@@ -24,15 +24,39 @@
 !*.md
 !*.txt
 !*.xlsx
+!*.docx
 
 # --------------------------------------------------
-# Ignore temporary Excel files
+# Ignore temporary Office files
 # --------------------------------------------------
 
 ~$*.xls*
+~$*.doc*
 
 # --------------------------------------------------
 # Sensitive/local-only files
 # --------------------------------------------------
 
 Доступы.txt
+
+# --------------------------------------------------
+# Public agent system configuration and source code
+# --------------------------------------------------
+
+!/.codex/*.toml
+!/.codex/agents/*.toml
+!/.agents/skills/**/*.py
+!/agent-system/**/*.py
+!/agent-system/**/*.toml
+
+# Agent review results and non-sensitive metadata
+!**/.agent/**/*.json
+
+# --------------------------------------------------
+# Private corporate repositories, knowledge and runtime
+# --------------------------------------------------
+
+/.private/
+
+# Python virtual environment
+/agent-system/.venv/
