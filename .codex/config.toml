@@ -1,0 +1,14 @@
+# Standalone roles are discovered from .codex/agents/*.toml.
+# SDK coordinator sets these permissions explicitly for every start/resume/turn.
+sandbox_mode = "read-only"
+approval_policy = "never"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 2
+
+[features]
+apps = false
+plugins = false
+memories = false
+request_permissions_tool = false
