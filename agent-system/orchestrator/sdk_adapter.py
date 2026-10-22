@@ -26,10 +26,23 @@ class RoutingUnavailable(BackendError):
     """ChatGPT workspace discovery is unavailable before model execution."""
 
 
+class OutputLimitExceeded(BackendError):
+    """The response reached its output token limit before completing JSON."""
+
+
 def _safe_failure(exc: BaseException, fallback: str) -> BackendError:
     message = getattr(exc, "message", str(exc))
+    if isinstance(exc, RuntimeError) and message == "Incomplete response returned, reason: max_output_tokens":
+        return OutputLimitExceeded(
+            "Codex response reached its output token limit; resume the saved run "
+            "to continue draft preparation in bounded parts."
+        )
     if isinstance(message, str) and message.strip().casefold() == "workspace routing discovery failed":
-        return RoutingUnavailable("Workspace routing discovery failed; restore ChatGPT account routing before running smoke")
+        return RoutingUnavailable(
+            "Codex workspace discovery failed; check the isolated TLS trust store, "
+            "proxy/network connectivity and account access with account-check. "
+            "This error alone does not identify an account problem."
+        )
     return BackendError(fallback)
 
 
@@ -91,12 +104,14 @@ class SDKBackend:
                  sources: Sequence[Path] = (), *, model: str | None = None,
                  timeout: float = 900, codex_bin: str | None = None,
                  include_corporate: bool = True, max_response_bytes: int = 2_097_152,
-                 client_factory: Callable[..., Any] | None = None, startup_timeout: float = 60):
+                 client_factory: Callable[..., Any] | None = None, startup_timeout: float = 60,
+                 analyst_sources: Sequence[Path] = ()):
         if timeout <= 0 or startup_timeout <= 0 or max_response_bytes <= 0:
             raise ValueError("Timeout and response size limit must be positive")
         self.workspace = Path(workspace).absolute()
         self.run_root = Path(run_root).absolute()
         self.sources = tuple(Path(p) for p in sources)
+        self.analyst_sources = tuple(Path(p) for p in analyst_sources)
         self.model = model
         self.timeout = timeout
         self.startup_timeout = startup_timeout
@@ -145,7 +160,8 @@ class SDKBackend:
                 raise BackendError("Install the pinned official openai-codex-cli-bin runtime") from exc
         if self._view is None:
             self._view = PreparedView(self.workspace, self.run_root, self.sources,
-                                      include_corporate=self.include_corporate)
+                                      include_corporate=self.include_corporate,
+                                      analyst_sources=self.analyst_sources)
         wrapper = self._view.prepare(role, self.codex_bin)
         config = self._sdk.CodexConfig(codex_bin=str(wrapper), cwd=str(self.workspace))
         try:
@@ -170,7 +186,11 @@ class SDKBackend:
         return result
 
     def check_account(self) -> bool:
-        """Public account metadata only: no refresh, model, identity or token output."""
+        """Account presence only; no model call or identity/token output.
+
+        Do not explicitly request token refresh. The official runtime may still
+        attempt recovery internally; the global auth mount remains read-only.
+        """
         client = self._client("reviewer")
         try:
             response = _bounded(lambda: client.account(refresh_token=False),

@@ -6,13 +6,13 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from orchestrator.access import ArtifactGateway
-from orchestrator.inputs import digest
+from orchestrator.inputs import MAX_PROMPT_BYTES, digest
 from orchestrator.main import main
 from orchestrator.models import Evidence, Research
-from orchestrator.pipeline import State, save
+from orchestrator.pipeline import State, load_state, save
 
 
 FINAL = """h3. Требования.
@@ -214,6 +214,78 @@ class CLITests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(json.loads(stdout)["questions"], [question])
 
+    def waiting_research(self):
+        self.state.stage = "NEEDS_USER"
+        self.state.version = self.state.cycles = 0
+        self.state.result = ""
+        self.state.threads = {"reviewer": "saved-independent-reviewer"}
+        self.state.wait_reason = "clarification"
+        self.state.questions = self.state.research.questions = ["Inspect the available source first?"]
+        save(self.gateway, self.state)
+        role = self.workspace / ".codex/agents/reviewer.toml"
+        role.parent.mkdir(parents=True)
+        role.write_text('developer_instructions = "Synthetic independent reviewer."\n')
+        standards = self.workspace / "agent-system/standards"
+        standards.mkdir(parents=True)
+        for name in ("jira-style.md", "requirements-quality.md"):
+            (standards / name).write_text("Synthetic requirements standard.")
+
+    def test_resume_continue_research_preserves_thread_without_fabricating_an_answer(self):
+        self.waiting_research()
+        updated = self.state.research.model_copy(deep=True)
+        updated.questions = ["A remaining product choice?"]
+        backend = Mock()
+        backend.run.return_value = updated.model_dump()
+        with patch("orchestrator.sdk_adapter.SDKBackend") as factory:
+            factory.return_value.__enter__.return_value = backend
+            code, stdout, stderr = self.invoke("resume", self.run_id, "--continue-research", "--company-approved")
+        self.assertEqual(code, 2, stderr)
+        summary = json.loads(stdout)
+        self.assertEqual((summary["stage"], summary["research_round"], summary["review_cycles"]),
+                         ("NEEDS_USER", 1, 0))
+        self.assertTrue(Path(summary["questions_file"]).is_file())
+        self.assertIn("A remaining product choice?", Path(summary["questions_file"]).read_text())
+        state = json.loads((self.root / "state.json").read_text())
+        self.assertEqual(state["answers"], [])
+        self.assertEqual(state["threads"], {"reviewer": "saved-independent-reviewer"})
+        self.assertIsNone(state["draft"])
+        backend.start.assert_not_called()
+        self.assertEqual(backend.resume.call_args.args[:2], ("reviewer", "saved-independent-reviewer"))
+        self.assertEqual(backend.run.call_args.args[0], "reviewer")
+
+    def test_continue_research_refuses_ineligible_state_before_starting_sdk(self):
+        with patch("orchestrator.sdk_adapter.SDKBackend") as factory:
+            code, _, stderr = self.invoke("resume", self.run_id, "--continue-research", "--company-approved")
+            self.assertEqual(code, 1)
+            self.assertIn("до запуска аналитика", stderr)
+            factory.assert_not_called()
+        self.waiting_research()
+        for update in ({"stage": "FAILED", "retry_stage": "BLIND"},
+                       {"threads": {"reviewer": "saved-independent-reviewer", "analyst": "already-created"}},
+                       {"research_round": 2}):
+            state = self.state.model_copy(update=update, deep=True)
+            save(self.gateway, state)
+            with self.subTest(update=update), patch("orchestrator.sdk_adapter.SDKBackend") as factory:
+                self.assertEqual(self.invoke("resume", self.run_id, "--continue-research", "--company-approved")[0], 1)
+                factory.assert_not_called()
+
+    def test_continue_research_and_user_answer_are_mutually_exclusive(self):
+        with patch("orchestrator.sdk_adapter.SDKBackend") as factory, self.assertRaises(SystemExit) as caught:
+            self.invoke("resume", self.run_id, "--continue-research", "--answer-file", "unused.txt",
+                        "--company-approved")
+        self.assertEqual(caught.exception.code, 2)
+        factory.assert_not_called()
+
+    def test_continue_research_requires_corporate_approval_and_refuses_cancelled_flag(self):
+        self.waiting_research()
+        checkpoint = (self.root / "state.json").read_bytes()
+        with patch("orchestrator.sdk_adapter.SDKBackend") as factory:
+            self.assertEqual(self.invoke("resume", self.run_id, "--continue-research")[0], 1)
+            self.assertEqual(self.invoke("resume", self.run_id, "--continue-research", "--continue-cancelled",
+                                         "--company-approved")[0], 1)
+            factory.assert_not_called()
+        self.assertEqual((self.root / "state.json").read_bytes(), checkpoint)
+
     def test_run_accepts_prompt_file_without_starting_real_sdk(self):
         with patch("orchestrator.main.execute", return_value=0) as execute:
             self.assertEqual(self.invoke("run", "--prompt", "topic/prompt.txt", "--company-approved")[0], 0)
@@ -234,10 +306,77 @@ class CLITests(unittest.TestCase):
     def test_stdin_without_sources_empty_or_oversized_prompt_fails_before_sdk(self):
         with patch("orchestrator.main.execute") as execute:
             self.assertEqual(self.invoke("run", "--stdin", "--company-approved", stdin="Task")[0], 1)
-            for prompt in ("  ", "x" * 150001):
+            for prompt in ("  ", "x" * (MAX_PROMPT_BYTES + 1), "Я" * (MAX_PROMPT_BYTES // 2 + 1)):
                 self.assertEqual(self.invoke("run", "--stdin", "--source", "topic/material.md",
                                              "--company-approved", stdin=prompt)[0], 1)
             execute.assert_not_called()
+
+    def test_full_size_russian_prompt_is_saved_unchanged_from_file_or_stdin(self):
+        prompt = "Я" * (MAX_PROMPT_BYTES // 2)
+        self.assertEqual(len(prompt.encode("utf-8")), MAX_PROMPT_BYTES)
+        self.assertGreater(len(prompt.encode("utf-8")), 150000)
+        self.prompt.write_bytes(prompt.encode("utf-8"))
+
+        def persist(workspace, root, args, state):
+            with ArtifactGateway(workspace, root) as gateway:
+                save(gateway, state)
+                self.assertEqual(load_state(gateway).prompt, prompt)
+            return 0
+
+        for args in (("--prompt", "topic/prompt.txt"), ("--stdin", "--source", "topic/material.md")):
+            with self.subTest(args=args), patch("orchestrator.main.execute", side_effect=persist) as execute:
+                code, _, stderr = self.invoke("run", *args, "--company-approved", stdin=prompt)
+                self.assertEqual(code, 0, stderr)
+                self.assertEqual(execute.call_args.args[3].prompt, prompt)
+
+    def test_binary_stdin_preserves_exact_utf8_text_and_rejects_oversize_before_sdk(self):
+        prompt = "Синтетическое требование.\r\n" + "Я" * 100000
+        for value, expected in ((prompt.encode("utf-8"), 0),
+                                (("Я" * (MAX_PROMPT_BYTES // 2 + 1)).encode("utf-8"), 1)):
+            stdout, stderr = io.StringIO(), io.StringIO()
+            with self.subTest(expected=expected), io.TextIOWrapper(io.BytesIO(value), encoding="utf-8") as stream, \
+                    contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr), \
+                    patch("sys.stdin", stream), patch("orchestrator.main.execute", return_value=0) as execute:
+                code = main(["--workspace", str(self.workspace), "run", "--stdin", "--source",
+                             "topic/material.md", "--company-approved"])
+                self.assertEqual(code, expected, stderr.getvalue())
+                if expected == 0:
+                    self.assertEqual(execute.call_args.args[3].prompt, prompt)
+                else:
+                    execute.assert_not_called()
+
+    def test_oversized_prompt_file_fails_before_sdk(self):
+        self.prompt.write_text("Я" * (MAX_PROMPT_BYTES // 2 + 1))
+        with patch("orchestrator.main.execute") as execute:
+            self.assertEqual(self.invoke("run", "--prompt", "topic/prompt.txt", "--company-approved")[0], 1)
+            execute.assert_not_called()
+
+    def test_repeatable_analyst_sources_override_autodiscovered_and_explicit_sources(self):
+        context = self.topic / "previous_context.txt"
+        second = self.topic / "additional_context.txt"
+        context.write_text("Synthetic previous context.")
+        second.write_text("Synthetic additional context.")
+        self.prompt.write_text("Use `topic/material.md` and `topic/previous_context.txt`.")
+        with patch("orchestrator.main.execute", return_value=0) as execute:
+            code, _, stderr = self.invoke("run", "--prompt", "topic/prompt.txt", "--source",
+                "topic/previous_context.txt", "--analyst-source", "topic/previous_context.txt",
+                "--analyst-source", "topic/additional_context.txt", "--company-approved")
+        self.assertEqual(code, 0, stderr)
+        state = execute.call_args.args[3]
+        self.assertEqual(state.analyst_sources, ["topic/previous_context.txt", "topic/additional_context.txt"])
+        for path in (self.prompt, self.source, context, second):
+            self.assertEqual(state.sources[str(path.relative_to(self.workspace))], digest(path))
+
+    def test_analyst_source_cannot_hide_prompt_or_expand_sensitive_input_access(self):
+        for relative in ("topic/prompt.txt", "topic/Доступы.txt", "topic/draft.txt", ".private/context.txt"):
+            path = self.workspace / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text("Synthetic forbidden context.")
+            with self.subTest(relative=relative), patch("orchestrator.main.execute") as execute:
+                self.assertEqual(self.invoke("run", "--prompt", "topic/prompt.txt", "--analyst-source",
+                                             relative, "--company-approved")[0], 1)
+                execute.assert_not_called()
 
     def test_corporate_run_requires_authorization_and_rejects_sensitive_sources(self):
         with patch("orchestrator.main.execute") as execute:

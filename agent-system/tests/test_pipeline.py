@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from collections import deque
 from copy import deepcopy
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -15,8 +16,8 @@ from pydantic import ValidationError
 from orchestrator.access import ArtifactGateway
 from orchestrator.inputs import digest
 from orchestrator.models import Draft, Research, Review
-from orchestrator.pipeline import Pipeline, State, load_state, save
-from orchestrator.sdk_adapter import EmptyThreadError
+from orchestrator.pipeline import Pipeline, State, base_prompt, load_state, save
+from orchestrator.sdk_adapter import EmptyThreadError, OutputLimitExceeded
 
 
 JIRA = """h3. Требуемое поведение.
@@ -175,6 +176,168 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual((self.gateway.root / state.result).read_text().strip(), JIRA.strip())
         self.assertFalse(backend.turns)
 
+    def test_analyst_context_is_versioned_but_hidden_from_reviewer_manifest(self):
+        context = "topic/source-6.txt"
+        self.state.analyst_sources = [context]
+        analyst = json.loads(base_prompt(self.state, "analyst"))
+        reviewer = json.loads(base_prompt(self.state, "reviewer"))
+        self.assertEqual(analyst["source_versions"], self.state.sources)
+        self.assertEqual(analyst["analyst_context_sources"], [context])
+        self.assertIn("не являются первичным контрактом", analyst["context_policy"])
+        self.assertNotIn(context, reviewer["source_versions"])
+        self.assertEqual(reviewer["analyst_context_sources"], [])
+        self.assertIn("Не блокируй независимое исследование", reviewer["context_policy"])
+
+        draft = self.draft()
+        draft["evidence"].append(self.evidence(6))
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "Draft", draft), ("reviewer", "Review", self.review(1))])
+        result = self.run_pipeline(backend)
+        self.assertEqual(result.stage, "APPROVED")
+        self.assertEqual(result.sources[context], self.sources[context])
+        for call in backend.calls:
+            if call[0] == "run":
+                payload, _ = json.JSONDecoder().raw_decode(call[2])
+                self.assertEqual(context in payload["source_versions"], call[1] == "analyst")
+
+    def test_draft_budget_is_analyst_only_and_preserves_source_manifest(self):
+        analyst = json.loads(base_prompt(self.state, "analyst"))
+        reviewer = json.loads(base_prompt(self.state, "reviewer"))
+        self.assertEqual(analyst["source_versions"], self.state.sources)
+        self.assertEqual(reviewer["source_versions"], self.state.sources)
+        self.assertIn("5000", analyst["draft_output_budget"])
+        self.assertIn("25000", analyst["draft_output_budget"])
+        self.assertNotIn("draft_output_budget", reviewer)
+
+    def part(self, index, text, more=False):
+        return {"index": index, "jira": text, "more": more,
+                "evidence": [self.evidence()], "questions": [], "change_log": []}
+
+    def test_output_limit_resume_assembles_parts_in_same_thread_before_whole_review(self):
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "Draft", OutputLimitExceeded("Synthetic limit"))])
+        with self.assertRaises(OutputLimitExceeded):
+            self.run_pipeline(backend)
+        failed = self.assert_failed_checkpoint("DRAFT")
+        ids = dict(failed.threads)
+        research = (self.gateway.root / "responses/blind-0-0-0.json").read_bytes()
+        first, second = JIRA.split("\n\n----\n", 1)
+
+        def observe_review(role, prompt, schema):
+            received = json.loads(prompt.rsplit("\n", 1)[1])["draft"]["jira"]
+            self.assertIn(first, received)
+            self.assertIn("AC.1", received)
+            self.assertTrue((self.gateway.root / "responses/draft-0-0-0.json").exists())
+            return self.review(1)
+
+        resumed = FakeBackend([("analyst", "DraftPart", self.part(1, first + "\n\n----", True)),
+                               ("analyst", "DraftPart", self.part(2, second)),
+                               ("reviewer", "Review", observe_review)])
+        result = self.run_pipeline(resumed, failed)
+        self.assertEqual((result.stage, result.cycles, result.version), ("APPROVED", 1, 1))
+        self.assertTrue(result.segmented_draft)
+        self.assertEqual(result.threads, ids)
+        self.assertEqual(result.answers, [])
+        self.assertFalse(result.bonus_used)
+        self.assertFalse(any(c[0] == "start" for c in resumed.calls))
+        self.assertEqual((self.gateway.root / "responses/blind-0-0-0.json").read_bytes(), research)
+        self.assertIn("AC.1", (self.gateway.root / result.result).read_text())
+        self.assertEqual(len(list((self.gateway.root / "responses").glob("draft-part-*.json"))), 2)
+        for call in resumed.calls:
+            if call[0] == "run" and call[1] == "analyst":
+                self.assertNotIn("INDEPENDENT_RESEARCH_ONLY", call[2])
+
+    def test_segmented_resume_reuses_completed_parts_after_transport_failure(self):
+        self.state.segmented_draft = True
+        first, second = JIRA.split("\n\n----\n", 1)
+        first += "\n\n----"
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "DraftPart", self.part(1, first, True)),
+                               ("analyst", "DraftPart", RuntimeError("Synthetic failure"))])
+        with self.assertRaises(RuntimeError):
+            self.run_pipeline(backend)
+        failed = self.assert_failed_checkpoint("DRAFT")
+        path = self.gateway.root / "responses/draft-part-1-0-0-0.json"
+        cached = path.read_bytes()
+        self.assertFalse(list((self.gateway.root / "results").glob("*")))
+        resumed = FakeBackend([("analyst", "DraftPart", self.part(2, second)),
+                               ("reviewer", "Review", self.review(1))])
+        result = self.run_pipeline(resumed, failed)
+        self.assertEqual(result.stage, "APPROVED")
+        self.assertEqual(path.read_bytes(), cached)
+        calls = [c for c in resumed.calls if c[0] == "run" and c[1] == "analyst"]
+        self.assertEqual(len(calls), 1)
+        self.assertNotIn(self.state.prompt, calls[0][2])
+
+    def test_wrong_part_index_fails_without_caching_or_reviewing(self):
+        self.state.segmented_draft = True
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "DraftPart", self.part(2, JIRA))])
+        with self.assertRaisesRegex(ValueError, "номер части"):
+            self.run_pipeline(backend)
+        failed = self.assert_failed_checkpoint("DRAFT")
+        self.assertEqual((failed.version, failed.cycles), (0, 0))
+        self.assertFalse((self.gateway.root / "responses/draft-part-1-0-0-0.json").exists())
+
+    def test_segmented_revision_keeps_previous_findings_and_review_cycles(self):
+        self.state.segmented_draft = True
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "DraftPart", self.part(1, JIRA)),
+                               ("reviewer", "Review", self.review(1, findings=[self.finding()])),
+                               ("analyst", "DraftPart", self.part(1, JIRA)),
+                               ("reviewer", "Review", self.review(2, findings=[self.finding(status="closed")]))])
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.cycles, result.version), ("APPROVED", 2, 2))
+        self.assertFalse(result.bonus_used)
+        revision = [c for c in backend.calls if c[0] == "run" and c[1] == "analyst"][-1][2]
+        self.assertIn("F1", revision)
+
+    def test_segmented_draft_stops_at_bounded_part_count(self):
+        from unittest.mock import patch
+        self.state.segmented_draft = True
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "DraftPart", self.part(1, JIRA, True)),
+                               ("analyst", "DraftPart", self.part(2, JIRA, True))])
+        with patch("orchestrator.pipeline.MAX_DRAFT_PARTS", 2), self.assertRaisesRegex(ValueError, "предел частей"):
+            self.run_pipeline(backend)
+        failed = self.assert_failed_checkpoint("DRAFT")
+        self.assertEqual((failed.version, failed.cycles), (0, 0))
+
+    def test_saved_part_prevents_replacing_lost_analyst_history(self):
+        self.state.stage, self.state.retry_stage = "FAILED", "DRAFT"
+        self.state.segmented_draft = True
+        self.state.research = Research.model_validate(self.research())
+        self.state.threads = {"reviewer": "saved-reviewer", "analyst": "saved-analyst"}
+        self.gateway.write_json("responses/draft-part-1-0-0-0.json", self.part(1, JIRA, True))
+        save(self.gateway, self.state)
+        backend = EmptyResumeBackend(empty_role="analyst", missing_id="saved-analyst")
+        with self.assertRaises(EmptyThreadError):
+            self.run_pipeline(backend, load_state(self.gateway))
+        self.assertFalse(any(c[0] == "start" for c in backend.calls))
+        self.assertEqual(load_state(self.gateway).threads["analyst"], "saved-analyst")
+
+    def test_analyst_context_changes_are_checked_before_any_model_call(self):
+        self.state.analyst_sources = ["topic/source-6.txt"]
+        (self.workspace / self.state.analyst_sources[0]).write_text("Changed historical context.")
+        backend = FakeBackend()
+        with self.assertRaisesRegex(ValueError, "Первоисточники изменились"):
+            self.run_pipeline(backend)
+        self.assertFalse(backend.calls)
+
+    def test_old_state_without_analyst_context_is_compatible(self):
+        payload = self.state.model_dump()
+        payload.pop("analyst_sources")
+        self.gateway.write_json("state.json", payload, replace=True)
+        loaded = load_state(self.gateway)
+        self.assertEqual(loaded.analyst_sources, [])
+        self.assertEqual(json.loads(base_prompt(loaded))["source_versions"], loaded.sources)
+
+    def test_context_outside_version_manifest_is_refused(self):
+        self.state.analyst_sources = ["topic/missing.txt"]
+        save(self.gateway, self.state)
+        with self.assertRaisesRegex(ValueError, "Контекст аналитика отсутствует"):
+            load_state(self.gateway)
+
     def test_failed_turn_resumes_both_saved_thread_ids_without_recreating_sessions(self):
         backend = FakeBackend([("reviewer", "Research", self.research()),
                                ("analyst", "Draft", RuntimeError("synthetic secret must not be persisted"))])
@@ -310,6 +473,37 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("F1:", "\n".join(result.questions))
         self.assertFalse(backend.turns)
 
+    def test_repeated_open_finding_is_revised_until_reviewer_confirms_correction(self):
+        backend = FakeBackend(self.turns(self.review(1, findings=[self.finding()]),
+                                         self.review(2, findings=[self.finding()]),
+                                         self.review(3, findings=[self.finding(status="closed")])))
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.cycles, result.version), ("APPROVED", 3, 3))
+        self.assertFalse(result.bonus_used)
+        self.assertEqual([review.findings[0].status for review in result.reviews],
+                         ["open", "open", "closed"])
+        self.assertFalse(backend.turns)
+
+    def test_repeated_open_finding_still_stops_at_five_reviews(self):
+        reviews = [self.review(version, findings=[self.finding()]) for version in range(1, 6)]
+        backend = FakeBackend(self.turns(*reviews))
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.cycles, result.version), ("NEEDS_USER", 5, 5))
+        self.assertEqual(result.wait_reason, "review")
+        self.assertIn("F1:", "\n".join(result.questions))
+        self.assertTrue(all(review.findings[0].status == "open" for review in result.reviews))
+        self.assertFalse(result.bonus_used)
+        self.assertFalse(backend.turns)
+
+    def test_previous_dispute_does_not_escalate_a_now_open_finding(self):
+        backend = FakeBackend(self.turns(self.review(1, findings=[self.finding(status="disputed")]),
+                                         self.review(2, findings=[self.finding()]),
+                                         self.review(3, findings=[self.finding(status="closed")])))
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.cycles), ("APPROVED", 3))
+        self.assertFalse(result.bonus_used)
+        self.assertFalse(backend.turns)
+
     def test_rephrasing_an_observation_does_not_create_new_evidence(self):
         repeated = self.finding(status="disputed")
         repeated["evidence"][0]["observation"] = "The same source still establishes this unchanged requirement."
@@ -347,6 +541,117 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result.cycles, 0)
         self.assertNotIn("analyst", result.threads)
         self.assertIn("Which precondition is required?", result.questions)
+
+    def test_continue_research_keeps_thread_inputs_answers_and_immutable_history(self):
+        backend = FakeBackend([("reviewer", "Research", self.research(questions=["Inspect the available source?"]))])
+        pipeline = Pipeline(self.workspace, self.gateway, backend)
+        waiting = pipeline.run(self.state)
+        ids, sources = dict(waiting.threads), dict(waiting.sources)
+        old_response = self.gateway.root / "responses/blind-0-0-0.json"
+        old_questions = self.gateway.root / "questions/v0-0-0.md"
+        response_bytes, question_bytes = old_response.read_bytes(), old_questions.read_bytes()
+        backend.calls.clear()
+        backend.turns.append(("reviewer", "Research", self.research(questions=["A remaining product choice?"])))
+        result = pipeline.continue_research(load_state(self.gateway))
+        self.assertEqual((result.stage, result.research_round, result.version, result.cycles),
+                         ("NEEDS_USER", 1, 0, 0))
+        self.assertEqual(result.threads, ids)
+        self.assertEqual(result.sources, sources)
+        self.assertEqual(result.answers, [])
+        self.assertIsNone(result.draft)
+        self.assertFalse(result.reviews)
+        self.assertFalse(result.bonus_used)
+        self.assertEqual(result.questions, ["A remaining product choice?"])
+        self.assertFalse(any(call[0] == "start" or call[1] == "analyst" for call in backend.calls))
+        prompt = next(call[2] for call in backend.calls if call[0] == "run")
+        self.assertIn('"previous_research_questions": ["Inspect the available source?"]', prompt)
+        self.assertIn("не проси пользователя выполнить этот поиск", prompt)
+        self.assertNotIn('"draft":', prompt)
+        self.assertEqual(old_response.read_bytes(), response_bytes)
+        self.assertEqual(old_questions.read_bytes(), question_bytes)
+        self.assertTrue((self.gateway.root / "responses/blind-extra-1-0-0-0.json").is_file())
+        self.assertIn("A remaining product choice?", (self.gateway.root / "questions/v0-0-0-research-1.md").read_text())
+
+    def test_continue_research_allows_only_two_additional_rounds(self):
+        backend = FakeBackend([("reviewer", "Research", self.research(questions=["Initial question?"]))])
+        pipeline = Pipeline(self.workspace, self.gateway, backend)
+        waiting = pipeline.run(self.state)
+        for research_round in (1, 2):
+            backend.turns.append(("reviewer", "Research", self.research(questions=[f"Question {research_round}?"])))
+            waiting = pipeline.continue_research(load_state(self.gateway))
+            self.assertEqual(waiting.research_round, research_round)
+        calls = list(backend.calls)
+        checkpoint = (self.gateway.root / "state.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "двух дополнительных"):
+            pipeline.continue_research(waiting)
+        self.assertEqual(backend.calls, calls)
+        self.assertEqual((self.gateway.root / "state.json").read_bytes(), checkpoint)
+        self.assertEqual((waiting.cycles, waiting.version, waiting.bonus_used, waiting.bonus_active),
+                         (0, 0, False, False))
+        self.assertEqual(len(list((self.gateway.root / "responses").glob("blind*.json"))), 3)
+
+    def test_continue_research_refuses_other_stages_and_any_analyst_work(self):
+        backend = FakeBackend([("reviewer", "Research", self.research(questions=["Question?"]))])
+        pipeline = Pipeline(self.workspace, self.gateway, backend)
+        waiting = pipeline.run(self.state)
+        variants = [dict(stage=stage) for stage in ("APPROVED", "FAILED", "BLIND", "DRAFT", "INCOMPLETE")]
+        variants += [{"wait_reason": "review"}, {"threads": {**waiting.threads, "analyst": "created-analyst"}},
+                     {"draft": Draft.model_validate(self.draft())},
+                     {"reviews": [Review.model_validate(self.review(1))]}, {"version": 1}, {"cycles": 1}]
+        calls = list(backend.calls)
+        checkpoint = (self.gateway.root / "state.json").read_bytes()
+        for update in variants:
+            with self.subTest(update=update), self.assertRaises(ValueError):
+                pipeline.continue_research(waiting.model_copy(update=update, deep=True))
+        self.assertEqual(backend.calls, calls)
+        self.assertEqual((self.gateway.root / "state.json").read_bytes(), checkpoint)
+
+    def test_cached_extra_research_is_used_without_replaying_old_or_new_research(self):
+        backend = FakeBackend([("reviewer", "Research", self.research(questions=["Investigate source?"])),
+                               ("reviewer", "Research", RuntimeError("Synthetic network failure"))])
+        pipeline = Pipeline(self.workspace, self.gateway, backend)
+        waiting = pipeline.run(self.state)
+        reviewer = waiting.threads["reviewer"]
+        with self.assertRaises(RuntimeError):
+            pipeline.continue_research(waiting)
+        failed = load_state(self.gateway)
+        self.assertEqual((failed.stage, failed.retry_stage, failed.research_round), ("FAILED", "BLIND", 1))
+        self.assertEqual(failed.research.questions, ["Investigate source?"])
+        # Model response persisted, then the coordinator crashed before advancing.
+        self.gateway.write_json("responses/blind-extra-1-0-0-0.json", self.research())
+        resumed = FakeBackend([("analyst", "Draft", self.draft()), ("reviewer", "Review", self.review(1))])
+        result = self.run_pipeline(resumed, failed)
+        self.assertEqual((result.stage, result.research_round), ("APPROVED", 1))
+        self.assertEqual(result.threads["reviewer"], reviewer)
+        self.assertFalse(any(call[0] == "run" and call[3] == "Research" for call in resumed.calls))
+        self.assertEqual(len(list((self.gateway.root / "responses").glob("blind*.json"))), 2)
+
+    def test_failed_resume_checkpoints_active_stage_and_cleared_error_before_model_call(self):
+        self.state.stage, self.state.retry_stage, self.state.error = "FAILED", "BLIND", "SyntheticFailure"
+        self.state.threads = {"reviewer": "saved-reviewer"}
+        save(self.gateway, self.state)
+
+        def observe_call(role, prompt, schema):
+            checkpoint = load_state(self.gateway)
+            self.assertEqual((checkpoint.stage, checkpoint.retry_stage, checkpoint.error), ("BLIND", "BLIND", ""))
+            self.assertEqual(checkpoint.threads, {"reviewer": "saved-reviewer"})
+            return self.research(questions=["A genuine product choice?"])
+
+        backend = FakeBackend([("reviewer", "Research", observe_call)])
+        result = self.run_pipeline(backend, load_state(self.gateway))
+        self.assertEqual(result.stage, "NEEDS_USER")
+        self.assertFalse(any(call[0] == "start" for call in backend.calls))
+
+    def test_old_state_defaults_to_first_research_round_and_rejects_out_of_range_rounds(self):
+        payload = self.state.model_dump()
+        payload.pop("research_round")
+        self.gateway.write_json("state.json", payload, replace=True)
+        self.assertEqual(load_state(self.gateway).research_round, 0)
+        for value in (-1, 3):
+            payload["research_round"] = value
+            self.gateway.write_json("state.json", payload, replace=True)
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                load_state(self.gateway)
 
     def test_wrong_reviewed_version_is_rejected_without_advancing_review_count(self):
         backend = FakeBackend(self.turns(self.review(2)))
@@ -390,6 +695,114 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result.style_errors, [])
         revision = [c for c in backend.calls if c[0] == "run" and c[1] == "analyst"][-1][2]
         self.assertIn("Markdown", revision)
+
+    def test_jira_only_dependencies_require_another_draft_and_review_before_approval(self):
+        dependency = "Delivery depends on the separately planned backend task."
+        initial = JIRA + "\n----\nh3. Открытые вопросы.\n* " + dependency + "\n"
+        corrected = JIRA + "\n----\nh3. Зависимости.\n* " + dependency + "\n"
+
+        def correct_format(role, prompt, schema):
+            checkpoint = load_state(self.gateway)
+            self.assertEqual((checkpoint.stage, checkpoint.version, checkpoint.cycles), ("REVISION", 1, 1))
+            self.assertEqual(checkpoint.draft.jira, initial)
+            self.assertFalse(checkpoint.questions)
+            self.assertTrue(checkpoint.style_errors)
+            self.assertIn(dependency, prompt)
+            self.assertIn("неразрешённые вопросы", prompt)
+            self.assertIn("Не выдумывай ответы", prompt)
+            self.assertFalse(checkpoint.result)
+            return self.draft(text=corrected)
+
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "Draft", self.draft(text=initial)),
+                               ("reviewer", "Review", self.review(1)),
+                               ("analyst", "Draft", correct_format),
+                               ("reviewer", "Review", self.review(2))])
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.version, result.cycles), ("APPROVED", 2, 2))
+        self.assertEqual(result.answers, [])
+        self.assertFalse(result.bonus_used)
+        self.assertEqual(result.style_errors, [])
+        self.assertIn(dependency, (self.gateway.root / result.result).read_text())
+
+    def test_true_hidden_question_kept_without_structured_questions_waits_at_five_reviews(self):
+        question = "Which behavior should the product require?"
+        text = JIRA + "\n----\nh3. Открытые вопросы.\n* " + question + "\n"
+        turns = [("reviewer", "Research", self.research())]
+        for version in range(1, 6):
+            turns += [("analyst", "Draft", self.draft(text=text)), ("reviewer", "Review", self.review(version))]
+        backend = FakeBackend(turns)
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.cycles), ("NEEDS_USER", 5))
+        self.assertIn(question, "\n".join(result.questions))
+        self.assertIn(question, (self.gateway.root / result.result).read_text())
+        self.assertFalse(result.bonus_used)
+        self.assertFalse(backend.turns)
+        # Resume cannot grant a sixth automatic format-repair review.
+        calls = list(backend.calls)
+        self.assertIs(self.run_pipeline(backend, result), result)
+        self.assertEqual(backend.calls, calls)
+
+    def test_structured_review_questions_still_wait_immediately_despite_jira_entries(self):
+        text = JIRA + "\n----\nh3. Открытые вопросы.\n* Also resolve this scenario?\n"
+        backend = FakeBackend([("reviewer", "Research", self.research()),
+                               ("analyst", "Draft", self.draft(text=text)),
+                               ("reviewer", "Review", self.review(1, questions=["A genuine product choice?"]))])
+        result = self.run_pipeline(backend)
+        self.assertEqual((result.stage, result.cycles), ("NEEDS_USER", 1))
+        self.assertEqual(result.questions, ["A genuine product choice?", "Also resolve this scenario?"])
+        self.assertFalse(result.style_errors)
+        self.assertFalse(backend.turns)
+
+    def old_jira_question_wait(self, question="Known external dependency."):
+        state = self.state
+        state.research = Research.model_validate(self.research())
+        state.draft = Draft.model_validate(self.draft(text=JIRA + "\n----\nh3. Открытые вопросы.\n* " + question + "\n"))
+        state.reviews = [Review.model_validate(self.review(1))]
+        state.version = state.cycles = 1
+        state.threads = {"analyst": "saved-analyst", "reviewer": "saved-reviewer"}
+        Pipeline(self.workspace, self.gateway, None)._wait(state, [question], "review")
+        return state
+
+    def test_old_jira_only_wait_resumes_format_repair_without_answers_or_bonus(self):
+        question = "Known external dependency."
+        old = self.old_jira_question_wait(question)
+        old.answers = ["The user already defined the required behavior."]
+        save(self.gateway, old)
+        old_result = self.gateway.root / old.result
+        old_questions = self.gateway.root / "questions/v1-0-1.md"
+        old_bytes, questions_bytes = old_result.read_bytes(), old_questions.read_bytes()
+        ids, answers = dict(old.threads), list(old.answers)
+        corrected = JIRA + "\n----\nh3. Зависимости.\n* " + question + "\n"
+        backend = FakeBackend([("analyst", "Draft", self.draft(text=corrected)),
+                               ("reviewer", "Review", self.review(2))])
+        result = self.run_pipeline(backend, load_state(self.gateway))
+        self.assertEqual((result.stage, result.cycles, result.version), ("APPROVED", 2, 2))
+        self.assertEqual(result.threads, ids)
+        self.assertEqual(result.answers, answers)
+        self.assertFalse(result.bonus_used or result.bonus_active)
+        self.assertEqual(old_result.read_bytes(), old_bytes)
+        self.assertEqual(old_questions.read_bytes(), questions_bytes)
+        self.assertFalse(any(call[0] == "start" for call in backend.calls))
+        self.assertIn("resume-question-format-1-1", result.events)
+
+    def test_old_question_wait_repair_guard_cannot_drop_findings_or_other_questions(self):
+        waiting = self.old_jira_question_wait()
+        variants = [{"cycles": 5}, {"wait_reason": "clarification"}, {"bonus_used": True},
+                    {"questions": ["A different unresolved user question?"]},
+                    {"draft": waiting.draft.model_copy(update={"questions": ["A real question?"]})},
+                    {"reviews": [Review.model_validate(self.review(1, questions=["A real question?"]))]},
+                    {"reviews": [Review.model_validate(self.review(1, findings=[self.finding()]))]},
+                    {"reviews": [Review.model_validate(self.review(2))]}]
+        for update in variants:
+            state = waiting.model_copy(update=update, deep=True)
+            save(self.gateway, state)
+            checkpoint = (self.gateway.root / "state.json").read_bytes()
+            backend = FakeBackend()
+            with self.subTest(update=update):
+                self.assertIs(self.run_pipeline(backend, state), state)
+                self.assertFalse(backend.calls)
+                self.assertEqual((self.gateway.root / "state.json").read_bytes(), checkpoint)
 
     def test_malformed_structured_output_fails_safely_and_can_resume_saved_reviewer(self):
         backend = FakeBackend([("reviewer", "Research", {"summary": "synthetic private text"})])

@@ -114,6 +114,13 @@ class ArtifactGateway:
             raise AccessDenied("Artifact parent is unsafe or inaccessible") from exc
 
     def write_text(self, relative: str | Path, text: str, *, replace: bool = False) -> Path:
+        """Publish one complete artifact without overwriting an existing name.
+
+        A competing create-only writer gets FileExistsError, or AccessDenied
+        if it observes the publisher's temporary second hardlink. That interval
+        cannot safely be distinguished from a substituted hardlinked target, so
+        both are refusals and the hardlink check remains fail-closed.
+        """
         if replace and os.fspath(relative) != "state.json":
             raise AccessDenied("Only state.json may be atomically replaced")
         data = text.encode("utf-8")

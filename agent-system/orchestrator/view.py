@@ -8,9 +8,12 @@ the user's global Codex sessions are never mounted. Each role has its own home.
 from __future__ import annotations
 
 import os
+import hashlib
 from pathlib import Path
+import re
 import shlex
 import shutil
+import stat
 import subprocess
 from typing import Sequence
 
@@ -23,6 +26,72 @@ class IsolationUnavailable(RuntimeError):
 
 _HISTORY = {"legacy", "history", "archive", "archives", "migration", "migrations", "old", "drafts"}
 _SECRET_NAMES = {"доступы.txt", "auth.json", ".env", ".netrc", "credentials", "id_rsa", "id_ed25519"}
+_PROXY_ENV = tuple(name for upper in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY")
+                   for name in (upper, upper.lower()))
+_CERT_ENV = {"SSL_CERT_FILE": False, "SSL_CERT_DIR": True, "CODEX_CA_CERTIFICATE": False}
+# Generated PUBLIC trust stores only. Their private-key/trust-source siblings
+# must never be mounted. Arch's /etc/ssl/certs contains symlinks into extracted;
+# exposing only /etc/ssl/certs silently breaks TLS in an otherwise healthy view.
+_SYSTEM_CA_PATHS = (
+    "/etc/ssl/certs", "/etc/ssl/cert.pem", "/etc/ca-certificates/extracted",
+    "/etc/pki/tls/certs", "/etc/pki/tls/cert.pem", "/etc/pki/ca-trust/extracted",
+    "/etc/ssl/ca-bundle.pem", "/var/lib/ca-certificates/ca-bundle.pem",
+)
+_CERT_SUFFIXES = {".crt", ".cer", ".pem", ".der"}
+
+
+def _system_certificate_path(path: Path, *, directory: bool) -> bool:
+    """Permit normal aliases only inside the already mounted public stores."""
+    stores = [Path(value) for value in _SYSTEM_CA_PATHS if Path(value).exists()]
+    covered = any(path == store or (store.is_dir() and path.is_relative_to(store)) for store in stores)
+    if not path.is_absolute() or not covered or not (path.is_dir() if directory else path.is_file()):
+        return False
+    target = path.resolve()
+    return any(target == store.resolve() or (store.is_dir() and target.is_relative_to(store.resolve()))
+               for store in stores)
+
+
+def _certificate_path(value: str, workspace: Path, *, directory: bool) -> Path:
+    """Custom CA grants are explicit, canonical, and contain no other user data."""
+    path = Path(value)
+    if not value or "\x00" in value or "\n" in value or not path.is_absolute():
+        raise AccessDenied("Custom certificate paths must be absolute existing paths")
+    if path != path.resolve() or (not path.is_dir() if directory else not path.is_file()):
+        raise AccessDenied("Custom certificate paths cannot contain symlinks or missing files")
+    lowered = {part.lower() for part in path.parts}
+    blocked = {".private", ".agent", ".codex", ".agents", ".git", ".aws", ".ssh", ".gnupg"}
+    if (lowered.intersection(blocked) or path.name.lower() in _SECRET_NAMES
+            or path.name.lower().startswith(".env")
+            or (path.is_relative_to(workspace) and lowered.intersection(_HISTORY))):
+        raise AccessDenied("Certificate paths cannot expose credentials or workspace history")
+    if directory:
+        # OpenSSL uses a flat cert directory. Reject symlink aliases, nested
+        # directories and unrelated files instead of granting an entire tree.
+        for index, child in enumerate(path.iterdir()):
+            if index >= 4096:
+                raise AccessDenied("Custom certificate directory is too large")
+            _certificate_path(str(child), workspace, directory=False)
+    elif (path.suffix.lower() not in _CERT_SUFFIXES
+          and re.fullmatch(r"[0-9a-fA-F]{8}\.\d+", path.name) is None):
+        raise AccessDenied("Custom CA files must have certificate filenames")
+    return path
+
+
+def _network_environment(workspace: Path) -> tuple[dict[str, str], list[Path]]:
+    environment = {name: os.environ[name] for name in _PROXY_ENV if name in os.environ}
+    mounts = []
+    for name, directory in _CERT_ENV.items():
+        value = os.environ.get(name)
+        if value:
+            # OpenSSL documents SSL_CERT_DIR as a colon-separated search path.
+            for entry in value.split(os.pathsep) if directory else (value,):
+                path = Path(entry)
+                if not _system_certificate_path(path, directory=directory):
+                    mounts.append(_certificate_path(entry, workspace, directory=directory))
+            environment[name] = value
+    if any("\x00" in value or "\n" in value for value in environment.values()):
+        raise AccessDenied("Network environment contains an invalid value")
+    return environment, list(dict.fromkeys(mounts))
 
 
 def _canonical_file(path: Path, workspace: Path) -> Path:
@@ -42,12 +111,13 @@ def _canonical_file(path: Path, workspace: Path) -> Path:
 class PreparedView:
     def __init__(self, workspace: str | Path, run_root: str | Path,
                  sources: Sequence[Path] = (), *, include_corporate: bool = True,
-                 auth_home: Path | None = None):
+                 auth_home: Path | None = None, analyst_sources: Sequence[Path] = ()):
         self.workspace = Path(workspace).absolute()
         self.run_root = Path(run_root).absolute()
         self.gateway = ArtifactGateway(self.workspace, self.run_root)
         try:
             self.sources = tuple(_canonical_file(Path(p), self.workspace) for p in sources)
+            self.analyst_sources = tuple(_canonical_file(Path(p), self.workspace) for p in analyst_sources)
         except Exception:
             self.gateway.close()
             raise
@@ -62,8 +132,8 @@ class PreparedView:
     def close(self) -> None:
         self.gateway.close()
 
-    def _files(self) -> list[Path]:
-        files = set(self.sources)
+    def _files(self, role: str = "reviewer") -> list[Path]:
+        files = set(self.sources) | set(self.analyst_sources)
         for pattern in ("AGENTS.md", "agent-system/standards/**/*.md", ".agents/skills/**/SKILL.md", ".codex/agents/*.toml"):
             for path in self.workspace.glob(pattern):
                 if path.is_file() and path == path.resolve():
@@ -83,7 +153,33 @@ class PreparedView:
                 if not any(part.startswith(".") or part.lower() in _HISTORY for part in parts[:-1]):
                     if path.is_file() and path == path.resolve():
                         files.add(path)
+        if role == "reviewer":
+            files.difference_update(self.analyst_sources)
         return sorted(files)
+
+    def _empty_git_config(self) -> Path:
+        """Git must see an empty regular config, never an unreadable device mask."""
+        relative = "view-files/empty-git-config"
+        path = self.gateway.path(relative)
+        if not path.exists():
+            try:
+                self.gateway.write_text(relative, "")
+            except FileExistsError:
+                pass  # Another caller installed the same immutable artifact.
+        parent_fd = open_directory(path.parent)
+        try:
+            descriptor = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent_fd)
+            try:
+                metadata = os.fstat(descriptor)
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1 or metadata.st_size != 0:
+                    raise AccessDenied("Git config surrogate must be an immutable empty regular file")
+            finally:
+                os.close(descriptor)
+        except OSError as exc:
+            raise AccessDenied("Git config surrogate is unsafe or inaccessible") from exc
+        finally:
+            os.close(parent_fd)
+        return path
 
     def command(self, role: str, codex_bin: str | Path, args: Sequence[str] = ()) -> list[str]:
         """Return argv, with no shell interpolation, for a selected role."""
@@ -107,12 +203,14 @@ class PreparedView:
             if Path(path).exists():
                 argv += ["--ro-bind", path, path]
         argv += ["--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp", "--dir", "/etc"]
-        for path in ("/etc/resolv.conf", "/etc/hosts", "/etc/nsswitch.conf", "/etc/passwd", "/etc/group", "/etc/gai.conf", "/etc/ssl/certs", "/etc/localtime"):
+        for path in ("/etc/resolv.conf", "/etc/hosts", "/etc/nsswitch.conf", "/etc/passwd", "/etc/group", "/etc/gai.conf", "/etc/localtime", *_SYSTEM_CA_PATHS):
             if Path(path).exists():
                 argv += ["--ro-bind", path, path]
         directories: set[Path] = {self.workspace, home, Path.home()}
-        files = self._files()
+        files = self._files(role)
         mounts: list[tuple[Path, Path]] = [(p, p) for p in files]
+        network_environment, certificates = _network_environment(self.workspace)
+        mounts.extend((p, p) for p in certificates)
         masked: list[Path] = []
         if self.include_corporate:
             repositories = self.workspace / ".private" / "repositories"
@@ -159,7 +257,11 @@ class PreparedView:
         for source, target in mounts:
             argv += ["--ro-bind", str(source), str(target)]
         for target in masked:
-            argv += ["--ro-bind", "/dev/null", str(target)]
+            source = (str(self._empty_git_config())
+                      if target.name.lower() == "config" and target.parent.name == ".git" else "/dev/null")
+            argv += ["--ro-bind", source, str(target)]
+        for name, value in network_environment.items():
+            argv += ["--setenv", name, value]
         argv += ["--setenv", "HOME", str(Path.home()), "--setenv", "CODEX_HOME", str(home),
                  "--setenv", "PATH", str(executable.parent) + ":" + str(distribution / "codex-path") + ":/usr/bin:/bin",
                  "--setenv", "LANG", "C.UTF-8", "--setenv", "TMPDIR", "/tmp",
@@ -174,11 +276,16 @@ class PreparedView:
         if result.returncode:
             raise IsolationUnavailable("bubblewrap cannot create the required filesystem view")
         script = "#!/bin/sh\nexec " + shlex.join(argv) + ' "$@"\n'
-        relative = "view-files/" + role + "-codex"
+        # The wrapper itself is an immutable policy snapshot. A resumed run may
+        # need a repaired mount/network policy; retain its old snapshot and use
+        # a new content-addressed name rather than overwrite or reject history.
+        revision = hashlib.sha256(script.encode("utf-8")).hexdigest()
+        relative = "view-files/" + role + "-codex-" + revision
         wrapper = self.gateway.path(relative)
         if wrapper.exists():
-            # Resume uses the same deterministic command; never overwrite history.
-            if wrapper.is_symlink() or wrapper.read_text(encoding="utf-8") != script:
+            # Resume reuses exactly this snapshot, never an altered/link target.
+            if (wrapper.is_symlink() or not wrapper.is_file() or wrapper.stat().st_nlink != 1
+                    or wrapper.read_text(encoding="utf-8") != script):
                 raise AccessDenied("Existing role wrapper differs from the current isolation policy")
         else:
             self.gateway.write_text(relative, script)

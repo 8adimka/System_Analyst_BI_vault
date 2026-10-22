@@ -5,9 +5,10 @@ import tempfile
 import time
 from types import SimpleNamespace
 import unittest
+import uuid
 from unittest.mock import patch
 
-from orchestrator.sdk_adapter import BackendError, EmptyThreadError, RoutingUnavailable, SDKBackend
+from orchestrator.sdk_adapter import BackendError, EmptyThreadError, OutputLimitExceeded, RoutingUnavailable, SDKBackend
 
 
 class FakeThread:
@@ -91,8 +92,11 @@ class SDKTests(unittest.TestCase):
     def test_account_diagnostic_classifies_known_routing_failure_without_raw_errors(self):
         from openai_codex.errors import InternalRpcError
         error = InternalRpcError(-32603, "Workspace routing discovery failed")
-        with patch.object(FakeClient, "account", side_effect=error), self.assertRaises(RoutingUnavailable):
+        with patch.object(FakeClient, "account", side_effect=error), self.assertRaises(RoutingUnavailable) as caught:
             self.backend.check_account()
+        self.assertIn("TLS trust store", str(caught.exception))
+        self.assertIn("account-check", str(caught.exception))
+        self.assertNotIn("restore ChatGPT account routing", str(caught.exception))
         with patch.object(FakeClient, "account", side_effect=RuntimeError("synthetic-private-provider-detail")):
             with self.assertRaises(BackendError) as caught:
                 self.backend.check_account()
@@ -104,6 +108,31 @@ class SDKTests(unittest.TestCase):
                         client_factory=FakeClient) as backend:
             backend.start("analyst", "role")
             self.assertEqual(backend.codex_bin, str(bundled_codex_path()))
+
+    def test_turn_classifies_only_exact_runtime_output_limit_without_raw_errors(self):
+        self.backend.start("analyst", "role")
+        known = "Incomplete response returned, reason: max_output_tokens"
+        with_message = RuntimeError("synthetic-private-provider-detail")
+        with_message.message = known
+        for error in (RuntimeError(known), with_message):
+            with self.subTest(message_attribute=hasattr(error, "message")):
+                with patch.object(self.backend._threads["analyst"], "run", side_effect=error):
+                    with self.assertRaises(OutputLimitExceeded) as caught:
+                        self.backend.run("analyst", "input", {})
+                self.assertIn("output token limit", str(caught.exception))
+                self.assertNotIn("synthetic-private-provider-detail", str(caught.exception))
+                self.assertNotIn("Incomplete response returned", str(caught.exception))
+        for error in (ValueError(known), RuntimeError(" " + known),
+                      RuntimeError(known + " synthetic-private-provider-detail"),
+                      RuntimeError("synthetic-private-provider-detail")):
+            with self.subTest(error=type(error).__name__, message=str(error)):
+                with patch.object(self.backend._threads["analyst"], "run", side_effect=error):
+                    with self.assertRaises(BackendError) as caught:
+                        self.backend.run("analyst", "input", {})
+                self.assertNotIsInstance(caught.exception, OutputLimitExceeded)
+                self.assertEqual(str(caught.exception),
+                                 "Codex turn failed; check account limits, authentication or connectivity")
+                self.assertNotIn("synthetic-private-provider-detail", str(caught.exception))
 
     def test_roles_have_distinct_threads_homes_and_read_only_calls(self):
         import openai_codex
@@ -122,6 +151,15 @@ class SDKTests(unittest.TestCase):
         options = self.backend._threads["reviewer"].calls[0][1]
         self.assertEqual(options["sandbox"], openai_codex.Sandbox.read_only)
         self.assertEqual(options["approval_mode"], openai_codex.ApprovalMode.deny_all)
+
+    def test_analyst_context_paths_are_forwarded_to_physical_view(self):
+        context = Path("/tmp/synthetic-work/topic/previous_context.txt")
+        with patch("orchestrator.sdk_adapter.PreparedView", return_value=FakeView()) as view:
+            with SDKBackend("/tmp/synthetic-work", "/tmp/synthetic-work/.private/runtime/context",
+                            [context], analyst_sources=[context], codex_bin="/usr/bin/true",
+                            client_factory=FakeClient) as backend:
+                backend.start("reviewer", "independent role")
+                self.assertEqual(view.call_args.kwargs["analyst_sources"], (context,))
 
     def test_resume_is_idempotent_and_cannot_merge_roles(self):
         self.backend.resume("analyst", "saved-analyst", "role")
@@ -209,6 +247,42 @@ class RealSDKMetadataTests(unittest.TestCase):
             # Persistence across app-server restarts requires a first turn in
             # runtime 0.163.0. The full synthetic smoke checks that separately;
             # this metadata-only test must not pretend it persisted a rollout.
+
+
+@unittest.skipUnless(os.environ.get("MODUS_REAL_SDK_TURN_TEST") == "1",
+                     "explicit opt-in real SDK model and restart check")
+class RealSDKRestartTests(unittest.TestCase):
+    def test_two_read_only_threads_retain_separate_history_after_restart(self):
+        # Preserve this synthetic run for inspection. No corporate sources or
+        # user sessions are mounted, and no authorization content is inspected.
+        root = Path(__file__).resolve().parents[2] / ".private/runtime" / ("sdk-restart-" + uuid.uuid4().hex[:12])
+        workspace = root / "workspace"
+        workspace.mkdir(parents=True, mode=0o700)
+        source = workspace / "input.txt"
+        fixture = "Synthetic read-only SDK restart fixture."
+        source.write_text(fixture)
+        run_root = workspace / ".private/runtime/check"
+        schema = {"type": "object", "properties": {
+            "marker": {"type": "string"}, "source": {"type": "string"}},
+            "required": ["marker", "source"], "additionalProperties": False}
+        ids, expected = {}, {}
+        instructions = "Synthetic SDK verification. Return the requested JSON. Do not write files."
+        with SDKBackend(workspace, run_root, [source], include_corporate=False, timeout=180) as backend:
+            for role in ("analyst", "reviewer"):
+                marker = role + "-" + uuid.uuid4().hex
+                expected[role] = {"marker": marker, "source": fixture}
+                ids[role] = backend.start(role, instructions)
+                result = backend.run(role, "Read input.txt. Remember this synthetic marker: " + marker +
+                                     ". Return marker and the exact input.txt content as source.", schema)
+                self.assertEqual(result, expected[role])
+        self.assertNotEqual(ids["analyst"], ids["reviewer"])
+        # New SDK clients/app-server processes, same persistent role homes/IDs.
+        with SDKBackend(workspace, run_root, [source], include_corporate=False, timeout=180) as backend:
+            for role in ("analyst", "reviewer"):
+                backend.resume(role, ids[role], instructions)
+                result = backend.run(role, "Return the marker and source from your previous response.", schema)
+                self.assertEqual(result, expected[role])
+        self.assertEqual(source.read_text(), fixture)
 
 
 if __name__ == "__main__":

@@ -24,8 +24,8 @@ class Research(Message):
 
 
 class Draft(Message):
-    jira: str = Field(min_length=20, max_length=100000)
-    evidence: list[Evidence] = Field(min_length=1, max_length=200)
+    jira: str = Field(min_length=20, max_length=500000)
+    evidence: list[Evidence] = Field(min_length=1, max_length=400)
     questions: list[str] = Field(max_length=20)
     change_log: list[str] = Field(max_length=100)
 

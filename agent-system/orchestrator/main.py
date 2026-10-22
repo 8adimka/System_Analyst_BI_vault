@@ -13,8 +13,9 @@ import sys
 import uuid
 
 from .access import ArtifactGateway
-from .inputs import digest, discover, repositories, source_path
-from .pipeline import Pipeline, State, load_state, save
+from .inputs import MAX_PROMPT_BYTES, digest, discover, repositories, source_path
+from .pipeline import (Pipeline, State, can_resume_question_format_repair, load_state,
+                       question_artifact_name, save, validate_research_continuation)
 
 WORKSPACE = Path(__file__).resolve().parents[2]
 
@@ -43,13 +44,14 @@ def run_root(workspace, value):
 
 def summary(state, root):
     return {"run_id": state.run_id, "stage": state.stage, "review_cycles": state.cycles,
+            "research_round": state.research_round,
             "version": state.version, "result": str(root / state.result) if state.result else None,
             "review_report": str(root / f"reviews/v{state.version}.md") if state.reviews and state.reviews[-1].reviewed_version == state.version else None,
-            "questions_file": str(root / f"questions/v{state.version}-{len(state.answers)}-{state.cycles}.md") if state.questions else None,
+            "questions_file": str(root / question_artifact_name(state)) if state.questions else None,
             "questions_count": len(state.questions), "error_type": state.error or None}
 
 
-def execute(workspace, root, args, state, answer=None, corporate=True):
+def execute(workspace, root, args, state, answer=None, corporate=True, *, continue_research=False):
     from .sdk_adapter import SDKBackend
     gateway = ArtifactGateway(workspace, root)
     with locked(gateway):
@@ -57,33 +59,69 @@ def execute(workspace, root, args, state, answer=None, corporate=True):
             state = load_state(gateway)
         else:
             save(gateway, state)
-        if state.stage in {"APPROVED", "INCOMPLETE", "NEEDS_USER", "CANCELLED"} and answer is None:
+        if continue_research:
+            if answer is not None:
+                raise ValueError("Продолжение исследования нельзя совмещать с ответом пользователя")
+            validate_research_continuation(state)
+        if (state.stage in {"APPROVED", "INCOMPLETE", "NEEDS_USER", "CANCELLED"}
+                and answer is None and not continue_research and not can_resume_question_format_repair(state)):
             print(json.dumps(summary(state, root), ensure_ascii=False, indent=2))
             return 0 if state.stage == "APPROVED" else 2
         sources = [workspace / key for key in state.sources]
         with SDKBackend(workspace, root, sources, model=args.model, timeout=args.timeout,
-                        include_corporate=corporate) as backend:
+                        include_corporate=corporate,
+                        analyst_sources=[workspace / key for key in state.analyst_sources]) as backend:
             pipeline = Pipeline(workspace, gateway, backend,
                                 progress=lambda event: print(json.dumps(event), file=sys.stderr, flush=True))
-            result = pipeline.answer(state, answer) if answer is not None else pipeline.run(state)
+            if continue_research:
+                result = pipeline.continue_research(state)
+            else:
+                result = pipeline.answer(state, answer) if answer is not None else pipeline.run(state)
         print(json.dumps(summary(result, root), ensure_ascii=False, indent=2))
         return 0 if result.stage == "APPROVED" else 2
 
 
-def create_state(workspace, run_id, prompt, sources):
-    if not prompt.strip() or len(prompt.encode()) > 150000:
-        raise ValueError("Промпт пустой либо превышает 150 KB")
-    sources = list(dict.fromkeys(sources + discover(workspace, prompt)))
+def create_state(workspace, run_id, prompt, sources, analyst_sources=()):
+    if not prompt.strip() or len(prompt.encode("utf-8")) > MAX_PROMPT_BYTES:
+        raise ValueError(f"Промпт пустой либо превышает {MAX_PROMPT_BYTES} UTF-8 bytes")
+    analyst_sources = list(dict.fromkeys(analyst_sources))
+    sources = list(dict.fromkeys(list(sources) + discover(workspace, prompt) + analyst_sources))
     if not sources:
         raise ValueError("Нужен хотя бы один исходный файл (--source либо --prompt)")
     return State(run_id=run_id, prompt=prompt,
                  sources={str(p.relative_to(workspace)): digest(p) for p in sources},
+                 analyst_sources=[str(p.relative_to(workspace)) for p in analyst_sources],
                  repositories=repositories(workspace))
+
+
+def read_stdin_prompt():
+    # Real stdin is read as bytes so a UTF-8 limit never truncates an accepted
+    # prompt. String-only streams are supported for embedded callers and tests.
+    stream = getattr(sys.stdin, "buffer", sys.stdin)
+    value = stream.read(MAX_PROMPT_BYTES + 1)
+    size = len(value) if isinstance(value, bytes) else len(value.encode("utf-8"))
+    if size > MAX_PROMPT_BYTES:
+        raise ValueError(f"Промпт превышает {MAX_PROMPT_BYTES} UTF-8 bytes")
+    return value.decode("utf-8") if isinstance(value, bytes) else value
 
 
 def require_corporate(args):
     if not args.company_approved:
         raise ValueError("Для боевого запуска нужен --company-approved: подтверждение права передачи корпоративных материалов провайдеру модели. Для проверки без корпоративных данных используйте smoke.")
+
+
+def isolated_tls_ca_count(workspace):
+    """Check the actual empty-root view without auth, network or a model call."""
+    from .view import PreparedView
+    root = workspace / ".private/runtime" / ("doctor-" + uuid.uuid4().hex[:12])
+    view = PreparedView(workspace, root, include_corporate=False, auth_home=root / "no-auth")
+    try:
+        result = subprocess.run(view.command("reviewer", sys.executable, ["-c",
+            "import ssl; print(ssl.create_default_context().cert_store_stats()['x509_ca'])"]),
+            capture_output=True, text=True, timeout=15, check=False)
+        return int(result.stdout.strip()) if result.returncode == 0 and result.stdout.strip().isdigit() else 0
+    finally:
+        view.close()
 
 
 def doctor(workspace):
@@ -102,8 +140,9 @@ def doctor(workspace):
     tracked = subprocess.check_output(["git", "-C", str(workspace), "ls-files", "--", ".private/", "Доступы.txt"], text=True)
     checks["private_index_empty"] = not tracked.strip()
     checks["private_ignored"] = subprocess.run(["git", "-C", str(workspace), "check-ignore", "-q", ".private/runtime/probe.json"]).returncode == 0
+    checks["isolated_tls_ca_count"] = isolated_tls_ca_count(workspace) if checks["bwrap"] else 0
     print(json.dumps(checks, ensure_ascii=False, indent=2))
-    required = ("thread_start", "thread_resume", "structured_output", "analyst", "reviewer", "bwrap", "private_index_empty", "private_ignored")
+    required = ("thread_start", "thread_resume", "structured_output", "analyst", "reviewer", "bwrap", "private_index_empty", "private_ignored", "isolated_tls_ca_count")
     return 0 if all(checks[k] for k in required) else 1
 
 
@@ -174,10 +213,15 @@ def main(argv=None):
     group.add_argument("--prompt", help="Путь к *.txt от workspace")
     group.add_argument("--stdin", action="store_true", help="Промпт из stdin; нужен --source")
     run.add_argument("--source", action="append", default=[])
+    run.add_argument("--analyst-source", action="append", default=[],
+                     help="Контекстный исторический материал только для аналитика; не первичный контракт")
     run.add_argument("--company-approved", action="store_true")
     resume = commands.add_parser("resume")
     resume.add_argument("run_id")
-    resume.add_argument("--answer-file", type=Path)
+    continuation = resume.add_mutually_exclusive_group()
+    continuation.add_argument("--answer-file", type=Path)
+    continuation.add_argument("--continue-research", action="store_true",
+                              help="Продолжить независимый поиск по тем же источникам до запуска аналитика; максимум два раза")
     resume.add_argument("--continue-cancelled", action="store_true")
     resume.add_argument("--company-approved", action="store_true")
     status = commands.add_parser("status")
@@ -208,16 +252,19 @@ def main(argv=None):
         if args.command == "run":
             require_corporate(args)
             sources = [source_path(workspace, v) for v in args.source]
+            analyst_sources = [source_path(workspace, v) for v in args.analyst_source]
             if args.prompt:
                 path = source_path(workspace, args.prompt)
                 if path.suffix != ".txt":
                     raise ValueError("Вводный промпт должен быть *.txt")
-                prompt = path.read_text()
+                if path in analyst_sources:
+                    raise ValueError("Вводный промпт нельзя ограничить ролью аналитика")
+                prompt = path.read_bytes().decode("utf-8")
                 sources.insert(0, path)
             else:
-                prompt = sys.stdin.read(150001)
+                prompt = read_stdin_prompt()
             run_id = "task-" + uuid.uuid4().hex[:16]
-            state = create_state(workspace, run_id, prompt, sources)
+            state = create_state(workspace, run_id, prompt, sources, analyst_sources)
             return execute(workspace, run_root(workspace, run_id), args, state)
         root = run_root(workspace, args.run_id)
         if not (root / "state.json").is_file():
@@ -249,13 +296,15 @@ def main(argv=None):
             return 2
         require_corporate(args)
         state = load_state(gateway)
+        if args.continue_research and args.continue_cancelled:
+            raise ValueError("Продолжение исследования нельзя совмещать с возобновлением отменённого прогона")
         if state.stage == "CANCELLED" and args.continue_cancelled:
             with locked(gateway):
                 state = load_state(gateway)
                 state.stage = "FAILED"
                 save(gateway, state)
         answer = args.answer_file.read_text() if args.answer_file else None
-        return execute(workspace, root, args, state, answer)
+        return execute(workspace, root, args, state, answer, continue_research=args.continue_research)
     except KeyboardInterrupt:
         print("Прервано; используйте status/resume.", file=sys.stderr)
         return 130

@@ -85,24 +85,78 @@ class GatewayTests(unittest.TestCase):
             self.gateway.write_json("state.json", {}, replace=True)
         self.assertEqual((self.repo / "README.md").read_text(), "unchanged")
 
+    def test_hardlinked_create_only_artifact_is_refused(self):
+        os.link(self.repo / "README.md", self.run / "artifact.json")
+        with self.assertRaises(AccessDenied):
+            self.gateway.write_json("artifact.json", {"forbidden": True})
+        self.assertEqual((self.repo / "README.md").read_text(), "unchanged")
+        self.assertEqual((self.run / "artifact.json").read_text(), "unchanged")
+        self.assertFalse(list(self.run.glob(".pending-*")))
+
     def test_concurrent_artifact_creation_does_not_overwrite_history(self):
         outcomes = []
 
         def write(value):
             try:
                 self.gateway.write_json("race.json", {"value": value})
-                outcomes.append("created")
-            except FileExistsError:
-                outcomes.append("exists")
+                outcomes.append((value, "created"))
+            except (FileExistsError, AccessDenied):
+                outcomes.append((value, "refused"))
+            except Exception as exc:
+                outcomes.append((value, type(exc).__name__))
 
         threads = [threading.Thread(target=write, args=(i,)) for i in range(2)]
         for thread in threads:
             thread.start()
         for thread in threads:
             thread.join()
-        self.assertCountEqual(outcomes, ["created", "exists"])
-        self.assertIn(self.gateway.read_json("race.json")["value"], (0, 1))
+        self.assertCountEqual([status for _, status in outcomes], ["created", "refused"])
+        winner = next(value for value, status in outcomes if status == "created")
+        self.assertEqual(self.gateway.read_json("race.json"), {"value": winner})
         self.assertFalse(list(self.run.glob(".pending-*")))
+
+    def test_concurrent_create_refuses_the_transient_publication_hardlink(self):
+        installed = threading.Event()
+        release = threading.Event()
+        outcomes = []
+        original_link = os.link
+
+        def paused_link(source, target, *args, **kwargs):
+            original_link(source, target, *args, **kwargs)
+            if target == "race.json":
+                installed.set()
+                if not release.wait(timeout=5):
+                    raise TimeoutError("Publication was not released by the test")
+
+        def publish():
+            try:
+                self.gateway.write_json("race.json", {"value": "winner"})
+                outcomes.append("created")
+            except Exception as exc:
+                outcomes.append(type(exc).__name__)
+
+        with patch("orchestrator.access.os.link", paused_link):
+            writer = threading.Thread(target=publish)
+            writer.start()
+            try:
+                self.assertTrue(installed.wait(timeout=5))
+                self.assertEqual((self.run / "race.json").stat().st_nlink, 2)
+                # A separate gateway may see a complete file while publication
+                # still owns the temporary name. It must refuse it safely.
+                with ArtifactGateway(self.workspace, self.run) as competitor:
+                    with self.assertRaises(AccessDenied):
+                        competitor.write_json("race.json", {"value": "loser"})
+            finally:
+                release.set()
+                writer.join(timeout=5)
+        self.assertFalse(writer.is_alive())
+        self.assertEqual(outcomes, ["created"])
+        self.assertEqual(self.gateway.read_json("race.json"), {"value": "winner"})
+        self.assertEqual((self.run / "race.json").stat().st_nlink, 1)
+        self.assertFalse(list(self.run.glob(".pending-*")))
+        with self.assertRaises(FileExistsError):
+            self.gateway.write_json("race.json", {"value": "later"})
+        self.assertEqual(self.gateway.read_json("race.json"), {"value": "winner"})
 
 
 if __name__ == "__main__":
