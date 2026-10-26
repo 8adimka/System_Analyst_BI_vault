@@ -1,0 +1,4043 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЦИ №1 — АРМ инспектора, production-style</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f8c43'/%3E%3Cpath d='M8 10h16v3H8zm0 5h16v3H8zm0 5h10v3H8z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-app: #d9d9d9;
+    --bg-shell: #eef1ed;
+    --bg-card: #ffffff;
+    --bg-muted: #f4f6f3;
+    --bg-toolbar: #f8faf7;
+    --bg-topbar: #4b4b4b;
+    --bg-tab: #e7eecf;
+    --bg-tab-active: #89cc91;
+    --bg-chip: #ebf4eb;
+    --bg-table-header: #4aa04f;
+    --bg-table-even: #ecf7ee;
+    --bg-selected: #fff3cd;
+    --bg-modal: rgba(32, 40, 32, 0.42);
+    --border: #d7ddd3;
+    --border-strong: #bfd1ba;
+    --text-main: #2f342f;
+    --text-soft: #677067;
+    --text-muted: #7d857d;
+    --accent: #2f8c43;
+    --accent-dark: #246a33;
+    --accent-warm: #e89e0d;
+    --danger: #c84d3d;
+    --danger-soft: #fbe8e5;
+    --warning-soft: #fff4d7;
+    --info-soft: #e8f2fb;
+    --success-soft: #e5f4e7;
+    --shadow: 0 10px 30px rgba(42, 55, 42, 0.08);
+    --shadow-modal: 0 28px 60px rgba(18, 23, 18, 0.25);
+    --radius-xl: 24px;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Montserrat", sans-serif;
+    background: var(--bg-app);
+    color: var(--text-main);
+  }
+
+  body {
+    min-width: 1180px;
+  }
+
+  .demo-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 8px 12px;
+    background: rgba(47, 52, 47, 0.92);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .demo-nav-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.58);
+    margin-right: 8px;
+    flex: 0 0 auto;
+  }
+
+  .demo-nav-btn {
+    border: 0;
+    border-radius: 999px;
+    min-height: 30px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.78);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .15s ease;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .demo-nav-btn:hover,
+  .demo-nav-btn.active {
+    background: #ffffff;
+    color: var(--text-main);
+  }
+
+  .screen {
+    display: none;
+  }
+
+  .screen.active {
+    display: block;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 46px;
+    z-index: 20;
+    height: 42px;
+    padding: 0 14px;
+    background: var(--bg-topbar);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  }
+
+  .topbar-left,
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-title {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .burger {
+    width: 18px;
+    height: 12px;
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .burger::before,
+  .burger::after,
+  .burger span {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent-warm);
+  }
+
+  .burger::before { top: 0; }
+  .burger span { top: 5px; }
+  .burger::after { bottom: 0; }
+
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .page {
+    padding: 10px;
+  }
+
+  .shell {
+    background: var(--bg-shell);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .shell-inner {
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .context-card,
+  .card,
+  .panel,
+  .main-panel,
+  .detail-panel,
+  .modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+
+  .context-card,
+  .main-panel,
+  .detail-panel,
+  .card,
+  .panel {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .context-card {
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.95fr);
+    gap: 12px;
+  }
+
+  .context-main {
+    display: grid;
+    gap: 10px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-dark);
+  }
+
+  .entity-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .entity-box,
+  .meta-card,
+  .detail-item,
+  .fact-card {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+  }
+
+  .entity-box {
+    padding: 10px 12px;
+  }
+
+  .entity-title,
+  .meta-label,
+  .mini-label,
+  .detail-item-label,
+  .metric-label,
+  .table-caption,
+  .helper {
+    color: var(--text-soft);
+  }
+
+  .entity-title,
+  .meta-label,
+  .mini-label,
+  .detail-item-label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .entity-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .signal-line,
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .badge,
+  .chip,
+  .status-pill,
+  .soft-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .badge,
+  .chip,
+  .soft-pill {
+    background: var(--bg-chip);
+    border: 1px solid #dbe6d8;
+    color: var(--text-main);
+  }
+
+  .badge-danger {
+    background: var(--danger-soft);
+    color: #9d3428;
+    border-color: #f0c2bb;
+  }
+
+  .badge-accent {
+    background: var(--success-soft);
+    color: var(--accent-dark);
+    border-color: #cde6d1;
+  }
+
+  .badge-info {
+    background: var(--info-soft);
+    color: #0a5477;
+    border-color: #c9e0ee;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    align-content: start;
+  }
+
+  .meta-card {
+    padding: 8px 10px;
+    background: var(--bg-muted);
+  }
+
+  .meta-value {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+    word-break: break-word;
+  }
+
+  .record-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #ffffff 0%, #f7faf6 100%);
+  }
+
+  .record-bar-main {
+    display: grid;
+    gap: 3px;
+  }
+
+  .record-bar-title {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .record-bar-subtitle,
+  .record-bar-summary {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text-soft);
+  }
+
+  .record-bar-meta,
+  .record-bar-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .record-bar-actions {
+    justify-content: flex-end;
+  }
+
+  .scr02-dashboard,
+  .scr02-main,
+  .scr02-entity-stack {
+    display: grid;
+    gap: 10px;
+  }
+
+  .scr02-dashboard {
+    grid-template-columns: 320px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    display: grid;
+    gap: 4px;
+  }
+
+  .kpi-card.highlight {
+    background: linear-gradient(180deg, #fff8ef 0%, #fff2dd 100%);
+    border-color: #efcf9d;
+  }
+
+  .kpi-value {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .kpi-card.highlight .kpi-value {
+    color: var(--danger);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text-soft);
+    line-height: 1.3;
+  }
+
+  .toolbar {
+    background: var(--bg-toolbar);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-left,
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .search-box,
+  .field,
+  .field-select,
+  .field-textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--text-main);
+    font: inherit;
+  }
+
+  .search-box {
+    min-width: 240px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+  }
+
+  .chip {
+    background: #fff;
+    border: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .segmented {
+    display: inline-flex;
+    padding: 4px;
+    background: #dfe9dc;
+    border-radius: 999px;
+  }
+
+  .segmented button {
+    min-width: 140px;
+    height: 30px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-soft);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .segmented button.active {
+    background: #fff;
+    color: var(--accent-dark);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .ghost-btn,
+  .primary-btn,
+  .secondary-btn,
+  .danger-btn {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .15s ease;
+  }
+
+  .ghost-btn,
+  .secondary-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-main);
+  }
+
+  .primary-btn {
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .danger-btn {
+    border: 1px solid #c84d3d;
+    background: #c84d3d;
+    color: #fff;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .workspace.single-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .main-panel,
+  .detail-panel {
+    background: var(--bg-card);
+  }
+
+  .source-tabs {
+    display: flex;
+    gap: 0;
+    padding: 8px 8px 0;
+    background: linear-gradient(180deg, #f5f8f3 0%, #eef5ec 100%);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .source-tab-btn {
+    border: 0;
+    background: var(--bg-tab);
+    color: #3f473f;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 11px 18px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 8px;
+  }
+
+  .source-tab-btn.active {
+    background: var(--bg-tab-active);
+    color: #18311d;
+  }
+
+  .tab-pane {
+    display: none;
+  }
+
+  .tab-pane.active {
+    display: block;
+  }
+
+  .table-toolbar,
+  .card-head,
+  .detail-head,
+  .panel-head,
+  .modal-head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fbfcfa 0%, #f4f7f2 100%);
+  }
+
+  .table-toolbar,
+  .card-head,
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .table-title,
+  .card-title,
+  .modal-title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .table-caption,
+  .card-subtitle,
+  .modal-subtitle,
+  .detail-subtitle {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .table-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 430px);
+  }
+
+  table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--bg-table-header);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.18;
+    padding: 12px 8px;
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.35);
+    border-bottom: 2px solid #fff;
+    min-width: 96px;
+  }
+
+  thead th:first-child {
+    left: 0;
+    z-index: 5;
+  }
+
+  thead th:nth-child(2) {
+    left: 96px;
+    z-index: 5;
+  }
+
+  thead th:nth-child(3) {
+    left: 208px;
+    z-index: 5;
+  }
+
+  tbody td {
+    padding: 10px 8px;
+    font-size: 12px;
+    line-height: 1.16;
+    text-align: center;
+    vertical-align: middle;
+    border-right: 1px solid #d7ddd3;
+    border-bottom: 1px solid #d7ddd3;
+    background: #fff;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: var(--bg-table-even);
+  }
+
+  tbody tr.is-selected td {
+    background: var(--bg-selected);
+  }
+
+  tbody td:first-child,
+  tbody td:nth-child(2),
+  tbody td:nth-child(3) {
+    position: sticky;
+    z-index: 2;
+  }
+
+  tbody td:first-child { left: 0; }
+  tbody td:nth-child(2) { left: 96px; }
+  tbody td:nth-child(3) { left: 208px; }
+
+  tbody tr:nth-child(odd) td:first-child,
+  tbody tr:nth-child(odd) td:nth-child(2),
+  tbody tr:nth-child(odd) td:nth-child(3) {
+    background: #fff;
+  }
+
+  tbody tr:nth-child(even) td:first-child,
+  tbody tr:nth-child(even) td:nth-child(2),
+  tbody tr:nth-child(even) td:nth-child(3) {
+    background: var(--bg-table-even);
+  }
+
+  tbody tr.is-selected td:first-child,
+  tbody tr.is-selected td:nth-child(2),
+  tbody tr.is-selected td:nth-child(3) {
+    background: var(--bg-selected);
+  }
+
+  tbody tr:hover td {
+    filter: brightness(0.98);
+    cursor: pointer;
+  }
+
+  td.text-left { text-align: left; }
+  td.nowrap { white-space: nowrap; }
+
+  .w-s { min-width: 96px; }
+  .w-m { min-width: 112px; }
+  .w-l { min-width: 140px; }
+  .w-xl { min-width: 180px; }
+
+  .detail-panel {
+    position: sticky;
+    top: 114px;
+  }
+
+  .detail-body,
+  .card-body,
+  .panel-body,
+  .modal-body {
+    padding: 14px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .detail-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .detail-group {
+    display: grid;
+    gap: 8px;
+  }
+
+  .detail-group-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .detail-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .detail-item {
+    padding: 10px 12px;
+    background: var(--bg-muted);
+  }
+
+  .detail-item-value {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .detail-note,
+  .note-box,
+  .helper-box,
+  .upload-box {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed var(--border-strong);
+    background: #f8fbf7;
+    font-size: 12px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  .empty-state {
+    padding: 30px 18px;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 13px;
+  }
+
+  .status-line,
+  .progress-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .status-pill {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  .status-pill.success { background: var(--success-soft); color: var(--accent-dark); border-color: #cde6d1; }
+  .status-pill.warning { background: var(--warning-soft); color: #8f6600; border-color: #efd89c; }
+  .status-pill.danger { background: var(--danger-soft); color: #9d3428; border-color: #f0c2bb; }
+  .status-pill.info { background: var(--info-soft); color: #0a5477; border-color: #c9e0ee; }
+
+  .stepper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .step-card {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    min-height: 0;
+  }
+
+  .step-card.is-active {
+    border-color: #afd0b6;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f8f1 100%);
+  }
+
+  .step-card.is-done {
+    border-color: #cde6d1;
+    background: linear-gradient(180deg, #ffffff 0%, #f3faf4 100%);
+  }
+
+  .step-index {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 0;
+    background: #fff;
+    border: 2px solid var(--border);
+    color: var(--text-soft);
+  }
+
+  .step-card.is-active .step-index {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .step-card.is-done .step-index {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .step-name {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .step-desc {
+    display: none;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-70-30,
+  .grid-60-40 {
+    display: grid;
+    gap: 14px;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-70-30 {
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+  }
+
+  .grid-60-40 {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  }
+
+  .fact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .fact-card {
+    padding: 12px 14px;
+    background: var(--bg-muted);
+  }
+
+  .fact-value {
+    font-size: 15px;
+    font-weight: 800;
+    margin-top: 4px;
+    line-height: 1.25;
+  }
+
+  .field {
+    height: 40px;
+    padding: 0 12px;
+  }
+
+  .field-textarea {
+    min-height: 108px;
+    padding: 10px 12px;
+    resize: vertical;
+  }
+
+  .radio-list,
+  .check-list,
+  .action-list,
+  .file-list,
+  .manifest-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .choice,
+  .file-item,
+  .manifest-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .choice.selected {
+    border-color: #a8ceaf;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f8f2 100%);
+  }
+
+  .choice-input {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    margin-top: 2px;
+    flex: 0 0 auto;
+    position: relative;
+  }
+
+  .choice.selected .choice-input {
+    border-color: var(--accent);
+  }
+
+  .choice.selected .choice-input::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .choice-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .choice-desc,
+  .file-meta,
+  .manifest-desc {
+    font-size: 11px;
+    color: var(--text-soft);
+    line-height: 1.45;
+  }
+
+  .check-list {
+    max-height: 256px;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .npa-card {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .npa-card.recommended {
+    background: #f0f7ff;
+    border-color: #d5e7f5;
+  }
+
+  .npa-card.selected {
+    background: #eef8ef;
+    border-color: #b9dcbf;
+  }
+
+  .npa-title {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .npa-sub {
+    font-size: 11px;
+    color: var(--text-soft);
+    line-height: 1.45;
+  }
+
+  .file-item {
+    justify-content: space-between;
+  }
+
+  .file-main {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .file-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--bg-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex: 0 0 auto;
+  }
+
+  .file-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .file-actions,
+  .cta-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .version-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .version-card {
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  .version-card.source {
+    background: var(--info-soft);
+    border-color: #cadeef;
+  }
+
+  .version-card.final {
+    background: var(--warning-soft);
+    border-color: #eed59b;
+  }
+
+  .version-card.done {
+    background: var(--success-soft);
+    border-color: #cce3cf;
+  }
+
+  .version-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--text-soft);
+  }
+
+  .version-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .upload-box {
+    background: linear-gradient(180deg, #ffffff 0%, #f7faf6 100%);
+    text-align: center;
+  }
+
+  .upload-box strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-main);
+  }
+
+  .rating-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .rating-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-main);
+    border-radius: 10px;
+    min-height: 42px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .rating-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .manifest-item {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .manifest-name {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .record-summary-grid,
+  .state-grid,
+  .selected-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .record-summary-grid {
+    grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, 1fr));
+  }
+
+  .record-summary-primary,
+  .state-card,
+  .selected-row {
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+  }
+
+  .record-summary-primary,
+  .state-card {
+    padding: 14px 16px;
+  }
+
+  .record-summary-primary {
+    display: grid;
+    gap: 8px;
+  }
+
+  .state-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .state-card.active {
+    border-color: #a8ceaf;
+    background: linear-gradient(180deg, #ffffff 0%, #eef8ef 100%);
+  }
+
+  .state-switch {
+    display: inline-flex;
+    gap: 6px;
+    padding: 4px;
+    border-radius: 999px;
+    background: #dfe9dc;
+    flex-wrap: wrap;
+  }
+
+  .state-switch button {
+    height: 32px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-soft);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .state-switch button.active {
+    background: #fff;
+    color: var(--accent-dark);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .state-pane {
+    display: none;
+  }
+
+  .state-pane.active {
+    display: grid;
+    gap: 14px;
+  }
+
+  .scr02-compact-stack,
+  .scr02-top-grid,
+  .log-workspace {
+    display: grid;
+    gap: 10px;
+  }
+
+  .scr02-compact-stack {
+    align-content: start;
+    gap: 8px;
+  }
+
+  .scr02-top-grid {
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+    align-items: start;
+    gap: 8px;
+  }
+
+  .scr02-kpi-strip .kpi-card {
+    padding: 10px 12px;
+  }
+
+  .scr02-kpi-strip .kpi-value {
+    font-size: 24px;
+  }
+
+  .scr02-record-compact {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  }
+
+  .decision-save-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .decision-option {
+    cursor: pointer;
+  }
+
+  .decision-option[data-decision-option] {
+    min-height: 72px;
+    align-content: center;
+  }
+
+  .log-workspace {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+
+  .log-table tbody tr.is-selected td {
+    background: var(--bg-selected);
+  }
+
+  .log-table tbody tr {
+    cursor: pointer;
+  }
+
+  .state-card.done {
+    border-color: #cde6d1;
+    background: linear-gradient(180deg, #ffffff 0%, #f3faf4 100%);
+  }
+
+  .state-card.queued {
+    border-style: dashed;
+  }
+
+  .state-title {
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .state-text,
+  .selected-meta {
+    font-size: 11px;
+    color: var(--text-soft);
+    line-height: 1.45;
+  }
+
+  .selected-row {
+    padding: 10px 12px;
+    display: grid;
+    gap: 4px;
+  }
+
+  .selected-name {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .npa-workspace,
+  .tree-column,
+  .selection-column,
+  .tree-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .npa-workspace {
+    grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
+  }
+
+  .tree-column,
+  .selection-column {
+    align-content: start;
+  }
+
+  .tree-group {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+    overflow: hidden;
+  }
+
+  .tree-group-head {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: #f6faf5;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .tree-list {
+    padding: 10px 12px 12px;
+  }
+
+  .tree-node {
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .tree-node.level-1 {
+    font-weight: 800;
+    background: #f8faf7;
+    border-color: #e2e8de;
+  }
+
+  .tree-node.level-2 {
+    margin-left: 16px;
+    font-weight: 700;
+  }
+
+  .tree-node.level-3 {
+    margin-left: 34px;
+    background: #fff;
+    border-color: var(--border);
+  }
+
+  .tree-node.selected {
+    background: #eef8ef;
+    border-color: #b9dcbf;
+  }
+
+  .tree-meta {
+    font-size: 11px;
+    color: var(--text-soft);
+    margin-top: 2px;
+  }
+
+  .is-hidden {
+    display: none !important;
+  }
+
+  .compact-stepper .step-card {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .compact-stepper .step-index {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  .compact-stepper .step-name {
+    font-size: 11px;
+  }
+
+  .scr03-main-grid,
+  .scr03-summary-grid,
+  .catalog-modal-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .scr03-main-grid {
+    grid-template-columns: minmax(320px, .78fr) minmax(0, 1.22fr);
+  }
+
+  .scr03-summary-grid {
+    align-content: start;
+  }
+
+  .decision-option {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .decision-option.is-selected {
+    border-color: #a8ceaf;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f8f1 100%);
+  }
+
+  .decision-option-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .decision-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: #fff;
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .decision-option.is-selected .decision-dot {
+    border-color: var(--accent);
+  }
+
+  .decision-option.is-selected .decision-dot::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .decision-title {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .decision-subtitle,
+  .catalog-point-meta,
+  .selection-meta {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-soft);
+  }
+
+  .scr03-action-bar,
+  .catalog-toolbar,
+  .catalog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .selection-result-card {
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+    display: grid;
+    gap: 12px;
+  }
+
+  .selection-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eef8ef;
+    border: 1px solid #b9dcbf;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-dark);
+  }
+
+  .selection-item {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    display: grid;
+    gap: 4px;
+  }
+
+  .selection-name {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .payload-box {
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px dashed var(--border-strong);
+    background: #f8fbf7;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-soft);
+  }
+
+  .payload-box strong {
+    color: var(--text-main);
+  }
+
+  .catalog-modal-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .catalog-toolbar {
+    align-items: flex-start;
+  }
+
+  .catalog-document {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+    overflow: hidden;
+  }
+
+  .catalog-document-head {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #f8fbf7 0%, #f1f5ef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .catalog-document-title {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .catalog-section {
+    padding: 16px 18px 18px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .catalog-section-title {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+
+  .catalog-point-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .catalog-point {
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: #fff;
+    display: grid;
+    gap: 4px;
+  }
+
+  .catalog-point.recommended {
+    border-color: #d5e7f5;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f8ff 100%);
+  }
+
+  .catalog-point.selected {
+    border-color: #afd8b6;
+    background: linear-gradient(180deg, #ffffff 0%, #eef8ef 100%);
+  }
+
+  .catalog-point-title {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .catalog-footer {
+    position: sticky;
+    bottom: 0;
+    padding-top: 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 26%);
+  }
+
+  .catalog-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .catalog-tree-panel,
+  .catalog-selection-panel {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .catalog-tree-head,
+  .catalog-selection-head {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fbfcfa 0%, #f4f7f2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .catalog-tree-head strong,
+  .catalog-selection-head strong {
+    font-size: 13px;
+  }
+
+  .catalog-tree-scroll,
+  .catalog-selection-body {
+    padding: 14px;
+  }
+
+  .catalog-tree-scroll {
+    max-height: calc(100vh - 390px);
+    overflow: auto;
+  }
+
+  .catalog-selection-body {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+  }
+
+  .catalog-overview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .catalog-root,
+  .tree-children,
+  .tree-point-list,
+  .selection-preview-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .catalog-node {
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbf7 100%);
+    overflow: hidden;
+  }
+
+  .catalog-node.section {
+    border-radius: 14px;
+    background: #fff;
+    margin-left: 24px;
+  }
+
+  .catalog-node > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .catalog-node > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .catalog-summary-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .catalog-chevron {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-soft);
+    flex: 0 0 auto;
+    transition: transform .15s ease;
+  }
+
+  .catalog-node[open] > summary .catalog-chevron {
+    transform: rotate(90deg);
+  }
+
+  .catalog-summary-text {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .catalog-summary-title {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+
+  .catalog-summary-meta {
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-soft);
+  }
+
+  .tree-children {
+    padding: 0 14px 14px;
+  }
+
+  .tree-point {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .tree-point:hover {
+    border-color: #c7d5c3;
+  }
+
+  .tree-point.selected {
+    border-color: #afd8b6;
+    background: linear-gradient(180deg, #ffffff 0%, #eef8ef 100%);
+  }
+
+  .tree-point.recommended {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f8ff 100%);
+    border-color: #d5e7f5;
+  }
+
+  .tree-point.selected.recommended {
+    border-color: #9ecfb2;
+    background: linear-gradient(180deg, #f6fbff 0%, #eef8ef 100%);
+  }
+
+  .tree-checkbox {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .tree-point-body {
+    display: grid;
+    gap: 4px;
+  }
+
+  .tree-point-title {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .tree-point-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tree-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-soft);
+  }
+
+  .tree-tag.recommended {
+    border-color: #cadeef;
+    background: var(--info-soft);
+    color: #0a5477;
+  }
+
+  .catalog-selection-body .selection-item {
+    padding: 10px 12px;
+  }
+
+  .catalog-empty-state {
+    padding: 18px 14px;
+    border-radius: 14px;
+    border: 1px dashed var(--border-strong);
+    background: #f8fbf7;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-soft);
+  }
+
+  .catalog-note-line {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px dashed var(--border);
+    background: #fbfcfa;
+    font-size: 12px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 88px 18px 18px;
+    z-index: 80;
+    background: var(--bg-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    backdrop-filter: blur(2px);
+  }
+
+  .scr02-shell .shell-inner {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .scr02-shell .scr02-sidebar .card-body {
+    padding: 12px;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .scr02-shell .scr02-entity-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .scr02-shell .scr02-sidebar .meta-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .scr02-shell .scr02-sidebar .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .scr02-shell .entity-box {
+    padding: 10px 12px;
+  }
+
+  .scr02-shell .entity-title,
+  .scr02-shell .meta-label {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .scr02-shell .entity-value {
+    font-size: 18px;
+  }
+
+  .scr02-shell .meta-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .scr02-shell .meta-card {
+    padding: 8px 10px;
+  }
+
+  .scr02-shell .meta-value {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  .scr02-shell .badge,
+  .scr02-shell .chip,
+  .scr02-shell .soft-pill {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 11px;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .scr02-shell .primary-btn,
+  .scr02-shell .secondary-btn,
+  .scr02-shell .ghost-btn {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+
+  .scr02-shell .kpi-grid {
+    gap: 8px;
+  }
+
+  .scr02-shell .kpi-card {
+    padding: 10px 12px;
+    gap: 4px;
+  }
+
+  .scr02-shell .kpi-value {
+    font-size: 24px;
+  }
+
+  .scr02-shell .kpi-label {
+    font-size: 11px;
+  }
+
+  .scr02-shell .scr02-sidebar .record-bar {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .scr02-shell .scr02-sidebar .record-bar-actions {
+    justify-content: flex-start;
+  }
+
+  .scr02-shell .toolbar {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+
+  .scr02-shell .toolbar-left,
+  .scr02-shell .toolbar-right {
+    gap: 8px;
+  }
+
+  .scr02-shell .search-box {
+    min-width: 220px;
+    height: 36px;
+  }
+
+  .scr02-shell .segmented {
+    padding: 3px;
+  }
+
+  .scr02-shell .segmented button {
+    min-width: 118px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .scr02-shell .source-tabs {
+    padding: 6px 6px 0;
+  }
+
+  .scr02-shell .toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .scr02-shell .toolbar-left {
+    min-width: 0;
+  }
+
+  .scr02-shell .search-box {
+    width: min(520px, 100%);
+  }
+
+  .scr02-shell .source-tab-btn {
+    padding: 9px 14px;
+    font-size: 11px;
+  }
+
+  .scr02-shell .table-toolbar {
+    padding: 10px 12px;
+  }
+
+  .scr02-shell .table-caption {
+    display: none;
+  }
+
+  .scr02-shell .table-wrap {
+    min-height: 470px;
+    max-height: calc(100vh - 225px);
+  }
+
+  .log-table td:first-child,
+  .log-table td:nth-child(2),
+  .log-table td:nth-child(3),
+  .log-table th:first-child,
+  .log-table th:nth-child(2),
+  .log-table th:nth-child(3) {
+    position: static;
+  }
+
+  .modal-card {
+    width: min(1120px, 100%);
+    max-height: calc(100vh - 160px);
+    box-shadow: var(--shadow-modal);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal-head {
+    padding: 16px 18px;
+  }
+
+  .modal-body {
+    overflow: auto;
+    padding: 18px;
+  }
+
+  .modal-close {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    font: inherit;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .annotation {
+    max-width: 1360px;
+    margin: 10px auto 0;
+    padding: 10px 14px;
+    background: #fefce8;
+    border-left: 3px solid #eab308;
+    border-radius: 0 12px 12px 0;
+    font-size: 11px;
+    color: #713f12;
+    line-height: 1.6;
+  }
+
+  .annotation strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 12px;
+  }
+
+  .annotation,
+  .card-subtitle,
+  .table-caption,
+  .helper,
+  .detail-note,
+  .helper-box,
+  .modal-subtitle,
+  .decision-subtitle,
+  .record-bar-subtitle,
+  .payload-box,
+  .detail-subtitle,
+  .catalog-note-line,
+  .state-text {
+    display: none !important;
+  }
+
+  @media (max-width: 1440px) {
+    .workspace {
+      grid-template-columns: minmax(0, 1fr) 290px;
+    }
+
+    .entity-value {
+      font-size: 21px;
+    }
+
+    .scr03-main-grid {
+      grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr);
+    }
+
+    .catalog-layout {
+      grid-template-columns: minmax(0, 1fr) 300px;
+    }
+
+    .scr02-top-grid,
+    .log-workspace {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 1240px) {
+    body {
+      min-width: 1024px;
+    }
+
+    .context-card,
+    .grid-2,
+    .grid-3,
+    .grid-70-30,
+    .grid-60-40,
+    .version-grid,
+    .fact-grid,
+    .entity-row,
+    .kpi-grid,
+    .workspace,
+    .record-summary-grid,
+    .state-grid,
+    .record-bar,
+    .scr02-dashboard,
+    .scr03-main-grid,
+    .catalog-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .detail-panel {
+      position: static;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="demo-nav">
+    <span class="demo-nav-label">Прототип АРМа</span>
+    <button class="demo-nav-btn active" data-screen-target="scr02">SCR-02 Детали</button>
+    <button class="demo-nav-btn" data-screen-target="scr03">SCR-03 АРМ инспектора</button>
+    <button class="demo-nav-btn" data-screen-target="scr04">SCR-04 Доказательства и документы</button>
+    <button class="demo-nav-btn" data-screen-target="scr04b">SCR-04b Оценка генерации</button>
+    <button class="demo-nav-btn" data-screen-target="scr05">SCR-05 Отправка и КНМ</button>
+    <button class="demo-nav-btn" data-screen-target="scr06">SCR-06 Журнал обменов</button>
+  </div>
+
+  <div id="scr02" class="screen active">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="burger"><span></span></div>
+        <div class="topbar-title">Цифровой индикатор №1 "Выявление роста болезней, падежа или вынужденного убоя животных" детали</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" title="Экспорт">↓</button>
+        <button class="icon-btn" type="button" title="Поделиться">⤴</button>
+        <button class="icon-btn" type="button" title="Справка">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="shell scr02-shell">
+        <div class="shell-inner">
+          <div class="scr02-compact-stack">
+            <section class="context-card">
+              <div class="context-main">
+                <div class="eyebrow">
+                  <span>Карточка нарушения</span>
+                  <span class="soft-pill">02.2026</span>
+                </div>
+                <div class="entity-row">
+                  <div class="entity-box">
+                    <div class="entity-title">Хозяйствующий субъект</div>
+                    <div class="entity-value">Крымская Анастасия Олеговна</div>
+                  </div>
+                  <div class="entity-box">
+                    <div class="entity-title">Площадка</div>
+                    <div class="entity-value">ИП ГКФХ Крымская А.О.</div>
+                  </div>
+                </div>
+                <div class="signal-line">
+                  <span class="badge badge-danger">Отклонение 200%</span>
+                  <span class="badge badge-accent">149 против 1</span>
+                  <span class="badge">Порог 15%</span>
+                  <span class="badge badge-info">На проверке</span>
+                </div>
+              </div>
+              <div class="meta-grid">
+                <div class="meta-card"><div class="meta-label">Нарушение</div><div class="meta-value">2 117 110 588</div></div>
+                <div class="meta-card"><div class="meta-label">ИНН</div><div class="meta-value">541 628 191 848</div></div>
+                <div class="meta-card"><div class="meta-label">Цербер</div><div class="meta-value">RU054:42608579</div></div>
+                <div class="meta-card"><div class="meta-label">Статус</div><div class="meta-value">Сформирован</div></div>
+                <div class="meta-card"><div class="meta-label">Регион ХС</div><div class="meta-value">Новосибирская область</div></div>
+                <div class="meta-card"><div class="meta-label">Регион площадки</div><div class="meta-value">Новосибирская область</div></div>
+                <div class="meta-card"><div class="meta-label">ID площадки</div><div class="meta-value">f0ef4360-c490...</div></div>
+                <div class="meta-card"><div class="meta-label">Источник</div><div class="meta-value">Сирано</div></div>
+              </div>
+            </section>
+
+            <div class="scr02-top-grid">
+              <section class="record-bar scr02-record-compact">
+                <div class="record-bar-main">
+                  <div class="record-bar-title" id="detail-title">Запись 04.02.2026 / Сирано</div>
+                  <div class="record-bar-summary" id="detail-summary">Лептоспироз, положительный титр 1:100+++ </div>
+                </div>
+                <div class="record-bar-meta">
+                  <div class="chip">Источник: <span id="detail-source">Сирано</span></div>
+                  <div class="chip">Ключ: <span id="detail-key">D1447-26 ОВ</span></div>
+                </div>
+                <div class="record-bar-actions">
+                  <button class="primary-btn" type="button" data-screen-jump="scr03">Открыть АРМ</button>
+                </div>
+              </section>
+
+              <section class="kpi-grid scr02-kpi-strip">
+                <div class="kpi-card"><div class="kpi-value">149</div><div class="kpi-label">В отчетном месяце</div></div>
+                <div class="kpi-card"><div class="kpi-value">1</div><div class="kpi-label">В предыдущем месяце</div></div>
+                <div class="kpi-card highlight"><div class="kpi-value">200%</div><div class="kpi-label">Отклонение</div></div>
+                <div class="kpi-card"><div class="kpi-value">15%</div><div class="kpi-label">Порог</div></div>
+              </section>
+            </div>
+
+            <section class="toolbar">
+              <div class="toolbar-left">
+                <input class="search-box" type="text" value="Лептоспироз / Хорриот / 20.02.2026" aria-label="Поиск">
+              </div>
+              <div class="toolbar-right">
+                <div class="segmented" aria-label="Период">
+                  <button class="active" type="button">Отчетный</button>
+                  <button type="button">Предыдущий</button>
+                </div>
+                <button class="ghost-btn" type="button">Колонки</button>
+                <button class="ghost-btn" type="button">Экспорт</button>
+              </div>
+            </section>
+
+            <div class="main-panel">
+              <div class="source-tabs" role="tablist" aria-label="Источники">
+                <button class="source-tab-btn active" type="button" data-tab="summary">Сводная</button>
+                <button class="source-tab-btn" type="button" data-tab="mercury">Меркурий</button>
+                <button class="source-tab-btn" type="button" data-tab="horiot">Хорриот</button>
+                <button class="source-tab-btn" type="button" data-tab="sirano">Сирано</button>
+                <button class="source-tab-btn" type="button" data-tab="manual">Ручной ввод</button>
+              </div>
+
+              <div id="summary" class="tab-pane active">
+                <div class="table-toolbar">
+                  <div>
+                    <div class="table-title">Сводная таблица</div>
+                    <div class="table-caption">Полный состав колонок сохраняется. Из этой вкладки инспектор открывает АРМ и запускает дальнейший процесс.</div>
+                  </div>
+                  <div class="chip">21 колонка · 5 строк</div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th class="w-s">Поднадзорный объект</th>
+                        <th class="w-m">Дата события</th>
+                        <th class="w-m">Источник данных</th>
+                        <th class="w-m">Тип продукта</th>
+                        <th class="w-s">Сертификат</th>
+                        <th class="w-m">Посмотреть сертификат</th>
+                        <th class="w-m">Номер карточки (Хорриот)</th>
+                        <th class="w-m">Причина потери (Хорриот)</th>
+                        <th class="w-m">Кол-во голов (Хорриот)</th>
+                        <th class="w-m">Регион обнаружения болезни (Сирано)</th>
+                        <th class="w-m">Статус в Сирано</th>
+                        <th class="w-l">Название болезни (Сирано)</th>
+                        <th class="w-m">Номер экспертизы (Сирано)</th>
+                        <th class="w-l">Значение факта (Сирано)</th>
+                        <th class="w-l">Лаборатория (Сирано)</th>
+                        <th class="w-m">Материал (Сирано)</th>
+                        <th class="w-xl">НД на метод (Сирано)</th>
+                        <th class="w-m">Метод (Сирано)</th>
+                        <th class="w-m">Предельно допустимая концентрация (Сирано)</th>
+                        <th class="w-m">Тип экспертизы (Сирано)</th>
+                        <th class="w-m">Номер пробы (Сирано)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="is-selected" data-title="Запись 04.02.2026 / Сирано" data-subtitle="Выбрана запись для запуска АРМа" data-source="Сирано" data-key="D1447-26 ОВ" data-summary="Лептоспироз, положительный титр 1:100+++" data-extra="Орловский филиал ФГБУ «ВНИИЗЖ»">
+                        <td>нет</td>
+                        <td class="nowrap">04.02.2026</td>
+                        <td>Сирано</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>Орловская область</td>
+                        <td><span class="status-pill info">IN_PROGRESS</span></td>
+                        <td class="text-left">Лептоспироз</td>
+                        <td class="nowrap">D1447-26 ОВ</td>
+                        <td class="text-left">обнаружено (положительный титр 1:100+++)</td>
+                        <td class="text-left">Орловский филиал ФГБУ «ВНИИЗЖ»</td>
+                        <td>Сыворотка крови</td>
+                        <td class="text-left">ГОСТ 25386-91 - Животные сельскохозяйственные. Методы лабораторной диагностики лептоспироз</td>
+                        <td>РМА</td>
+                        <td>-</td>
+                        <td>Эпизоотологический мониторинг</td>
+                        <td class="nowrap">20-26-01447/1-8</td>
+                      </tr>
+                      <tr data-title="Запись 23.02.2026 / Хорриот" data-subtitle="Минимальный набор полей в специализированной вкладке" data-source="Хорриот" data-key="RU12aa00RB5" data-summary="Падеж крупного рогатого скота" data-extra="Источник: Хорриот">
+                        <td>нет</td>
+                        <td class="nowrap">23.02.2026</td>
+                        <td>Хорриот</td>
+                        <td>Крупный рогатый скот</td>
+                        <td></td>
+                        <td></td>
+                        <td class="nowrap">RU12aa00RB5</td>
+                        <td>Падеж</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr data-title="Запись 21.02.2026 / Хорриот" data-subtitle="Дополнительная запись для сравнения динамики" data-source="Хорриот" data-key="RU12aa00RI9" data-summary="Падеж крупного рогатого скота" data-extra="Источник: Хорриот">
+                        <td>нет</td>
+                        <td class="nowrap">21.02.2026</td>
+                        <td>Хорриот</td>
+                        <td>Крупный рогатый скот</td>
+                        <td></td>
+                        <td></td>
+                        <td class="nowrap">RU12aa00RI9</td>
+                        <td>Падеж</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr data-title="Запись 20.02.2026 / Меркурий" data-subtitle="Сопутствующая запись из Меркурия" data-source="Меркурий" data-key="CERT-001" data-summary="Сертификат на КРС" data-extra="Источник: Меркурий">
+                        <td>нет</td>
+                        <td class="nowrap">20.02.2026</td>
+                        <td>Меркурий</td>
+                        <td>Крупный рогатый скот</td>
+                        <td class="nowrap">CERT-001</td>
+                        <td>Открыть</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr data-title="Запись 20.02.2026 / Хорриот" data-subtitle="Историческая запись по падежу" data-source="Хорриот" data-key="RU12aa00R1P" data-summary="Падеж крупного рогатого скота" data-extra="Источник: Хорриот">
+                        <td>нет</td>
+                        <td class="nowrap">20.02.2026</td>
+                        <td>Хорриот</td>
+                        <td>Крупный рогатый скот</td>
+                        <td></td>
+                        <td></td>
+                        <td class="nowrap">RU12aa00R1P</td>
+                        <td>Падеж</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="mercury" class="tab-pane">
+                <div class="table-toolbar">
+                  <div>
+                    <div class="table-title">Меркурий</div>
+                    <div class="table-caption">Минимальный рабочий набор полей для инспектора по сертификату.</div>
+                  </div>
+                  <div class="chip">5 колонок</div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th class="w-m">Дата события</th>
+                        <th class="w-m">Источник</th>
+                        <th class="w-m">Тип продукта</th>
+                        <th class="w-m">ID сертификата</th>
+                        <th class="w-m">Посмотреть сертификат</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="nowrap">20.02.2026</td>
+                        <td>Меркурий</td>
+                        <td>Крупный рогатый скот</td>
+                        <td class="nowrap">CERT-001</td>
+                        <td>Открыть</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="horiot" class="tab-pane">
+                <div class="table-toolbar">
+                  <div>
+                    <div class="table-title">Хорриот</div>
+                    <div class="table-caption">Рабочая вкладка для падежа и карточек учета животных.</div>
+                  </div>
+                  <div class="chip">5 колонок</div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th class="w-m">Дата события</th>
+                        <th class="w-m">Источник</th>
+                        <th class="w-m">Номер карточки</th>
+                        <th class="w-l">Причина потери</th>
+                        <th class="w-m">Кол-во голов</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="nowrap">23.02.2026</td>
+                        <td>Хорриот</td>
+                        <td class="nowrap">RU12aa00RB5</td>
+                        <td>Падеж</td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="sirano" class="tab-pane">
+                <div class="table-toolbar">
+                  <div>
+                    <div class="table-title">Сирано</div>
+                    <div class="table-caption">Минимальный набор для оценки лабораторного подтверждения.</div>
+                  </div>
+                  <div class="chip">9 колонок</div>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th class="w-m">Дата события</th>
+                        <th class="w-m">Регион</th>
+                        <th class="w-m">Статус</th>
+                        <th class="w-l">Болезнь</th>
+                        <th class="w-m">Экспертиза</th>
+                        <th class="w-l">Значение факта</th>
+                        <th class="w-l">Лаборатория</th>
+                        <th class="w-m">Метод</th>
+                        <th class="w-m">Номер пробы</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="nowrap">04.02.2026</td>
+                        <td>Орловская область</td>
+                        <td><span class="status-pill info">IN_PROGRESS</span></td>
+                        <td class="text-left">Лептоспироз</td>
+                        <td class="nowrap">D1447-26 ОВ</td>
+                        <td class="text-left">обнаружено (положительный титр 1:100+++)</td>
+                        <td class="text-left">Орловский филиал ФГБУ «ВНИИЗЖ»</td>
+                        <td>РМА</td>
+                        <td class="nowrap">20-26-01447/1-8</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="manual" class="tab-pane">
+                <div class="table-toolbar">
+                  <div>
+                    <div class="table-title">Ручной ввод</div>
+                    <div class="table-caption">Отдельный поток сохраняется в едином рабочем пространстве.</div>
+                  </div>
+                  <div class="chip">0 записей</div>
+                </div>
+                <div class="empty-state">Для текущего нарушения нет записей из блока ручного ввода.</div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">
+      <strong>SCR-02</strong>
+      Базовый экран сохранен как точка входа в сценарий. АРМ инспектора открывается как отдельная рабочая страница, сохраняя тот же visual language и контекст нарушения.
+    </div>
+  </div>
+
+  <div id="scr03" class="screen">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="burger"><span></span></div>
+        <div class="topbar-title">Цифровой индикатор №1 — АРМ инспектора</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" title="Экспорт">↓</button>
+        <button class="icon-btn" type="button" title="Поделиться">⤴</button>
+        <button class="icon-btn" type="button" title="Справка">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="shell">
+        <div class="shell-inner">
+          <section class="context-card">
+            <div class="context-main">
+              <div class="eyebrow"><span>АРМ инспектора</span><span class="soft-pill">Шаг 1: подтверждение индикатора и выбор НПА</span></div>
+              <div class="entity-row">
+                <div class="entity-box">
+                  <div class="entity-title">ХС</div>
+                  <div class="entity-value">Крымская Анастасия Олеговна</div>
+                </div>
+                <div class="entity-box">
+                  <div class="entity-title">Площадка</div>
+                  <div class="entity-value">ИП ГКФХ Крымская А.О.</div>
+                </div>
+              </div>
+              <div class="signal-line">
+                <span class="badge badge-danger">Отклонение 200%</span>
+                <span class="badge badge-accent">149 случаев против 1 месяцем ранее</span>
+              </div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-card">
+                <div class="meta-label">Нарушение</div>
+                <div class="meta-value">2 117 110 588</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Статус</div>
+                <div class="meta-value">На проверке инспектором</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Отчетный месяц</div>
+                <div class="meta-value">02.2026</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Источник подтверждения</div>
+                <div class="meta-value">Сирано / Лептоспироз</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="shell-inner" style="padding-top:0">
+          <section class="stepper compact-stepper">
+            <div class="step-card is-active"><div class="step-index">1</div><div class="step-name">Подтверждение</div><div class="step-desc">Решение инспектора и НПА.</div></div>
+            <div class="step-card"><div class="step-index">2</div><div class="step-name">Доказательная база</div><div class="step-desc">Запрос пакета файлов.</div></div>
+            <div class="step-card"><div class="step-index">3</div><div class="step-name">LLM-документы</div><div class="step-desc">Генерация и финальная редакция.</div></div>
+            <div class="step-card"><div class="step-index">4</div><div class="step-name">Оценка</div><div class="step-desc">Обратная связь по LLM.</div></div>
+            <div class="step-card"><div class="step-index">5</div><div class="step-name">ГосТех + КНМ</div><div class="step-desc">Финальная отправка.</div></div>
+          </section>
+
+          <div class="scr03-main-grid">
+            <section class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Подтверждение индикатора</div>
+                </div>
+                <span id="scr03-decision-status" class="status-pill warning">Решение не сохранено</span>
+              </div>
+              <div class="card-body">
+                <div class="radio-list" id="scr03-decision-group">
+                  <div class="decision-option is-selected" data-decision-option="confirm">
+                    <div class="decision-option-head">
+                      <div class="decision-dot"></div>
+                      <div class="decision-title">Подтвердить сработавший индикатор</div>
+                    </div>
+                  </div>
+                  <div class="decision-option" data-decision-option="reject">
+                    <div class="decision-option-head">
+                      <div class="decision-dot"></div>
+                      <div class="decision-title">Отклонить сработавший индикатор</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="decision-save-row">
+                  <button id="scr03-decision-save" class="primary-btn" type="button">Сохранить решение</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Нормативная база для передачи дальше</div>
+                </div>
+                <span class="selection-count" data-selection-counter="saved">Сохранено 3 пункта НПА</span>
+              </div>
+              <div class="card-body scr03-summary-grid">
+                <div class="scr03-action-bar">
+                  <div class="status-line">
+                    <button class="secondary-btn" type="button" data-modal-open="scr03-npa-modal">Открыть справочник</button>
+                    <button id="scr03-clear-selection" class="ghost-btn" type="button">Очистить выбор</button>
+                  </div>
+                </div>
+
+                <div class="selection-result-card">
+                  <div class="detail-group-title">Итоговый результат выбора</div>
+                  <div id="scr03-selection-result-list" class="selected-list">
+                  <div class="selection-item">
+                    <div class="selection-name">Закон РФ №4979-1 «О ветеринарии» → статья 18 → пункт 1</div>
+                    <div class="selection-meta">`NPA-001-18-1` · выбран инспектором как базовое основание по изоляции больных животных</div>
+                  </div>
+                  <div class="selection-item">
+                    <div class="selection-name">Приказ Минсельхоза №281 → раздел 9 → пункт 9.2</div>
+                    <div class="selection-meta">`NPA-281-9-2` · подтвержден как профильный операционный пункт по порядку изоляции</div>
+                  </div>
+                  <div class="selection-item">
+                    <div class="selection-name">Постановление Правительства РФ №336 → раздел 4 → пункт 4.1</div>
+                    <div class="selection-meta">`PP-336-4-1` · добавлен вручную как основание для последующих действий по нарушению</div>
+                  </div>
+                  </div>
+                </div>
+
+                <div class="cta-row">
+                  <button class="secondary-btn" type="button" data-screen-jump="scr02">Вернуться к карточке нарушения</button>
+                  <button class="primary-btn" type="button" data-screen-jump="scr04">Перейти к доказательной базе</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="scr03-npa-modal" class="modal-overlay is-hidden" aria-hidden="true">
+      <div class="card modal-card" role="dialog" aria-modal="true" aria-labelledby="scr03-npa-title">
+        <div class="modal-head">
+          <div>
+            <div id="scr03-npa-title" class="modal-title">Справочник нормативной базы</div>
+          </div>
+          <button class="modal-close" type="button" aria-label="Закрыть" data-modal-close="scr03-npa-modal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="catalog-toolbar">
+            <div class="status-line" style="flex:1 1 680px">
+              <input class="field" value="Поиск по постановлению, статье, разделу или пункту">
+              <div class="chip">Тип: все документы</div>
+              <div class="chip">Статус: выбранные и рекомендованные</div>
+            </div>
+            <div class="status-line">
+              <button class="ghost-btn" type="button" data-tree-toggle="expand">Развернуть все</button>
+              <button class="ghost-btn" type="button" data-tree-toggle="collapse">Свернуть все</button>
+            </div>
+          </div>
+
+          <div class="catalog-overview">
+            <span class="chip">Каталог: 128 документов</span>
+            <span class="chip">413 разделов и статей</span>
+            <span class="chip">1 248 пунктов</span>
+          </div>
+
+          <div class="catalog-layout">
+            <div class="catalog-tree-panel">
+              <div class="catalog-tree-head">
+                <strong>Иерархический каталог НПА</strong>
+                <span class="selection-count" data-selection-counter="working">Выбрано 3 пункта НПА</span>
+              </div>
+              <div class="catalog-tree-scroll">
+                <div class="catalog-root">
+                  <details class="catalog-node" open>
+                    <summary>
+                      <div class="catalog-summary-main">
+                        <span class="catalog-chevron">›</span>
+                        <div class="catalog-summary-text">
+                          <div class="catalog-summary-title">Закон РФ №4979-1 «О ветеринарии»</div>
+                          <div class="catalog-summary-meta">Базовый закон, 18 статей, 42 доступных пункта для выбора</div>
+                        </div>
+                      </div>
+                      <span class="status-pill success" data-doc-count="vet-law">1 пункт выбран</span>
+                    </summary>
+                    <div class="tree-children">
+                      <details class="catalog-node section" open>
+                        <summary>
+                          <div class="catalog-summary-main">
+                            <span class="catalog-chevron">›</span>
+                            <div class="catalog-summary-text">
+                              <div class="catalog-summary-title">Статья 18. Меры по предупреждению и ликвидации заразных болезней животных</div>
+                              <div class="catalog-summary-meta">4 пункта в статье</div>
+                            </div>
+                          </div>
+                          <span class="tree-tag">Статья</span>
+                        </summary>
+                        <div class="tree-children">
+                          <div class="tree-point-list">
+                            <label class="tree-point selected">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="NPA-001-18-1" data-doc-id="vet-law" data-title="Закон РФ №4979-1 «О ветеринарии» → статья 18 → пункт 1" data-meta="`NPA-001-18-1` · выбран инспектором как базовое основание по изоляции больных животных" checked>
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 1. Изоляция больных животных и обязательное сообщение ветеринарной службе</span>
+                                <span class="catalog-point-meta">ID `NPA-001-18-1` · будет закреплен за нарушением после сохранения</span>
+                              </span>
+                            </label>
+                            <label class="tree-point">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="NPA-001-18-2" data-doc-id="vet-law" data-title="Закон РФ №4979-1 «О ветеринарии» → статья 18 → пункт 2" data-meta="`NPA-001-18-2` · дополнительный пункт исполнения предписаний ветеринарных специалистов">
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 2. Исполнение предписаний ветеринарных специалистов</span>
+                                <span class="catalog-point-meta">ID `NPA-001-18-2` · доступен для дополнительного выбора</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </details>
+                      <details class="catalog-node section">
+                        <summary>
+                          <div class="catalog-summary-main">
+                            <span class="catalog-chevron">›</span>
+                            <div class="catalog-summary-text">
+                              <div class="catalog-summary-title">Статья 19. Ограничительные меры и контроль исполнения</div>
+                              <div class="catalog-summary-meta">3 пункта в статье</div>
+                            </div>
+                          </div>
+                          <span class="tree-tag">Статья</span>
+                        </summary>
+                        <div class="tree-children">
+                          <div class="tree-point-list">
+                            <label class="tree-point">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="NPA-001-19-1" data-doc-id="vet-law" data-title="Закон РФ №4979-1 «О ветеринарии» → статья 19 → пункт 1" data-meta="`NPA-001-19-1` · контроль исполнения ограничительных мероприятий">
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 1. Контроль исполнения ограничительных мероприятий</span>
+                                <span class="catalog-point-meta">ID `NPA-001-19-1` · доступен в полном каталоге</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+
+                  <details class="catalog-node" open>
+                    <summary>
+                      <div class="catalog-summary-main">
+                        <span class="catalog-chevron">›</span>
+                        <div class="catalog-summary-text">
+                          <div class="catalog-summary-title">Приказ Минсельхоза №281</div>
+                          <div class="catalog-summary-meta">Профильный приказ по ограничительным мероприятиям, 12 разделов</div>
+                        </div>
+                      </div>
+                      <span class="status-pill info" data-doc-count="order-281">1 пункт выбран</span>
+                    </summary>
+                    <div class="tree-children">
+                      <details class="catalog-node section" open>
+                        <summary>
+                          <div class="catalog-summary-main">
+                            <span class="catalog-chevron">›</span>
+                            <div class="catalog-summary-text">
+                              <div class="catalog-summary-title">Раздел 9. Ограничительные мероприятия</div>
+                              <div class="catalog-summary-meta">6 пунктов в разделе</div>
+                            </div>
+                          </div>
+                          <span class="tree-tag recommended">Рекомендация</span>
+                        </summary>
+                        <div class="tree-children">
+                          <div class="tree-point-list">
+                            <label class="tree-point selected recommended">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="NPA-281-9-2" data-doc-id="order-281" data-title="Приказ Минсельхоза №281 → раздел 9 → пункт 9.2" data-meta="`NPA-281-9-2` · подтвержден как профильный операционный пункт по порядку изоляции" checked>
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 9.2. Порядок изоляции больных и подозреваемых животных</span>
+                                <span class="catalog-point-meta">ID `NPA-281-9-2` · рекомендован системой и подтвержден инспектором</span>
+                                <span class="tree-point-tags"><span class="tree-tag recommended">Рекомендован системой</span></span>
+                              </span>
+                            </label>
+                            <label class="tree-point">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="NPA-281-9-3" data-doc-id="order-281" data-title="Приказ Минсельхоза №281 → раздел 9 → пункт 9.3" data-meta="`NPA-281-9-3` · порядок наблюдения за контактной группой">
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 9.3. Порядок наблюдения за контактной группой</span>
+                                <span class="catalog-point-meta">ID `NPA-281-9-3` · может быть добавлен при необходимости</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+
+                  <details class="catalog-node" open>
+                    <summary>
+                      <div class="catalog-summary-main">
+                        <span class="catalog-chevron">›</span>
+                        <div class="catalog-summary-text">
+                          <div class="catalog-summary-title">Постановление Правительства РФ №336</div>
+                          <div class="catalog-summary-meta">Регламент инициирования дальнейших контрольных действий</div>
+                        </div>
+                      </div>
+                      <span class="status-pill warning" data-doc-count="pp-336">1 пункт выбран</span>
+                    </summary>
+                    <div class="tree-children">
+                      <details class="catalog-node section" open>
+                        <summary>
+                          <div class="catalog-summary-main">
+                            <span class="catalog-chevron">›</span>
+                            <div class="catalog-summary-text">
+                              <div class="catalog-summary-title">Раздел 4. Реакция на признаки нарушения</div>
+                              <div class="catalog-summary-meta">5 пунктов в разделе</div>
+                            </div>
+                          </div>
+                          <span class="tree-tag">Раздел</span>
+                        </summary>
+                        <div class="tree-children">
+                          <div class="tree-point-list">
+                            <label class="tree-point selected">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="PP-336-4-1" data-doc-id="pp-336" data-title="Постановление Правительства РФ №336 → раздел 4 → пункт 4.1" data-meta="`PP-336-4-1` · добавлен вручную как основание для последующих действий по нарушению" checked>
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 4.1. Основания для инициирования дальнейших действий</span>
+                                <span class="catalog-point-meta">ID `PP-336-4-1` · добавлен вручную из каталога</span>
+                              </span>
+                            </label>
+                            <label class="tree-point">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="PP-336-4-2" data-doc-id="pp-336" data-title="Постановление Правительства РФ №336 → раздел 4 → пункт 4.2" data-meta="`PP-336-4-2` · требования к оформлению последующих действий инспектора">
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 4.2. Требования к оформлению последующих действий инспектора</span>
+                                <span class="catalog-point-meta">ID `PP-336-4-2` · доступен для выбора</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+
+                  <details class="catalog-node">
+                    <summary>
+                      <div class="catalog-summary-main">
+                        <span class="catalog-chevron">›</span>
+                        <div class="catalog-summary-text">
+                          <div class="catalog-summary-title">Федеральный закон №248-ФЗ</div>
+                          <div class="catalog-summary-meta">Государственный контроль (надзор), общие процессуальные основания</div>
+                        </div>
+                      </div>
+                      <span class="status-pill">Нет выбранных пунктов</span>
+                    </summary>
+                    <div class="tree-children">
+                      <details class="catalog-node section">
+                        <summary>
+                          <div class="catalog-summary-main">
+                            <span class="catalog-chevron">›</span>
+                            <div class="catalog-summary-text">
+                              <div class="catalog-summary-title">Глава 8. Основания и процедуры</div>
+                              <div class="catalog-summary-meta">8 пунктов в главе</div>
+                            </div>
+                          </div>
+                          <span class="tree-tag">Глава</span>
+                        </summary>
+                        <div class="tree-children">
+                          <div class="tree-point-list">
+                            <label class="tree-point">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="248-FZ-8-3" data-doc-id="law-248" data-title="Федеральный закон №248-ФЗ → глава 8 → пункт 3" data-meta="`248-FZ-8-3` · основания проведения дальнейших надзорных действий">
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 3. Основания проведения дальнейших надзорных действий</span>
+                                <span class="catalog-point-meta">ID `248-FZ-8-3` · доступен в общем каталоге</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+
+                  <details class="catalog-node">
+                    <summary>
+                      <div class="catalog-summary-main">
+                        <span class="catalog-chevron">›</span>
+                        <div class="catalog-summary-text">
+                          <div class="catalog-summary-title">Ветеринарные правила №589</div>
+                          <div class="catalog-summary-meta">Профилактика, изоляция, учет и мониторинг очагов</div>
+                        </div>
+                      </div>
+                      <span class="status-pill">Нет выбранных пунктов</span>
+                    </summary>
+                    <div class="tree-children">
+                      <details class="catalog-node section">
+                        <summary>
+                          <div class="catalog-summary-main">
+                            <span class="catalog-chevron">›</span>
+                            <div class="catalog-summary-text">
+                              <div class="catalog-summary-title">Раздел 6. Локализация очага</div>
+                              <div class="catalog-summary-meta">5 пунктов в разделе</div>
+                            </div>
+                          </div>
+                          <span class="tree-tag">Раздел</span>
+                        </summary>
+                        <div class="tree-children">
+                          <div class="tree-point-list">
+                            <label class="tree-point">
+                              <input class="tree-checkbox" type="checkbox" data-npa-choice value="VR-589-6-4" data-doc-id="vr-589" data-title="Ветеринарные правила №589 → раздел 6 → пункт 6.4" data-meta="`VR-589-6-4` · меры локализации и учета контактных животных">
+                              <span class="tree-point-body">
+                                <span class="tree-point-title">Пункт 6.4. Меры локализации и учета контактных животных</span>
+                                <span class="catalog-point-meta">ID `VR-589-6-4` · доступен в полном каталоге</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  </details>
+
+                  <div class="catalog-note-line">В прототипе показана часть каталога. Рабочий сценарий предполагает полный scrollable-список из 100+ документов с вложенными разделами, статьями и пунктами, доступными через поиск и иерархическое раскрытие.</div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="catalog-selection-panel">
+              <div class="catalog-selection-head">
+                <strong>Текущий набор выбора</strong>
+                <span class="selection-count" data-selection-counter="working-side">Выбрано 3 пункта НПА</span>
+              </div>
+              <div class="catalog-selection-body">
+                <div class="helper-box">Справа отображается рабочий набор пунктов, отмеченных в дереве. После нажатия «Сохранить выбор» именно этот список будет зафиксирован за нарушением и перенесен на следующий шаг.</div>
+                <div id="catalog-preview-list" class="selection-preview-list">
+                  <div class="selection-item">
+                    <div class="selection-name">Закон РФ №4979-1 «О ветеринарии» → статья 18 → пункт 1</div>
+                    <div class="selection-meta">`NPA-001-18-1` · выбран инспектором как базовое основание по изоляции больных животных</div>
+                  </div>
+                  <div class="selection-item">
+                    <div class="selection-name">Приказ Минсельхоза №281 → раздел 9 → пункт 9.2</div>
+                    <div class="selection-meta">`NPA-281-9-2` · подтвержден как профильный операционный пункт по порядку изоляции</div>
+                  </div>
+                  <div class="selection-item">
+                    <div class="selection-name">Постановление Правительства РФ №336 → раздел 4 → пункт 4.1</div>
+                    <div class="selection-meta">`PP-336-4-1` · добавлен вручную как основание для последующих действий по нарушению</div>
+                  </div>
+                </div>
+                <div class="payload-box"><strong>Логика сохранения:</strong> инспектор может открывать любые ветки дерева, выбирать и снимать флажки у конкретных пунктов, просматривать промежуточный состав справа и только после этого фиксировать выбор кнопкой внизу окна.</div>
+              </div>
+            </aside>
+          </div>
+
+          <div class="catalog-footer">
+            <div class="selection-count" data-selection-counter="working-footer">Выбрано 3 пункта НПА</div>
+            <div class="status-line">
+              <button class="secondary-btn" type="button" data-catalog-cancel="scr03-npa-modal">Отмена</button>
+              <button class="primary-btn" type="button" data-catalog-save="scr03-npa-modal">Сохранить выбор</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="annotation">
+      <strong>SCR-03</strong>
+      Шаг 1 собран как линейный сценарий: инспектор подтверждает индикатор в самостоятельном блоке, открывает каталог НПА в pop-up, сохраняет множественный выбор пунктов и сразу видит итоговый результат, который уйдет на следующий шаг.
+    </div>
+  </div>
+
+  <div id="scr04" class="screen">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="burger"><span></span></div>
+        <div class="topbar-title">Цифровой индикатор №1 — рабочее пространство АРМа</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" title="Экспорт">↓</button>
+        <button class="icon-btn" type="button" title="Поделиться">⤴</button>
+        <button class="icon-btn" type="button" title="Справка">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="shell">
+        <div class="shell-inner">
+          <section class="context-card">
+            <div class="context-main">
+              <div class="eyebrow">
+                <span>АРМ инспектора</span>
+                <span class="soft-pill">Шаг 2: доказательная база</span>
+              </div>
+              <div class="signal-line">
+                <span class="badge badge-accent">Индикатор подтвержден</span>
+                <span class="badge badge-info">НПА зафиксированы</span>
+                <span class="badge">Шаг 2</span>
+              </div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-card">
+                <div class="meta-label">ХС</div>
+                <div class="meta-value">Крымская Анастасия Олеговна</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Площадка</div>
+                <div class="meta-value">ИП ГКФХ Крымская А.О.</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Нарушение</div>
+                <div class="meta-value">2 117 110 588</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Текущий статус</div>
+                <div class="meta-value">Ожидание первичного запроса доказательной базы</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="toolbar">
+            <div class="toolbar-left">
+              <div class="state-switch" aria-label="Состояние доказательной базы">
+                <button class="active" type="button" data-state-group="scr04-flow" data-state-value="new">Не запрошен</button>
+                <button type="button" data-state-group="scr04-flow" data-state-value="requested">Запрос отправлен</button>
+                <button type="button" data-state-group="scr04-flow" data-state-value="received">Пакет получен</button>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <div class="chip">Шаг 2</div>
+            </div>
+          </section>
+
+          <section class="stepper">
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Подтверждение</div><div class="step-desc">Шаг завершен.</div></div>
+            <div class="step-card is-active"><div class="step-index">2</div><div class="step-name">Доказательная база</div><div class="step-desc">Запрос и прием пакета.</div></div>
+            <div class="step-card"><div class="step-index">3</div><div class="step-name">LLM-документы</div><div class="step-desc">Работа с Word-документами.</div></div>
+            <div class="step-card"><div class="step-index">4</div><div class="step-name">Оценка</div><div class="step-desc">Фидбек по генерации.</div></div>
+            <div class="step-card"><div class="step-index">5</div><div class="step-name">ГосТех + КНМ</div><div class="step-desc">Финальная отправка.</div></div>
+          </section>
+
+          <section class="grid-70-30">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Шаг 2 — Доказательная база</div>
+                </div>
+                <span class="status-pill warning">Состояние</span>
+              </div>
+              <div class="card-body">
+                <div class="state-pane active" data-state-pane="scr04-flow" data-state-value="new">
+                  <div class="fact-grid">
+                    <div class="fact-card"><div class="mini-label">Источник обмена</div><div class="fact-value">ИВИС / ГосТех</div></div>
+                    <div class="fact-card"><div class="mini-label">Первичный запрос</div><div class="fact-value">Еще не отправлен</div></div>
+                    <div class="fact-card"><div class="mini-label">Транспорт</div><div class="fact-value">SOAP + attachment</div></div>
+                  </div>
+                  <div class="upload-box"><strong>Пакет документов не получен</strong></div>
+                  <div class="cta-row">
+                    <button class="primary-btn" type="button">Запросить пакет документов</button>
+                    <button class="secondary-btn" type="button">Проверить входящий ответ</button>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr04-flow" data-state-value="requested">
+                  <div class="fact-grid">
+                    <div class="fact-card"><div class="mini-label">message_id</div><div class="fact-value">IVIS-OUT-2026-03-26-00084</div></div>
+                    <div class="fact-card"><div class="mini-label">Дата отправки</div><div class="fact-value">26.03.2026 09:18</div></div>
+                    <div class="fact-card"><div class="mini-label">Статус</div><div class="fact-value">Ожидание входящего пакета</div></div>
+                  </div>
+                  <div class="upload-box"><strong>Запрос отправлен</strong></div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Обновить статус</button>
+                    <button class="secondary-btn" type="button">Запросить пакет повторно</button>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr04-flow" data-state-value="received">
+                  <div class="fact-grid">
+                    <div class="fact-card"><div class="mini-label">message_id</div><div class="fact-value">IVIS-OUT-2026-03-26-00084</div></div>
+                    <div class="fact-card"><div class="mini-label">Получено файлов</div><div class="fact-value">4</div></div>
+                    <div class="fact-card"><div class="mini-label">Статус</div><div class="fact-value">Пакет получен</div></div>
+                  </div>
+                  <div class="file-list">
+                    <div class="file-item">
+                      <div class="file-main">
+                        <div class="file-icon">📄</div>
+                        <div>
+                          <div class="file-name">Лабораторное заключение Сирано</div>
+                          <div class="file-meta">PDF · № D1447-26 ОВ · 04.02.2026</div>
+                        </div>
+                      </div>
+                      <div class="file-actions">
+                        <button class="secondary-btn" type="button">Просмотр</button>
+                        <button class="secondary-btn" type="button">Скачать</button>
+                      </div>
+                    </div>
+                    <div class="file-item">
+                      <div class="file-main">
+                        <div class="file-icon">📄</div>
+                        <div>
+                          <div class="file-name">Карточка падежа Хорриот</div>
+                          <div class="file-meta">XLSX · № RU12aa00RB5 · 23.02.2026</div>
+                        </div>
+                      </div>
+                      <div class="file-actions">
+                        <button class="secondary-btn" type="button">Скачать</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Запросить пакет повторно</button>
+                    <button class="primary-btn" type="button" data-screen-jump="scr04b">Перейти к LLM</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="detail-panel">
+              <div class="detail-head">
+                <div class="detail-title">Статус шага</div>
+              </div>
+              <div class="detail-body">
+                <div class="state-pane active" data-state-pane="scr04-flow" data-state-value="new">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">Индикатор</div><div class="detail-item-value">Подтвержден</div></div>
+                    <div class="detail-item"><div class="detail-item-label">НПА</div><div class="detail-item-value">3 пункта зафиксированы</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Следующее действие</div><div class="detail-item-value">Отправить первый запрос</div></div>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr04-flow" data-state-value="requested">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">message_id</div><div class="detail-item-value">IVIS-OUT-2026-03-26-00084</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Отправлено</div><div class="detail-item-value">26.03.2026 09:18</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Следующее действие</div><div class="detail-item-value">Дождаться входящего ответа</div></div>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr04-flow" data-state-value="received">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">message_id</div><div class="detail-item-value">IVIS-OUT-2026-03-26-00084</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Состав пакета</div><div class="detail-item-value">4 файла</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Следующий шаг</div><div class="detail-item-value">Переход к LLM</div></div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scr04b" class="screen">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="burger"><span></span></div>
+        <div class="topbar-title">Цифровой индикатор №1 — оценка качества генерации</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" title="Экспорт">↓</button>
+        <button class="icon-btn" type="button" title="Поделиться">⤴</button>
+        <button class="icon-btn" type="button" title="Справка">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="shell">
+        <div class="shell-inner">
+          <section class="context-card">
+            <div class="context-main">
+              <div class="eyebrow">
+                <span>Шаги 3-4</span>
+                <span class="soft-pill">Документы LLM и оценка генерации</span>
+              </div>
+              <div class="signal-line">
+                <span class="badge badge-info">LLM</span>
+                <span class="badge">Word</span>
+                <span class="badge badge-accent">Шаги 3-4</span>
+              </div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-card">
+                <div class="meta-label">Исходная версия</div>
+                <div class="meta-value">LLM-DRAFT-01.docx</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Финальная версия</div>
+                <div class="meta-value">FIN-INSPECTOR-01.docx</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Статус LLM</div>
+                <div class="meta-value">Документы сформированы</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Статус оценки</div>
+                <div class="meta-value">Готова к отправке</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="toolbar">
+            <div class="toolbar-left">
+              <div class="state-switch" aria-label="Состояние LLM">
+                <button class="active" type="button" data-state-group="scr04b-flow" data-state-value="draft">Черновик получен</button>
+                <button type="button" data-state-group="scr04b-flow" data-state-value="final">Финальная версия</button>
+                <button type="button" data-state-group="scr04b-flow" data-state-value="feedback">Оценка отправлена</button>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <div class="chip">LLM-DRAFT-01.docx</div>
+            </div>
+          </section>
+
+          <section class="stepper">
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Подтверждение</div><div class="step-desc">Решение сохранено.</div></div>
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Доказательная база</div><div class="step-desc">Пакет получен.</div></div>
+            <div class="step-card is-active"><div class="step-index">3</div><div class="step-name">LLM-документы</div><div class="step-desc">Word и финальная редакция.</div></div>
+            <div class="step-card is-active"><div class="step-index">4</div><div class="step-name">Оценка</div><div class="step-desc">Рейтинг и комментарий.</div></div>
+            <div class="step-card"><div class="step-index">5</div><div class="step-name">ГосТех + КНМ</div><div class="step-desc">Готовность пакета.</div></div>
+          </section>
+
+          <section class="grid-70-30">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Документы LLM и оценка</div>
+                </div>
+                <span class="status-pill success">Состояние</span>
+              </div>
+              <div class="card-body">
+                <div class="state-pane active" data-state-pane="scr04b-flow" data-state-value="draft">
+                  <div class="version-grid">
+                    <div class="version-card source">
+                      <div class="version-label">Документ от LLM</div>
+                      <div class="version-name">Мотивированное представление о проведении проверки</div>
+                      <div class="cta-row" style="justify-content:flex-start; margin-top:12px">
+                        <button class="secondary-btn" type="button">Скачать Word</button>
+                        <button class="secondary-btn" type="button">Запросить повторно</button>
+                      </div>
+                    </div>
+                    <div class="version-card final">
+                      <div class="version-label">Финальная редакция инспектора</div>
+                      <div class="version-name">Файл еще не загружен</div>
+                      <div class="cta-row" style="justify-content:flex-start; margin-top:12px">
+                        <button class="primary-btn" type="button">Прикрепить финальную версию</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr04b-flow" data-state-value="final">
+                  <div class="version-grid">
+                    <div class="version-card source">
+                      <div class="version-label">Документ от LLM</div>
+                      <div class="version-name">LLM-DRAFT-01.docx</div>
+                      <div class="cta-row" style="justify-content:flex-start; margin-top:12px">
+                        <button class="secondary-btn" type="button">Скачать Word</button>
+                      </div>
+                    </div>
+                    <div class="version-card final done">
+                      <div class="version-label">Финальная редакция инспектора</div>
+                      <div class="version-name">FIN-INSPECTOR-01.docx</div>
+                      <div class="cta-row" style="justify-content:flex-start; margin-top:12px">
+                        <button class="secondary-btn" type="button">Скачать финальную версию</button>
+                        <button class="secondary-btn" type="button">Заменить файл</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="mini-label">Оценка качества</div>
+                    <div class="rating-row">
+                      <button class="rating-btn" type="button">1</button>
+                      <button class="rating-btn" type="button">2</button>
+                      <button class="rating-btn" type="button">3</button>
+                      <button class="rating-btn active" type="button">4</button>
+                      <button class="rating-btn" type="button">5</button>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="mini-label">Комментарий</div>
+                    <textarea class="field-textarea">Структура документа релевантна, потребовалась редакция реквизитов и мотивировочной части.</textarea>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Отправить оценку</button>
+                    <button class="primary-btn" type="button" data-screen-jump="scr05">Перейти к шагу 5</button>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr04b-flow" data-state-value="feedback">
+                  <div class="version-grid">
+                    <div class="version-card source done">
+                      <div class="version-label">Исходная версия</div>
+                      <div class="version-name">LLM-DRAFT-01.docx</div>
+                    </div>
+                    <div class="version-card final done">
+                      <div class="version-label">Финальная версия</div>
+                      <div class="version-name">FIN-INSPECTOR-01.docx</div>
+                    </div>
+                  </div>
+                  <div class="fact-grid">
+                    <div class="fact-card"><div class="mini-label">Оценка</div><div class="fact-value">4 / 5</div></div>
+                    <div class="fact-card"><div class="mini-label">Статус feedback</div><div class="fact-value">Отправлено</div></div>
+                    <div class="fact-card"><div class="mini-label">Следующий шаг</div><div class="fact-value">Формирование пакета</div></div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Скачать версии</button>
+                    <button class="secondary-btn" type="button">Отправить повторно</button>
+                    <button class="primary-btn" type="button" data-screen-jump="scr05">Перейти к шагу 5</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="detail-panel">
+              <div class="detail-head">
+                <div class="detail-title">Статус шага</div>
+              </div>
+              <div class="detail-body">
+                <div class="state-pane active" data-state-pane="scr04b-flow" data-state-value="draft">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">Статус LLM</div><div class="detail-item-value">Черновик получен</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Финальный файл</div><div class="detail-item-value">Не загружен</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Следующее действие</div><div class="detail-item-value">Загрузить финальную версию</div></div>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr04b-flow" data-state-value="final">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">Черновик</div><div class="detail-item-value">LLM-DRAFT-01.docx</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Финальная версия</div><div class="detail-item-value">FIN-INSPECTOR-01.docx</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Следующее действие</div><div class="detail-item-value">Отправить оценку</div></div>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr04b-flow" data-state-value="feedback">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">Feedback</div><div class="detail-item-value">Отправлен</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Оценка</div><div class="detail-item-value">4 / 5</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Следующий шаг</div><div class="detail-item-value">Перейти к отправке</div></div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scr05" class="screen">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="burger"><span></span></div>
+        <div class="topbar-title">Цифровой индикатор №1 — отправка пакета в ГосТех и КНМ</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" title="Экспорт">↓</button>
+        <button class="icon-btn" type="button" title="Поделиться">⤴</button>
+        <button class="icon-btn" type="button" title="Справка">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="shell">
+        <div class="shell-inner">
+          <section class="context-card">
+            <div class="context-main">
+              <div class="eyebrow">
+                <span>Шаг 5</span>
+                <span class="soft-pill">Отправка полного пакета в ГосТех</span>
+              </div>
+              <div class="signal-line">
+                <span class="badge badge-accent">Итоговая редакция загружена</span>
+                <span class="badge">Шаг 5</span>
+              </div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-card">
+                <div class="meta-label">XML пакет</div>
+                <div class="meta-value">GT-PACK-2026-00184.xml</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Транспорт</div>
+                <div class="meta-value">SOAP через ИВИС</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="toolbar">
+            <div class="toolbar-left">
+              <div class="state-switch" aria-label="Состояние отправки">
+                <button class="active" type="button" data-state-group="scr05-flow" data-state-value="draft">Черновик пакета</button>
+                <button type="button" data-state-group="scr05-flow" data-state-value="ready">Готов к отправке</button>
+                <button type="button" data-state-group="scr05-flow" data-state-value="sent">Отправлено</button>
+                <button type="button" data-state-group="scr05-flow" data-state-value="knm">КНМ завершено</button>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <div class="chip">GT-PACK-2026-00184.xml</div>
+            </div>
+          </section>
+
+          <section class="stepper">
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Подтверждение</div><div class="step-desc">Шаг завершен.</div></div>
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Доказательная база</div><div class="step-desc">Пакет файлов получен.</div></div>
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Документы LLM</div><div class="step-desc">Финальная версия загружена.</div></div>
+            <div class="step-card is-done"><div class="step-index">✓</div><div class="step-name">Оценка</div><div class="step-desc">Отправляется независимо.</div></div>
+            <div class="step-card is-active"><div class="step-index">5</div><div class="step-name">ГосТех + КНМ</div><div class="step-desc">Пакет готов к отправке и последующему трекингу.</div></div>
+          </section>
+
+          <section class="grid-70-30">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Состав финального пакета</div>
+                </div>
+                <span class="status-pill success">Состояние</span>
+              </div>
+              <div class="card-body">
+                <div class="state-pane active" data-state-pane="scr05-flow" data-state-value="draft">
+                  <div class="manifest-list">
+                    <div class="manifest-item"><div><div class="manifest-name">XML пакет</div><div class="manifest-desc">GT-PACK-2026-00184.xml</div></div><span class="status-pill warning">Черновик</span></div>
+                    <div class="manifest-item"><div><div class="manifest-name">Пакет доказательной базы</div><div class="manifest-desc">4 файла</div></div><span class="status-pill success">Готово</span></div>
+                    <div class="manifest-item"><div><div class="manifest-name">Финальная редакция инспектора</div><div class="manifest-desc">FIN-INSPECTOR-01.docx</div></div><span class="status-pill success">Готово</span></div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Прикрепить файл</button>
+                    <button class="secondary-btn" type="button">Проверить XML</button>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr05-flow" data-state-value="ready">
+                  <div class="manifest-list">
+                    <div class="manifest-item"><div><div class="manifest-name">XML пакет</div><div class="manifest-desc">GT-PACK-2026-00184.xml</div></div><span class="status-pill success">Готово</span></div>
+                    <div class="manifest-item"><div><div class="manifest-name">Пакет доказательной базы</div><div class="manifest-desc">4 файла</div></div><span class="status-pill success">Готово</span></div>
+                    <div class="manifest-item"><div><div class="manifest-name">Финальная редакция инспектора</div><div class="manifest-desc">FIN-INSPECTOR-01.docx</div></div><span class="status-pill success">Готово</span></div>
+                    <div class="manifest-item"><div><div class="manifest-name">Дополнительные вложения</div><div class="manifest-desc">INSPECTOR-NOTE-01.docx</div></div><span class="status-pill info">1 файл</span></div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Прикрепить дополнительный файл</button>
+                    <button class="secondary-btn" type="button">Проверить XML и вложения</button>
+                    <button class="primary-btn" type="button">Отправить пакет в ГосТех</button>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr05-flow" data-state-value="sent">
+                  <div class="fact-grid">
+                    <div class="fact-card"><div class="mini-label">message_id</div><div class="fact-value">IVIS-OUT-2026-03-26-00091</div></div>
+                    <div class="fact-card"><div class="mini-label">Дата отправки</div><div class="fact-value">26.03.2026 11:08</div></div>
+                    <div class="fact-card"><div class="mini-label">Статус</div><div class="fact-value">Ожидание КНМ</div></div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Скачать пакет</button>
+                    <button class="secondary-btn" type="button">Повторить отправку</button>
+                  </div>
+                </div>
+
+                <div class="state-pane" data-state-pane="scr05-flow" data-state-value="knm">
+                  <div class="fact-grid">
+                    <div class="fact-card"><div class="mini-label">КНМ</div><div class="fact-value">Завершено</div></div>
+                    <div class="fact-card"><div class="mini-label">Результат</div><div class="fact-value">Пакет принят</div></div>
+                    <div class="fact-card"><div class="mini-label">Дата</div><div class="fact-value">27.03.2026 10:42</div></div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Скачать подтверждение</button>
+                    <button class="secondary-btn" type="button" data-screen-jump="scr06">Открыть журнал</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="detail-panel">
+              <div class="detail-head">
+                <div class="detail-title">Статус КНМ</div>
+              </div>
+              <div class="detail-body">
+                <div class="state-pane active" data-state-pane="scr05-flow" data-state-value="draft">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">Статус</div><div class="detail-item-value">Черновик</div></div>
+                    <div class="detail-item"><div class="detail-item-label">XML</div><div class="detail-item-value">Не валидирован</div></div>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr05-flow" data-state-value="ready">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">Статус</div><div class="detail-item-value">Готов к отправке</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Файлов</div><div class="detail-item-value">6</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Проверка</div><div class="detail-item-value">Пройдена</div></div>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr05-flow" data-state-value="sent">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">message_id</div><div class="detail-item-value">IVIS-OUT-2026-03-26-00091</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Состояние</div><div class="detail-item-value">Ожидание результата КНМ</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Последнее обновление</div><div class="detail-item-value">26.03.2026 11:24</div></div>
+                  </div>
+                  <div class="cta-row">
+                    <button class="secondary-btn" type="button">Обновить статус</button>
+                    <button class="secondary-btn" type="button" data-screen-jump="scr06">Открыть журнал обменов</button>
+                  </div>
+                </div>
+                <div class="state-pane" data-state-pane="scr05-flow" data-state-value="knm">
+                  <div class="detail-list">
+                    <div class="detail-item"><div class="detail-item-label">message_id</div><div class="detail-item-value">IVIS-OUT-2026-03-26-00091</div></div>
+                    <div class="detail-item"><div class="detail-item-label">КНМ</div><div class="detail-item-value">Завершено</div></div>
+                    <div class="detail-item"><div class="detail-item-label">Итог</div><div class="detail-item-value">Принято во внешнем контуре</div></div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scr06" class="screen">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="burger"><span></span></div>
+        <div class="topbar-title">Цифровой индикатор №1 — журнал интеграционных обменов</div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" type="button" title="Экспорт">↓</button>
+        <button class="icon-btn" type="button" title="Поделиться">⤴</button>
+        <button class="icon-btn" type="button" title="Справка">?</button>
+      </div>
+    </header>
+
+    <div class="page">
+      <div class="shell">
+        <div class="shell-inner">
+          <section class="context-card">
+            <div class="context-main">
+              <div class="eyebrow">
+                <span>Журнал обменов</span>
+              </div>
+            </div>
+            <div class="meta-grid">
+              <div class="meta-card">
+                <div class="meta-label">Нарушение</div>
+                <div class="meta-value">2 117 110 588</div>
+              </div>
+              <div class="meta-card">
+                <div class="meta-label">Цепочка</div>
+                <div class="meta-value">Подтверждение → доказательства → LLM → ГосТех</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="toolbar">
+            <div class="toolbar-left">
+              <input class="search-box" type="text" value="violation_id = 2117110588 / message_id / EVB-2026-000184" aria-label="Поиск">
+              <div class="chip">Система: все</div>
+              <div class="chip">Статус: все</div>
+            </div>
+            <div class="toolbar-right">
+              <button class="ghost-btn" type="button">Экспорт журнала</button>
+              <button class="ghost-btn" type="button">Обновить</button>
+            </div>
+          </section>
+
+          <section class="log-workspace">
+            <div class="card">
+              <div class="table-toolbar">
+                <div>
+                  <div class="table-title">Журнал обменов</div>
+                </div>
+                <div class="chip">6 событий</div>
+              </div>
+              <div class="table-wrap" style="max-height:none">
+                <table class="log-table">
+                  <thead>
+                    <tr>
+                      <th class="w-m">Дата / время</th>
+                      <th class="w-m">Этап</th>
+                      <th class="w-m">Направление</th>
+                      <th class="w-l">message_id</th>
+                      <th class="w-l">Пакет / файл</th>
+                      <th class="w-m">Статус</th>
+                      <th class="w-s">Результат</th>
+                      <th class="w-xl">Комментарий</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="is-selected" data-log-title="Подтверждение индикатора" data-log-time="26.03.2026 09:12" data-log-id="INT-LOCAL-0001" data-log-status="Подтверждено" data-log-payload="Решение инспектора + НПА" data-log-result="OK" data-log-extra="Сохранены решение, статус и множественный выбор НПА.">
+                      <td class="nowrap">26.03.2026 09:12</td>
+                      <td>Подтверждение индикатора</td>
+                      <td>Portal → AS</td>
+                      <td class="nowrap">INT-LOCAL-0001</td>
+                      <td class="text-left">Решение инспектора + НПА</td>
+                      <td><span class="status-pill success">Подтверждено</span></td>
+                      <td>OK</td>
+                      <td class="text-left">Сохранены решение, статус, комментарий и множественный выбор НПА.</td>
+                    </tr>
+                    <tr data-log-title="Доказательная база" data-log-time="26.03.2026 09:18" data-log-id="IVIS-OUT-2026-03-26-00084" data-log-status="Выполнено" data-log-payload="Запрос пакета доказательной базы" data-log-result="4 файла" data-log-extra="Attachment приняты, сохранены и привязаны к violation_id.">
+                      <td class="nowrap">26.03.2026 09:18</td>
+                      <td>Доказательная база</td>
+                      <td>AS → ИВИС → ГосТех</td>
+                      <td class="nowrap">IVIS-OUT-2026-03-26-00084</td>
+                      <td class="text-left">Запрос пакета доказательной базы</td>
+                      <td><span class="status-pill info">Выполнено</span></td>
+                      <td>4 файла</td>
+                      <td class="text-left">Attachment приняты, сохранены и привязаны к violation_id.</td>
+                    </tr>
+                    <tr data-log-title="LLM" data-log-time="26.03.2026 09:34" data-log-id="IVIS-OUT-2026-03-26-00087" data-log-status="Успешно" data-log-payload="XML + evidence package" data-log-result="2 DOCX" data-log-extra="Черновики документов сохранены как исходные версии.">
+                      <td class="nowrap">26.03.2026 09:34</td>
+                      <td>LLM</td>
+                      <td>AS → ИВИС → LLM</td>
+                      <td class="nowrap">IVIS-OUT-2026-03-26-00087</td>
+                      <td class="text-left">XML + evidence package</td>
+                      <td><span class="status-pill info">Успешно</span></td>
+                      <td>2 DOCX</td>
+                      <td class="text-left">Черновики документов сохранены как исходные версии.</td>
+                    </tr>
+                    <tr data-log-title="Загрузка финальной редакции" data-log-time="26.03.2026 10:05" data-log-id="INT-LOCAL-0002" data-log-status="Загружено" data-log-payload="FIN-INSPECTOR-01.docx" data-log-result="OK" data-log-extra="Финальная версия связана с исходным пакетом документов.">
+                      <td class="nowrap">26.03.2026 10:05</td>
+                      <td>Загрузка финальной редакции</td>
+                      <td>Portal → AS</td>
+                      <td class="nowrap">INT-LOCAL-0002</td>
+                      <td class="text-left">FIN-INSPECTOR-01.docx</td>
+                      <td><span class="status-pill warning">Загружено</span></td>
+                      <td>OK</td>
+                      <td class="text-left">Финальная версия связана с исходным пакетом документов.</td>
+                    </tr>
+                    <tr data-log-title="Оценка генерации" data-log-time="26.03.2026 10:22" data-log-id="IVIS-OUT-2026-03-26-00089" data-log-status="Отправлено" data-log-payload="Rating 4 + две версии документа" data-log-result="ACK" data-log-extra="Поток обратной связи не блокирует шаг отправки в ГосТех.">
+                      <td class="nowrap">26.03.2026 10:22</td>
+                      <td>Оценка генерации</td>
+                      <td>AS → ИВИС → LLM</td>
+                      <td class="nowrap">IVIS-OUT-2026-03-26-00089</td>
+                      <td class="text-left">Rating 4 + две версии документа</td>
+                      <td><span class="status-pill success">Отправлено</span></td>
+                      <td>ACK</td>
+                      <td class="text-left">Поток обратной связи не блокирует шаг отправки в ГосТех.</td>
+                    </tr>
+                    <tr data-log-title="ГосТех + КНМ" data-log-time="26.03.2026 11:08" data-log-id="IVIS-OUT-2026-03-26-00091" data-log-status="Ожидание КНМ" data-log-payload="GT-PACK-2026-00184.xml + 6 файлов" data-log-result="WAIT" data-log-extra="Пакет отправлен, ожидается входящий статус по КНМ или ручное обновление.">
+                      <td class="nowrap">26.03.2026 11:08</td>
+                      <td>ГосТех + КНМ</td>
+                      <td>AS → ИВИС → ГосТех</td>
+                      <td class="nowrap">IVIS-OUT-2026-03-26-00091</td>
+                      <td class="text-left">GT-PACK-2026-00184.xml + 6 файлов</td>
+                      <td><span class="status-pill danger">Ожидание КНМ</span></td>
+                      <td>WAIT</td>
+                      <td class="text-left">Пакет отправлен, ожидается входящий статус по КНМ или ручное обновление.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <aside class="detail-panel">
+              <div class="detail-head">
+                <div id="log-detail-title" class="detail-title">Подтверждение индикатора</div>
+              </div>
+              <div class="detail-body">
+                <div class="detail-list">
+                  <div class="detail-item"><div class="detail-item-label">Дата / время</div><div id="log-detail-time" class="detail-item-value">26.03.2026 09:12</div></div>
+                  <div class="detail-item"><div class="detail-item-label">message_id</div><div id="log-detail-id" class="detail-item-value">INT-LOCAL-0001</div></div>
+                  <div class="detail-item"><div class="detail-item-label">Статус</div><div id="log-detail-status" class="detail-item-value">Подтверждено</div></div>
+                  <div class="detail-item"><div class="detail-item-label">Пакет / файл</div><div id="log-detail-payload" class="detail-item-value">Решение инспектора + НПА</div></div>
+                  <div class="detail-item"><div class="detail-item-label">Результат</div><div id="log-detail-result" class="detail-item-value">OK</div></div>
+                  <div class="detail-item"><div class="detail-item-label">Комментарий</div><div id="log-detail-extra" class="detail-item-value">Сохранены решение, статус и множественный выбор НПА.</div></div>
+                </div>
+                <div class="cta-row">
+                  <button class="secondary-btn" type="button">Скопировать message_id</button>
+                  <button class="secondary-btn" type="button">Экспорт строки</button>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const demoButtons = document.querySelectorAll(".demo-nav-btn");
+  const screens = document.querySelectorAll(".screen");
+  const sourceButtons = document.querySelectorAll(".source-tab-btn");
+  const panes = document.querySelectorAll(".tab-pane");
+  const dataRows = document.querySelectorAll("tbody tr[data-title]");
+  const modalOpenButtons = document.querySelectorAll("[data-modal-open]");
+  const modalCloseButtons = document.querySelectorAll("[data-modal-close]");
+  const catalogChoices = Array.from(document.querySelectorAll("[data-npa-choice]"));
+  const catalogToggleButtons = document.querySelectorAll("[data-tree-toggle]");
+  const catalogCancelButtons = document.querySelectorAll("[data-catalog-cancel]");
+  const catalogSaveButtons = document.querySelectorAll("[data-catalog-save]");
+  const catalogPreviewList = document.getElementById("catalog-preview-list");
+  const savedSelectionList = document.getElementById("scr03-selection-result-list");
+  const selectionCounterEls = document.querySelectorAll("[data-selection-counter]");
+  const catalogDetails = document.querySelectorAll("#scr03-npa-modal details.catalog-node");
+  const decisionOptions = document.querySelectorAll("[data-decision-option]");
+  const decisionSaveButton = document.getElementById("scr03-decision-save");
+  const decisionStatus = document.getElementById("scr03-decision-status");
+  const clearSelectionButton = document.getElementById("scr03-clear-selection");
+  const stateButtons = document.querySelectorAll("[data-state-group][data-state-value]");
+  const logRows = document.querySelectorAll(".log-table tbody tr[data-log-title]");
+  let savedSelectionIds = catalogChoices.filter((input) => input.checked).map((input) => input.value);
+  let currentDecision = "confirm";
+  let savedDecision = null;
+
+  function formatPointCount(count, prefix) {
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    let word = "пунктов";
+    if (mod10 === 1 && mod100 !== 11) {
+      word = "пункт";
+    } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+      word = "пункта";
+    }
+    return `${prefix} ${count} ${word} НПА`;
+  }
+
+  function getChoicePayload(input) {
+    return {
+      id: input.value,
+      docId: input.dataset.docId || "",
+      title: input.dataset.title || "",
+      meta: input.dataset.meta || ""
+    };
+  }
+
+  function renderSelectionItems(container, items) {
+    if (!container) return;
+    if (!items.length) {
+      container.innerHTML = '<div class="catalog-empty-state">Пока не выбрано ни одного пункта. Раскройте нужный документ в каталоге слева и отметьте конкретные пункты постановлений или правил.</div>';
+      return;
+    }
+    container.innerHTML = items.map((item) => `
+      <div class="selection-item">
+        <div class="selection-name">${item.title}</div>
+        <div class="selection-meta">${item.meta}</div>
+      </div>
+    `).join("");
+  }
+
+  function syncChoiceVisuals() {
+    catalogChoices.forEach((input) => {
+      const point = input.closest(".tree-point");
+      if (point) point.classList.toggle("selected", input.checked);
+    });
+  }
+
+  function updateDocCounters(inputs) {
+    const countsByDoc = {};
+    inputs.forEach((input) => {
+      const docId = input.dataset.docId || "";
+      countsByDoc[docId] = (countsByDoc[docId] || 0) + 1;
+    });
+    document.querySelectorAll("[data-doc-count]").forEach((badge) => {
+      const count = countsByDoc[badge.dataset.docCount] || 0;
+      const mod10 = count % 10;
+      const mod100 = count % 100;
+      let word = "пунктов";
+      if (mod10 === 1 && mod100 !== 11) {
+        word = "пункт";
+      } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        word = "пункта";
+      }
+      badge.textContent = count ? `${count} ${word} выбрано` : "Нет выбранных пунктов";
+    });
+  }
+
+  function updateSelectionCounters(mode, count) {
+    selectionCounterEls.forEach((el) => {
+      if (el.dataset.selectionCounter === mode) {
+        const prefix = mode === "saved" ? "Сохранено" : "Выбрано";
+        el.textContent = formatPointCount(count, prefix);
+      }
+    });
+  }
+
+  function refreshWorkingSelection() {
+    syncChoiceVisuals();
+    const checkedInputs = catalogChoices.filter((input) => input.checked);
+    const items = checkedInputs.map(getChoicePayload);
+    renderSelectionItems(catalogPreviewList, items);
+    updateSelectionCounters("working", checkedInputs.length);
+    updateSelectionCounters("working-side", checkedInputs.length);
+    updateSelectionCounters("working-footer", checkedInputs.length);
+    updateDocCounters(checkedInputs);
+  }
+
+  function applySavedSelection() {
+    catalogChoices.forEach((input) => {
+      input.checked = savedSelectionIds.includes(input.value);
+    });
+    refreshWorkingSelection();
+  }
+
+  function commitSavedSelection() {
+    savedSelectionIds = catalogChoices.filter((input) => input.checked).map((input) => input.value);
+    const savedInputs = catalogChoices.filter((input) => savedSelectionIds.includes(input.value));
+    renderSelectionItems(savedSelectionList, savedInputs.map(getChoicePayload));
+    updateSelectionCounters("saved", savedInputs.length);
+  }
+
+  function renderDecisionState() {
+    decisionOptions.forEach((option) => {
+      option.classList.toggle("is-selected", option.dataset.decisionOption === currentDecision);
+    });
+    if (!decisionStatus) return;
+    if (!savedDecision) {
+      decisionStatus.textContent = "Решение не сохранено";
+      decisionStatus.className = "status-pill warning";
+      return;
+    }
+    if (savedDecision === "confirm") {
+      decisionStatus.textContent = "Сохранено: подтверждено";
+      decisionStatus.className = "status-pill success";
+    } else {
+      decisionStatus.textContent = "Сохранено: отклонено";
+      decisionStatus.className = "status-pill danger";
+    }
+  }
+
+  function setStateGroup(group, value) {
+    stateButtons.forEach((button) => {
+      if (button.dataset.stateGroup === group) {
+        button.classList.toggle("active", button.dataset.stateValue === value);
+      }
+    });
+    document.querySelectorAll(`[data-state-pane="${group}"]`).forEach((pane) => {
+      pane.classList.toggle("active", pane.dataset.stateValue === value);
+    });
+  }
+
+  function updateLogDetails(row) {
+    const mappings = [
+      ["log-detail-title", "logTitle"],
+      ["log-detail-time", "logTime"],
+      ["log-detail-id", "logId"],
+      ["log-detail-status", "logStatus"],
+      ["log-detail-payload", "logPayload"],
+      ["log-detail-result", "logResult"],
+      ["log-detail-extra", "logExtra"]
+    ];
+    mappings.forEach(([id, key]) => {
+      const node = document.getElementById(id);
+      if (node) node.textContent = row.dataset[key] || "";
+    });
+  }
+
+  function showScreen(id) {
+    screens.forEach((screen) => screen.classList.toggle("active", screen.id === id));
+    demoButtons.forEach((button) => button.classList.toggle("active", button.dataset.screenTarget === id));
+    document.querySelectorAll(".modal-overlay").forEach((modal) => {
+      modal.classList.add("is-hidden");
+      modal.setAttribute("aria-hidden", "true");
+    });
+    applySavedSelection();
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function setModalState(id, isOpen) {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    modal.classList.toggle("is-hidden", !isOpen);
+    modal.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  }
+
+  demoButtons.forEach((button) => {
+    button.addEventListener("click", () => showScreen(button.dataset.screenTarget));
+  });
+
+  document.querySelectorAll("[data-screen-jump]").forEach((button) => {
+    button.addEventListener("click", () => showScreen(button.dataset.screenJump));
+  });
+
+  modalOpenButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.modalOpen === "scr03-npa-modal") {
+        applySavedSelection();
+      }
+      setModalState(button.dataset.modalOpen, true);
+    });
+  });
+
+  modalCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (button.dataset.modalClose === "scr03-npa-modal") {
+        applySavedSelection();
+      }
+      setModalState(button.dataset.modalClose, false);
+    });
+  });
+
+  document.querySelectorAll(".modal-overlay").forEach((modal) => {
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        if (modal.id === "scr03-npa-modal") {
+          applySavedSelection();
+        }
+        setModalState(modal.id, false);
+      }
+    });
+  });
+
+  catalogChoices.forEach((input) => {
+    input.addEventListener("change", refreshWorkingSelection);
+  });
+
+  catalogToggleButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const shouldOpen = button.dataset.treeToggle === "expand";
+      catalogDetails.forEach((details) => {
+        details.open = shouldOpen;
+      });
+    });
+  });
+
+  catalogCancelButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      applySavedSelection();
+      setModalState(button.dataset.catalogCancel, false);
+    });
+  });
+
+  catalogSaveButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      commitSavedSelection();
+      setModalState(button.dataset.catalogSave, false);
+    });
+  });
+
+  decisionOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      currentDecision = option.dataset.decisionOption;
+      renderDecisionState();
+    });
+  });
+
+  if (decisionSaveButton) {
+    decisionSaveButton.addEventListener("click", () => {
+      savedDecision = currentDecision;
+      renderDecisionState();
+    });
+  }
+
+  if (clearSelectionButton) {
+    clearSelectionButton.addEventListener("click", () => {
+      savedSelectionIds = [];
+      commitSavedSelection();
+      applySavedSelection();
+    });
+  }
+
+  stateButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setStateGroup(button.dataset.stateGroup, button.dataset.stateValue);
+    });
+  });
+
+  sourceButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      sourceButtons.forEach((item) => item.classList.remove("active"));
+      panes.forEach((pane) => pane.classList.remove("active"));
+      button.classList.add("active");
+      const pane = document.getElementById(button.dataset.tab);
+      if (pane) pane.classList.add("active");
+    });
+  });
+
+  function updateDetails(row) {
+    const detailTitle = document.getElementById("detail-title");
+    const detailSubtitle = document.getElementById("detail-subtitle");
+    const detailSource = document.getElementById("detail-source");
+    const detailKey = document.getElementById("detail-key");
+    const detailSummary = document.getElementById("detail-summary");
+    const detailExtra = document.getElementById("detail-extra");
+    if (detailTitle) detailTitle.textContent = row.dataset.title || "";
+    if (detailSubtitle) detailSubtitle.textContent = row.dataset.subtitle || "";
+    if (detailSource) detailSource.textContent = row.dataset.source || "";
+    if (detailKey) detailKey.textContent = row.dataset.key || "";
+    if (detailSummary) detailSummary.textContent = row.dataset.summary || "";
+    if (detailExtra) detailExtra.textContent = row.dataset.extra || "";
+  }
+
+  dataRows.forEach((row) => {
+    row.addEventListener("click", () => {
+      dataRows.forEach((item) => item.classList.remove("is-selected"));
+      row.classList.add("is-selected");
+      updateDetails(row);
+    });
+  });
+
+  logRows.forEach((row) => {
+    row.addEventListener("click", () => {
+      logRows.forEach((item) => item.classList.remove("is-selected"));
+      row.classList.add("is-selected");
+      updateLogDetails(row);
+    });
+  });
+
+  commitSavedSelection();
+  applySavedSelection();
+  renderDecisionState();
+  document.querySelectorAll("[data-state-pane]").forEach((pane) => {
+    if (pane.classList.contains("active")) {
+      setStateGroup(pane.dataset.statePane, pane.dataset.stateValue);
+    }
+  });
+  if (logRows.length) updateLogDetails(logRows[0]);
+</script>
+</body>
+</html>

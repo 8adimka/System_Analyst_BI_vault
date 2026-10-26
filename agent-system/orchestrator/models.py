@@ -32,6 +32,7 @@ class Draft(Message):
 
 class Finding(Message):
     id: str = Field(min_length=1, max_length=100)
+    category: Literal["requirements", "readability"] = "requirements"
     severity: Literal["blocker", "major", "minor"]
     blocking: bool
     claim: str = Field(min_length=1, max_length=4000)
@@ -51,3 +52,14 @@ class Review(Message):
 def unresolved(review: Review) -> list[Finding]:
     return [f for f in review.findings if f.status != "closed"
             and (f.blocking or f.severity in {"blocker", "major"})]
+
+
+def pending_readability(review: Review) -> list[Finding]:
+    """Actionable editing suggestions never alter the substantive approval gate."""
+    return [f for f in review.findings if f.category == "readability"
+            and f.severity == "minor" and not f.blocking and f.status == "open"]
+
+
+def tracked_findings(review: Review) -> list[Finding]:
+    """Require an explicit follow-up status for substantive and attempted edits."""
+    return unresolved(review) + pending_readability(review)

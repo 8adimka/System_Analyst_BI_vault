@@ -180,7 +180,8 @@ def smoke(workspace, args):
     root = workspace / ".private/runtime" / ("smoke-" + uuid.uuid4().hex[:12])
     synthetic = root / "workspace"
     synthetic.mkdir(parents=True, mode=0o700)
-    for name in ("AGENTS.md", ".codex/agents", ".agents/skills", "agent-system/standards"):
+    for name in ("AGENTS.md", ".codex/agents", ".agents/skills", "agent-system/standards",
+                 "agent-system/runtime"):
         source, target = workspace / name, synthetic / name
         target.parent.mkdir(parents=True, exist_ok=True)
         if source.is_dir():

@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Концепт: AI-чат по базе знаний — прототип</title>
+<style>
+  :root {
+    --header-bg: #4a4a4a;
+    --header-h: 56px;
+    --subheader-h: 36px;
+    --accent: #ffab00;
+    --primary: #5294de;
+    --primary-dark: #3f7fc4;
+    --canvas: #e8eef4;
+    --panel: #ffffff;
+    --text: rgba(0, 0, 0, 0.87);
+    --text-muted: rgba(0, 0, 0, 0.55);
+    --border: rgba(0, 0, 0, 0.16);
+    --drawer-w: 420px;
+    --radius: 5px;
+    --danger: #de3b3b;
+    --ok: #3aa76d;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--canvas);
+    overflow: hidden;
+  }
+
+  button { font: inherit; cursor: pointer; }
+
+  /* ─────────────── Макет портала (фон) ─────────────── */
+
+  .app { height: 100%; display: flex; flex-direction: column; }
+
+  .app-header {
+    height: var(--header-h);
+    flex: 0 0 auto;
+    background: var(--header-bg);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 8px 0 0;
+    gap: 4px;
+  }
+
+  .burger {
+    width: 48px; height: var(--header-h);
+    display: grid; place-items: center;
+    background: var(--accent);
+    border: 0;
+  }
+  .burger span { display: block; width: 22px; height: 2px; background: #fff; margin: 3px 0; }
+
+  .app-title { margin-left: 16px; font-size: 16px; letter-spacing: .2px; }
+  .header-spacer { flex: 1 1 auto; }
+
+  .icon-btn {
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    background: transparent; border: 0; border-radius: 50%;
+    color: #fff; opacity: .9;
+    position: relative;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.14); opacity: 1; }
+  .icon-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+
+  .app-subheader {
+    height: var(--subheader-h);
+    flex: 0 0 auto;
+    background: #f2f2f2;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 12px;
+    color: rgba(0,0,0,.35);
+  }
+  .app-subheader svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+
+  .app-body { flex: 1 1 auto; position: relative; overflow: auto; padding: 0; }
+
+  .report-grid {
+    display: grid;
+    grid-template-columns: 700px 670px;
+    gap: 12px;
+    padding: 0 0 24px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 2px;
+  }
+  .panel-title { padding: 10px 14px; font-size: 15px; color: #333; }
+  .panel-chart { padding: 0 8px 8px; }
+
+  .filter-panel { height: 285px; margin-top: 12px; padding: 12px 14px; }
+  .filter-row {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    color: #333;
+  }
+  .caret { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #555; }
+
+  /* ─────────────── Точки входа ─────────────── */
+
+  /* Вариант A — кнопка в шапке */
+  .chat-header-btn { display: none; }
+  body[data-entry='header'] .chat-header-btn { display: grid; }
+  body[data-entry='header'] .chat-header-btn::after {
+    content: '';
+    position: absolute; top: 7px; right: 7px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--header-bg);
+  }
+
+  /* Вариант B — FAB в правом нижнем углу */
+  .chat-fab {
+    position: fixed;
+    right: 24px;
+    bottom: 88px;             /* 88, а не 24: 24 занят FAB конструктора */
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--primary);
+    color: #fff;
+    display: none;
+    place-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,.28);
+    z-index: 30;
+    transition: right .28s ease, transform .12s ease;
+  }
+  .chat-fab:hover { transform: translateY(-1px); }
+  .chat-fab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+  body[data-entry='fab'] .chat-fab { display: grid; }
+  body[data-entry='fab'][data-open='true'] .chat-fab { right: calc(var(--drawer-w) + 24px); }
+
+  .chat-fab .fab-badge {
+    position: absolute; top: -2px; right: -2px;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--accent); color: #3a2b00;
+    font-size: 11px; font-weight: 700; display: grid; place-items: center;
+  }
+
+  /* FAB конструктора отчёта — существующий, для демонстрации коллизии */
+  .fab-existing {
+    position: fixed; right: 24px; bottom: 24px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: 0;
+    display: grid; place-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,.28);
+    opacity: .55;
+    z-index: 29;
+    transition: right .28s ease;
+  }
+  body[data-open='true'] .fab-existing { right: calc(var(--drawer-w) + 24px); }
+  .fab-existing svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+  /* ─────────────── Drawer чата ─────────────── */
+
+  .chat-drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: var(--drawer-w);
+    background: #fff;
+    border-left: 1px solid var(--border);
+    box-shadow: -2px 0 12px rgba(0,0,0,.12);
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 40;
+  }
+  body[data-open='true'] .chat-drawer { transform: none; }
+  body[data-open='true'] .app-body { padding-right: var(--drawer-w); }
+
+  .chat-head {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 8px 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .chat-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .chat-head .beta {
+    font-size: 10px; font-weight: 700; letter-spacing: .4px;
+    background: #eef4fc; color: var(--primary-dark);
+    border: 1px solid #d5e4f7; border-radius: 3px; padding: 1px 5px;
+  }
+  .chat-head .spacer { flex: 1; }
+  .chat-head .icon-btn { color: var(--text-muted); width: 34px; height: 34px; }
+  .chat-head .icon-btn:hover { background: rgba(0,0,0,.06); }
+  .chat-head .icon-btn svg { width: 19px; height: 19px; }
+
+  .chat-log {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+
+  .msg { max-width: 100%; }
+  .msg-user {
+    align-self: flex-end;
+    background: var(--primary);
+    color: #fff;
+    padding: 9px 13px;
+    border-radius: 14px 14px 3px 14px;
+    max-width: 86%;
+    line-height: 1.45;
+  }
+  .msg-bot {
+    align-self: flex-start;
+    background: #f5f7fa;
+    border: 1px solid rgba(0,0,0,.06);
+    border-radius: 14px 14px 14px 3px;
+    padding: 12px 14px;
+    max-width: 96%;
+    line-height: 1.5;
+  }
+  .msg-bot p { margin: 0 0 9px; }
+  .msg-bot p:last-child { margin-bottom: 0; }
+  .msg-bot ol, .msg-bot ul { margin: 0 0 9px; padding-left: 20px; }
+  .msg-bot li { margin-bottom: 4px; }
+  .msg-bot code {
+    background: rgba(0,0,0,.06); border-radius: 3px;
+    padding: 1px 4px; font-size: 12.5px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+  }
+
+  /* Картинки в ответе */
+  .msg-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin: 10px 0 4px;
+  }
+  .msg-images.single { grid-template-columns: 1fr; }
+  .thumb {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #fbfbfb;
+    cursor: zoom-in;
+    padding: 0;
+    display: block;
+    width: 100%;
+  }
+  .thumb img { display: block; width: 100%; height: auto; }
+  .thumb .thumb-cap {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,.72));
+    color: #fff; font-size: 11px; line-height: 1.25;
+    padding: 14px 6px 5px; text-align: left;
+  }
+  .thumb .zoom-hint {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,.55); color: #fff;
+    width: 22px; height: 22px; border-radius: 4px;
+    display: grid; place-items: center;
+  }
+  .thumb .zoom-hint svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .thumb.broken { cursor: default; }
+  .thumb-fallback {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    height: 92px; color: var(--text-muted); font-size: 11.5px; text-align: center; padding: 8px;
+    background: repeating-linear-gradient(45deg, #f7f7f7, #f7f7f7 8px, #f1f1f1 8px, #f1f1f1 16px);
+  }
+  .thumb-fallback svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .thumb-fallback a { color: var(--primary-dark); }
+
+  .img-skeleton {
+    height: 92px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 37%, #f0f0f0 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.3s ease infinite;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+  /* Источники */
+  .sources { margin-top: 10px; }
+  .sources-title { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 6px; }
+  .source-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    max-width: 100%;
+    border: 1px solid #d5e4f7; background: #f4f8fd;
+    color: var(--primary-dark);
+    border-radius: 14px; padding: 4px 10px 4px 8px;
+    font-size: 12.5px; text-decoration: none;
+    margin: 0 6px 6px 0;
+  }
+  .source-chip:hover { background: #e9f1fb; }
+  .source-chip .num {
+    width: 17px; height: 17px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    font-size: 10.5px; font-weight: 700;
+    display: grid; place-items: center; flex: 0 0 auto;
+  }
+  .source-chip .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .source-chip .frag { color: var(--text-muted); font-size: 11px; flex: 0 0 auto; }
+
+  /* Футер сообщения */
+  .msg-foot {
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,.07);
+    color: var(--text-muted); font-size: 12px;
+  }
+  .foot-btn {
+    background: transparent; border: 0; border-radius: 4px;
+    padding: 4px 6px; color: var(--text-muted);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .foot-btn:hover { background: rgba(0,0,0,.06); color: var(--text); }
+  .foot-btn.active { color: var(--ok); }
+  .foot-btn.active.down { color: var(--danger); }
+  .foot-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+  .msg-foot .spacer { flex: 1; }
+  .timing { font-size: 11.5px; white-space: nowrap; }
+
+  /* Шаги пайплайна */
+  .steps { display: flex; flex-direction: column; gap: 7px; }
+  .step { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--text-muted); }
+  .step .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid #d9d9d9; flex: 0 0 auto;
+    display: grid; place-items: center;
+  }
+  .step.active .dot { border-color: var(--primary); border-right-color: transparent; animation: spin .8s linear infinite; }
+  .step.done .dot { border-color: var(--ok); background: var(--ok); }
+  .step.done .dot::after { content: ''; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+  .step.done, .step.active { color: var(--text); }
+  .step .ms { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .step-details {
+    margin-top: 8px; font-size: 12px; color: var(--text-muted);
+    border-top: 1px dashed rgba(0,0,0,.12); padding-top: 8px;
+  }
+
+  /* Пустое состояние */
+  .empty { padding: 8px 2px; }
+  .empty-icon {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #eef4fc; color: var(--primary);
+    display: grid; place-items: center; margin-bottom: 12px;
+  }
+  .empty-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .empty h3 { margin: 0 0 6px; font-size: 15px; }
+  .empty p { margin: 0 0 14px; color: var(--text-muted); line-height: 1.5; }
+  .starter {
+    display: block; width: 100%; text-align: left;
+    border: 1px solid var(--border); background: #fff;
+    border-radius: var(--radius); padding: 9px 12px;
+    margin-bottom: 8px; color: var(--text); line-height: 1.4;
+  }
+  .starter:hover { border-color: var(--primary); background: #f7fbff; }
+  .disclaimer { font-size: 11.5px; color: var(--text-muted); line-height: 1.45; margin-top: 12px; }
+
+  /* Системные состояния */
+  .notice {
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+    line-height: 1.45;
+  }
+  .notice svg { width: 20px; height: 20px; flex: 0 0 auto; stroke: currentColor; fill: none; stroke-width: 1.7; margin-top: 1px; }
+  .notice-warn { background: #fff8e6; border: 1px solid #ffe0a3; color: #7a5300; }
+  .notice-err { background: #fdeeee; border: 1px solid #f5c2c2; color: #8a2626; }
+  .notice-info { background: #eef4fc; border: 1px solid #d5e4f7; color: #2c5d96; }
+  .notice h4 { margin: 0 0 4px; font-size: 13.5px; }
+  .notice p { margin: 0 0 8px; font-size: 12.5px; }
+  .notice p:last-child { margin-bottom: 0; }
+  .notice .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-sm {
+    border: 1px solid currentColor; background: transparent; color: inherit;
+    border-radius: var(--radius); padding: 4px 10px; font-size: 12.5px;
+  }
+  .btn-sm:hover { background: rgba(0,0,0,.05); }
+  .btn-sm.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn-sm.primary:hover { background: var(--primary-dark); }
+
+  /* Композер */
+  .chat-composer {
+    flex: 0 0 auto;
+    border-top: 1px solid var(--border);
+    padding: 10px 12px 12px;
+    background: #fff;
+  }
+  .composer-box {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 8px 6px 12px;
+    display: flex; align-items: flex-end; gap: 8px;
+    transition: border-color .15s;
+  }
+  .composer-box:focus-within { border-color: var(--primary); }
+  .composer-box textarea {
+    flex: 1; border: 0; outline: 0; resize: none;
+    font: inherit; line-height: 1.45; max-height: 120px;
+    background: transparent;
+  }
+  .send-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 0; background: var(--primary); color: #fff;
+    display: grid; place-items: center; flex: 0 0 auto;
+  }
+  .send-btn:disabled { background: #d0d5da; cursor: default; }
+  .send-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .composer-meta {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-muted); margin-top: 6px; padding: 0 2px;
+  }
+  .composer-meta .over { color: var(--danger); font-weight: 600; }
+
+  /* ─────────────── Лайтбокс ─────────────── */
+
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(15,18,22,.96);
+    z-index: 60;
+    display: none;
+    flex-direction: column;
+  }
+  body[data-lightbox='true'] .lightbox { display: flex; }
+
+  .lb-head {
+    flex: 0 0 auto;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    color: #fff;
+  }
+  .lb-head .lb-title { font-size: 14px; font-weight: 600; }
+  .lb-head .lb-counter { font-size: 12px; color: rgba(255,255,255,.65); }
+  .lb-head .spacer { flex: 1; }
+  .lb-head .icon-btn { color: #fff; }
+
+  .lb-stage {
+    flex: 1 1 auto; position: relative; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 64px 8px;
+    overflow: auto;
+  }
+  .lb-stage img {
+    max-width: 100%; max-height: calc(100vh - 200px); object-fit: contain;
+    background: #fff; border-radius: 4px;
+    transition: transform .18s ease;
+    transform-origin: center center;
+  }
+  .lb-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,.14); color: #fff; border: 0;
+    display: grid; place-items: center;
+  }
+  .lb-nav:hover { background: rgba(255,255,255,.26); }
+  .lb-nav.prev { left: 12px; }
+  .lb-nav.next { right: 12px; }
+  .lb-nav svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .lb-foot {
+    flex: 0 0 auto;
+    padding: 12px 16px 18px;
+    color: rgba(255,255,255,.82);
+    display: flex; align-items: center; gap: 16px;
+    font-size: 12.5px;
+  }
+  .lb-caption { flex: 1; line-height: 1.4; }
+  .lb-source { color: #9cc6f5; text-decoration: none; white-space: nowrap; }
+  .lb-source:hover { text-decoration: underline; }
+  .lb-zoom { display: flex; align-items: center; gap: 6px; }
+  .lb-zoom button {
+    width: 28px; height: 28px; border-radius: 4px;
+    background: rgba(255,255,255,.14); color: #fff; border: 0;
+    display: grid; place-items: center; font-size: 16px; line-height: 1;
+  }
+  .lb-zoom span { min-width: 42px; text-align: center; }
+
+  /* ─────────────── Панель управления демо ─────────────── */
+
+  .demo-panel {
+    position: fixed;
+    left: 16px; bottom: 16px;
+    width: 290px;
+    background: rgba(255,255,255,.97);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 6px 22px rgba(0,0,0,.18);
+    z-index: 50;
+    font-size: 12.5px;
+    overflow: hidden;
+  }
+  .demo-panel h4 {
+    margin: 0; padding: 10px 12px;
+    background: #2f3438; color: #fff;
+    font-size: 12px; letter-spacing: .4px; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .demo-panel h4 button { background: transparent; border: 0; color: rgba(255,255,255,.7); font-size: 15px; line-height: 1; }
+  .demo-body { padding: 10px 12px 12px; }
+  body[data-demo='collapsed'] .demo-body { display: none; }
+  .demo-group { margin-bottom: 12px; }
+  .demo-group:last-child { margin-bottom: 0; }
+  .demo-group > label { display: block; font-weight: 600; margin-bottom: 6px; color: #444; }
+  .seg { display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .seg button {
+    flex: 1; border: 0; background: #fff; padding: 6px 4px; color: #555;
+    border-right: 1px solid var(--border);
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed='true'] { background: var(--primary); color: #fff; }
+  .state-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .state-list button {
+    border: 1px solid var(--border); background: #fff; border-radius: var(--radius);
+    padding: 6px 4px; color: #444; text-align: center;
+  }
+  .state-list button[aria-pressed='true'] { border-color: var(--primary); background: #f0f7ff; color: var(--primary-dark); font-weight: 600; }
+  .demo-hint { color: var(--text-muted); line-height: 1.4; margin-top: 8px; }
+
+  @media (max-width: 700px) {
+    :root { --drawer-w: 100%; }
+    body[data-open='true'] .app-body { padding-right: 0; }
+    .demo-panel { width: calc(100% - 32px); }
+  }
+</style>
+</head>
+<body data-entry="header" data-open="false" data-state="empty" data-lightbox="false" data-demo="expanded">
+
+<!-- ═══════════ Фон: макет отчёта ═══════════ -->
+<div class="app">
+  <header class="app-header">
+    <button class="burger" title="Меню"><span></span><span></span><span></span></button>
+    <div class="app-title">malanin</div>
+    <div class="header-spacer"></div>
+
+    <button class="icon-btn" title="Настройки">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+    </button>
+    <button class="icon-btn" title="Экспорт">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    </button>
+    <button class="icon-btn" title="Поделиться">
+      <svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+    </button>
+    <button class="icon-btn" title="Информация">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    </button>
+    <button class="icon-btn" title="Фильтры">
+      <svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+    </button>
+
+    <!-- ВАРИАНТ A: кнопка чата в шапке, слева от «?» -->
+    <button class="icon-btn chat-header-btn" id="chatHeaderBtn" title="Спросить помощника">
+      <svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.9 9.9 0 0 1-2.8-.4L3 21l1.6-4.6A8.2 8.2 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/><path d="M9.2 9.6a2.8 2.8 0 0 1 5.5.7c0 1.9-2.8 2.8-2.8 2.8M12 16.2h.01"/></svg>
+    </button>
+
+    <button class="icon-btn" title="Справка">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    </button>
+  </header>
+
+  <div class="app-subheader">
+    <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+  </div>
+
+  <main class="app-body">
+    <div class="report-grid">
+      <section class="panel">
+        <div class="panel-title">Столбчатая диаграмма</div>
+        <div class="panel-chart">
+          <svg viewBox="0 0 680 520" width="100%" height="520" role="img" aria-label="Столбчатая диаграмма продаж по регионам">
+            <g stroke="#e6e6e6" stroke-width="1">
+              <line x1="70" y1="20" x2="670" y2="20"/><line x1="70" y1="60" x2="670" y2="60"/>
+              <line x1="70" y1="100" x2="670" y2="100"/><line x1="70" y1="140" x2="670" y2="140"/>
+              <line x1="70" y1="180" x2="670" y2="180"/><line x1="70" y1="220" x2="670" y2="220"/>
+              <line x1="70" y1="260" x2="670" y2="260"/><line x1="70" y1="300" x2="670" y2="300"/>
+              <line x1="70" y1="340" x2="670" y2="340"/><line x1="70" y1="380" x2="670" y2="380"/>
+            </g>
+            <g fill="#666" font-size="11" text-anchor="end">
+              <text x="62" y="24">150 млн</text><text x="62" y="64">130 млн</text>
+              <text x="62" y="104">110 млн</text><text x="62" y="144">90 млн</text>
+              <text x="62" y="184">70 млн</text><text x="62" y="224">50 млн</text>
+              <text x="62" y="264">30 млн</text><text x="62" y="304">10 млн</text>
+              <text x="62" y="384">0</text>
+            </g>
+            <line x1="70" y1="380" x2="670" y2="380" stroke="#999"/>
+            <g id="bars"></g>
+            <g transform="translate(80, 470)" font-size="11" fill="#444">
+              <rect x="0" y="-9" width="10" height="10" fill="#7cb5ec"/><text x="16" y="0">Стол приставной</text>
+              <rect x="130" y="-9" width="10" height="10" fill="#f7a35c"/><text x="146" y="0">Шкаф-купе</text>
+              <rect x="250" y="-9" width="10" height="10" fill="#a2e576"/><text x="266" y="0">Кресло</text>
+              <rect x="340" y="-9" width="10" height="10" fill="#7798BF"/><text x="356" y="0">Диван</text>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <div>
+        <section class="panel filter-panel">
+          <div class="filter-row"><span>Регион: Все</span><span class="caret"></span></div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Существующий FAB конструктора: показывает, чем занят правый нижний угол -->
+<button class="fab-existing" title="Добавить панель (существующая кнопка конструктора)">
+  <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<!-- ВАРИАНТ B: FAB чата -->
+<button class="chat-fab" id="chatFabBtn" title="Спросить помощника">
+  <svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.9 9.9 0 0 1-2.8-.4L3 21l1.6-4.6A8.2 8.2 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/><path d="M9.2 9.6a2.8 2.8 0 0 1 5.5.7c0 1.9-2.8 2.8-2.8 2.8M12 16.2h.01"/></svg>
+  <span class="fab-badge">1</span>
+</button>
+
+<!-- ═══════════ Drawer чата ═══════════ -->
+<aside class="chat-drawer" role="complementary" aria-label="Помощник по базе знаний">
+  <div class="chat-head">
+    <h2>Помощник Modus BI</h2>
+    <span class="beta">BETA</span>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="clearBtn" title="Очистить диалог">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    </button>
+    <button class="icon-btn" id="closeBtn" title="Закрыть">
+      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="chat-log" id="chatLog"></div>
+
+  <div class="chat-composer">
+    <div class="composer-box">
+      <textarea id="composer" rows="1" maxlength="1000" placeholder="Спросите про Modus BI…"></textarea>
+      <button class="send-btn" id="sendBtn" disabled title="Отправить">
+        <svg viewBox="0 0 24 24"><path d="m4 20 16-8L4 4v6l10 2-10 2z"/></svg>
+      </button>
+    </div>
+    <div class="composer-meta">
+      <span>Enter — отправить, Shift+Enter — перенос строки</span>
+      <span id="counter">0 / 1000</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ Лайтбокс (раскрытая картинка) ═══════════ -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр изображения">
+  <div class="lb-head">
+    <span class="lb-title" id="lbTitle">Панель фильтров отчёта</span>
+    <span class="lb-counter" id="lbCounter">1 / 3</span>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="lbDownload" title="Скачать">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    </button>
+    <button class="icon-btn" id="lbClose" title="Закрыть (Esc)">
+      <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="lb-stage">
+    <button class="lb-nav prev" id="lbPrev" title="Предыдущее (←)">
+      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <img id="lbImg" src="" alt="">
+    <button class="lb-nav next" id="lbNext" title="Следующее (→)">
+      <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+  <div class="lb-foot">
+    <div class="lb-caption" id="lbCaption"></div>
+    <div class="lb-zoom">
+      <button id="lbZoomOut" title="Уменьшить">−</button>
+      <span id="lbZoomVal">100%</span>
+      <button id="lbZoomIn" title="Увеличить">+</button>
+    </div>
+    <a class="lb-source" id="lbSource" href="#" target="_blank" rel="noreferrer">Открыть статью ↗</a>
+  </div>
+</div>
+
+<!-- ═══════════ Панель управления демо ═══════════ -->
+<div class="demo-panel">
+  <h4>Прототип · управление <button id="demoToggle" title="Свернуть">—</button></h4>
+  <div class="demo-body">
+    <div class="demo-group">
+      <label>Расположение кнопки</label>
+      <div class="seg" id="entrySeg">
+        <button data-entry="header" aria-pressed="true">1 · В шапке</button>
+        <button data-entry="fab" aria-pressed="false">2 · FAB снизу</button>
+      </div>
+    </div>
+    <div class="demo-group">
+      <label>Состояние чата</label>
+      <div class="state-list" id="stateList">
+        <button data-state="empty" aria-pressed="true">Пусто</button>
+        <button data-state="loading" aria-pressed="false">Загрузка</button>
+        <button data-state="answer" aria-pressed="false">Ответ + фото</button>
+        <button data-state="gallery" aria-pressed="false">Галерея фото</button>
+        <button data-state="notfound" aria-pressed="false">Не найдено</button>
+        <button data-state="broken" aria-pressed="false">Фото не грузится</button>
+        <button data-state="unauth" aria-pressed="false">401</button>
+        <button data-state="error" aria-pressed="false">Сбой / офлайн</button>
+        <button data-state="expired" aria-pressed="false">Сессия истекла</button>
+        <button data-state="rated" aria-pressed="false">Дизлайк</button>
+      </div>
+    </div>
+    <div class="demo-hint">
+      Клик по миниатюре — раскрытая картинка. Правый нижний угол в отчёте уже занят FAB конструктора — включите вариант 2, чтобы увидеть соседство.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ────────── Данные-заглушки ────────── */
+
+const IMG_FILTERS = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#f6f8fb"/>
+  <rect x="0" y="0" width="640" height="44" fill="#4a4a4a"/>
+  <rect x="0" y="0" width="38" height="44" fill="#ffab00"/>
+  <rect x="470" y="12" width="20" height="20" rx="3" fill="#ffffff" opacity=".8"/>
+  <rect x="505" y="12" width="20" height="20" rx="3" fill="#ffffff" opacity=".5"/>
+  <rect x="540" y="12" width="20" height="20" rx="3" fill="#ffffff" opacity=".5"/>
+  <rect x="24" y="70" width="270" height="300" rx="4" fill="#fff" stroke="#dfe4ea"/>
+  <text x="42" y="98" font-family="Arial" font-size="15" fill="#333">Фильтры отчёта</text>
+  <rect x="42" y="116" width="234" height="30" rx="4" fill="#f0f3f7" stroke="#dfe4ea"/>
+  <text x="52" y="136" font-family="Arial" font-size="12" fill="#666">Регион</text>
+  <rect x="42" y="158" width="234" height="30" rx="4" fill="#f0f3f7" stroke="#dfe4ea"/>
+  <text x="52" y="178" font-family="Arial" font-size="12" fill="#666">Период</text>
+  <rect x="42" y="200" width="234" height="30" rx="4" fill="#e8f1fc" stroke="#5294de"/>
+  <text x="52" y="220" font-family="Arial" font-size="12" fill="#2c5d96">Категория товара ✓</text>
+  <rect x="42" y="250" width="110" height="30" rx="4" fill="#5294de"/>
+  <text x="66" y="270" font-family="Arial" font-size="12" fill="#fff">Применить</text>
+  <rect x="320" y="70" width="296" height="300" rx="4" fill="#fff" stroke="#dfe4ea"/>
+  <text x="338" y="98" font-family="Arial" font-size="15" fill="#333">Предпросмотр</text>
+  <rect x="338" y="250" width="30" height="90" fill="#7cb5ec"/>
+  <rect x="380" y="200" width="30" height="140" fill="#7cb5ec"/>
+  <rect x="422" y="160" width="30" height="180" fill="#f7a35c"/>
+  <rect x="464" y="230" width="30" height="110" fill="#a2e576"/>
+  <rect x="506" y="120" width="30" height="220" fill="#7798BF"/>
+  <rect x="548" y="270" width="30" height="70" fill="#7cb5ec"/>
+</svg>`);
+
+const IMG_SELECT = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#f6f8fb"/>
+  <rect x="60" y="40" width="520" height="60" rx="4" fill="#fff" stroke="#dfe4ea"/>
+  <text x="82" y="76" font-family="Arial" font-size="15" fill="#333">Регион: Все</text>
+  <path d="M548 66 l10 0 -5 8 z" fill="#555"/>
+  <rect x="60" y="104" width="520" height="250" rx="4" fill="#fff" stroke="#5294de"/>
+  <rect x="76" y="120" width="488" height="30" rx="4" fill="#f0f3f7" stroke="#dfe4ea"/>
+  <text x="90" y="140" font-family="Arial" font-size="12" fill="#888">Поиск…</text>
+  <rect x="76" y="162" width="14" height="14" rx="2" fill="#5294de"/>
+  <text x="102" y="175" font-family="Arial" font-size="13" fill="#333">Выбрать все</text>
+  <rect x="76" y="196" width="14" height="14" rx="2" fill="#fff" stroke="#999"/>
+  <text x="102" y="209" font-family="Arial" font-size="13" fill="#333">Московская область</text>
+  <rect x="76" y="230" width="14" height="14" rx="2" fill="#5294de"/>
+  <text x="102" y="243" font-family="Arial" font-size="13" fill="#333">Санкт-Петербург</text>
+  <rect x="76" y="264" width="14" height="14" rx="2" fill="#fff" stroke="#999"/>
+  <text x="102" y="277" font-family="Arial" font-size="13" fill="#333">Красноярский край</text>
+  <rect x="76" y="298" width="14" height="14" rx="2" fill="#fff" stroke="#999"/>
+  <text x="102" y="311" font-family="Arial" font-size="13" fill="#333">Республика Татарстан</text>
+</svg>`);
+
+const IMG_HIERARCHY = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#f6f8fb"/>
+  <rect x="40" y="30" width="560" height="340" rx="4" fill="#fff" stroke="#dfe4ea"/>
+  <text x="62" y="64" font-family="Arial" font-size="15" fill="#333">Иерархический фильтр</text>
+  <path d="M70 96 l8 6 -8 6z" fill="#555"/>
+  <text x="90" y="108" font-family="Arial" font-size="13" fill="#333">Россия</text>
+  <path d="M100 130 l8 6 -8 6z" fill="#555"/>
+  <text x="120" y="142" font-family="Arial" font-size="13" fill="#333">Центральный ФО</text>
+  <rect x="150" y="162" width="13" height="13" rx="2" fill="#5294de"/>
+  <text x="175" y="174" font-family="Arial" font-size="13" fill="#333">Москва</text>
+  <rect x="150" y="192" width="13" height="13" rx="2" fill="#5294de"/>
+  <text x="175" y="204" font-family="Arial" font-size="13" fill="#333">Московская область</text>
+  <path d="M100 226 l8 6 -8 6z" fill="#555"/>
+  <text x="120" y="238" font-family="Arial" font-size="13" fill="#333">Северо-Западный ФО</text>
+  <rect x="150" y="258" width="13" height="13" rx="2" fill="#fff" stroke="#999"/>
+  <text x="175" y="270" font-family="Arial" font-size="13" fill="#333">Санкт-Петербург</text>
+  <rect x="62" y="300" width="120" height="32" rx="4" fill="#5294de"/>
+  <text x="90" y="321" font-family="Arial" font-size="13" fill="#fff">Применить</text>
+</svg>`);
+
+const IMAGES = [
+  { src: IMG_FILTERS,   title: 'Панель фильтров отчёта',      caption: 'Настройка глобальных фильтров: выбор поля, режима и значений.', article: 'Как настроить фильтры отчёта', url: '#article-215341' },
+  { src: IMG_SELECT,    title: 'Выпадающий список значений',  caption: 'Множественный выбор значений с поиском и «Выбрать все».',        article: 'Как настроить фильтры отчёта', url: '#article-215341' },
+  { src: IMG_HIERARCHY, title: 'Иерархический фильтр',        caption: 'Дерево значений: выбор узла отмечает вложенные элементы.',       article: 'Иерархические фильтры',        url: '#article-215902' },
+];
+
+/* ────────── Диаграмма на фоне ────────── */
+
+(function drawBars() {
+  const colors = ['#7cb5ec', '#f7a35c', '#a2e576', '#7798BF'];
+  const g = document.getElementById('bars');
+  let x = 78;
+  for (let i = 0; i < 58; i++) {
+    const peak = i === 8 ? 340 : i === 22 ? 300 : (i % 11 === 0 ? 150 : 20 + (i * 37) % 90);
+    let y = 380;
+    for (let s = 0; s < 4; s++) {
+      const h = Math.max(2, peak / 4 * (0.6 + ((i + s) % 5) / 8));
+      y -= h;
+      const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      r.setAttribute('x', x); r.setAttribute('y', y);
+      r.setAttribute('width', 6); r.setAttribute('height', h);
+      r.setAttribute('fill', colors[s]);
+      g.appendChild(r);
+    }
+    x += 10.3;
+  }
+})();
+
+/* ────────── Рендер состояний чата ────────── */
+
+const log = document.getElementById('chatLog');
+const body = document.body;
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function userMsg(text) {
+  return `<div class="msg msg-user">${esc(text)}</div>`;
+}
+
+function thumbs(list, cls = '') {
+  return `<div class="msg-images ${cls}">` + list.map((i) => `
+    <button class="thumb" data-img="${i}">
+      <img src="${IMAGES[i].src}" alt="${esc(IMAGES[i].title)}">
+      <span class="zoom-hint"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M11 8v6M8 11h6"/></svg></span>
+      <span class="thumb-cap">${esc(IMAGES[i].title)}</span>
+    </button>`).join('') + `</div>`;
+}
+
+function sources(items) {
+  return `<div class="sources">
+    <div class="sources-title">Источники · база знаний</div>
+    ${items.map((s, n) => `<a class="source-chip" href="${s.url}" target="_blank" rel="noreferrer">
+      <span class="num">${n + 1}</span>
+      <span class="label">${esc(s.title)}</span>
+      <span class="frag">· ${s.chunks} фрагм.</span>
+    </a>`).join('')}
+  </div>`;
+}
+
+function foot({ ms = '2.4 с', chunks = 4, rated = null } = {}) {
+  return `<div class="msg-foot">
+    <button class="foot-btn like ${rated === 'up' ? 'active' : ''}" title="Ответ помог">
+      <svg viewBox="0 0 24 24"><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3M14 9V4a2.5 2.5 0 0 0-4.8-1L7 11v11h9.6a2 2 0 0 0 2-1.7l1.3-8a2 2 0 0 0-2-2.3z"/></svg>
+    </button>
+    <button class="foot-btn down ${rated === 'down' ? 'active down' : ''}" title="Ответ не помог">
+      <svg viewBox="0 0 24 24"><path d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3M10 15v5a2.5 2.5 0 0 0 4.8 1L17 13V2H7.4a2 2 0 0 0-2 1.7l-1.3 8a2 2 0 0 0 2 2.3z"/></svg>
+    </button>
+    <button class="foot-btn" title="Скопировать ответ">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    </button>
+    <div class="spacer"></div>
+    <span class="timing" title="Поиск 0,9 с · генерация 1,5 с">${ms} · ${chunks} фрагм.</span>
+  </div>`;
+}
+
+const ANSWER_HTML = `
+  <p>Фильтры настраиваются в редакторе отчёта:</p>
+  <ol>
+    <li>Откройте отчёт и переключитесь в режим конструктора.</li>
+    <li>В панели «Фильтры» нажмите <code>+</code> и выберите поле набора данных.</li>
+    <li>Задайте режим — единичный выбор, множественный или иерархический.</li>
+    <li>Нажмите «Применить», чтобы фильтр начал влиять на панели отчёта.</li>
+  </ol>
+  <p>Значения по умолчанию сохраняются вместе с отчётом и применяются при каждом открытии.</p>`;
+
+const STATES = {
+
+  empty: () => `
+    <div class="empty">
+      <div class="empty-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.9 9.9 0 0 1-2.8-.4L3 21l1.6-4.6A8.2 8.2 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/></svg></div>
+      <h3>Спросите о работе с Modus BI</h3>
+      <p>Отвечаю по документации и базе знаний: настройка отчётов, фильтры, наборы данных, экспорт.</p>
+      <button class="starter">Как настроить фильтры в отчёте?</button>
+      <button class="starter">Чем мера отличается от показателя?</button>
+      <button class="starter">Как выгрузить отчёт в Excel по расписанию?</button>
+      <button class="starter">Почему панель показывает «Нет данных»?</button>
+      <p class="disclaimer">Ответы формирует ИИ по статьям базы знаний и может ошибаться — проверяйте по источникам под ответом. Помощник не видит данные вашего отчёта.</p>
+    </div>`,
+
+  loading: () => `
+    ${userMsg('Как настроить фильтры в отчёте?')}
+    <div class="msg msg-bot">
+      <div class="steps">
+        <div class="step done"><span class="dot"></span> Поиск по базе знаний <span class="ms">0,9 с</span></div>
+        <div class="step done"><span class="dot"></span> Сборка контекста · 4 фрагмента <span class="ms">0,1 с</span></div>
+        <div class="step active"><span class="dot"></span> Генерация ответа…</div>
+      </div>
+      <div class="step-details">Нашёл 4 фрагмента в 2 статьях, лучшее совпадение — 0.87</div>
+    </div>`,
+
+  answer: () => `
+    ${userMsg('Как настроить фильтры в отчёте?')}
+    <div class="msg msg-bot">
+      ${ANSWER_HTML}
+      ${thumbs([0], 'single')}
+      ${sources([
+        { title: 'Как настроить фильтры отчёта', chunks: 3, url: '#article-215341' },
+        { title: 'Иерархические фильтры', chunks: 1, url: '#article-215902' },
+      ])}
+      ${foot()}
+    </div>`,
+
+  gallery: () => `
+    ${userMsg('Покажи, как выглядит выбор значений в фильтре')}
+    <div class="msg msg-bot">
+      <p>В зависимости от режима фильтр выглядит по-разному. Ниже — три варианта из документации:</p>
+      ${thumbs([0, 1, 2])}
+      <p>Иерархический режим доступен, только если в наборе данных настроена иерархия полей.</p>
+      ${sources([
+        { title: 'Как настроить фильтры отчёта', chunks: 2, url: '#article-215341' },
+        { title: 'Иерархические фильтры', chunks: 2, url: '#article-215902' },
+      ])}
+      ${foot({ ms: '3,1 с', chunks: 4 })}
+    </div>`,
+
+  broken: () => `
+    ${userMsg('Как выглядит панель фильтров?')}
+    <div class="msg msg-bot">
+      <p>Панель фильтров располагается слева от области отчёта и содержит список активных фильтров.</p>
+      <div class="msg-images">
+        <div class="thumb broken">
+          <div class="thumb-fallback">
+            <svg viewBox="0 0 24 24"><path d="M3 3l18 18M21 15l-5-5L5 21M3 16V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>Изображение недоступно<br><a href="#article-215341" target="_blank" rel="noreferrer">Открыть статью ↗</a></span>
+          </div>
+        </div>
+        <div class="img-skeleton"></div>
+      </div>
+      ${sources([{ title: 'Как настроить фильтры отчёта', chunks: 2, url: '#article-215341' }])}
+      ${foot({ ms: '2,2 с', chunks: 2 })}
+    </div>`,
+
+  notfound: () => `
+    ${userMsg('Как подключить биллинг 1С через SAP-коннектор?')}
+    <div class="msg msg-bot">
+      <div class="notice notice-warn">
+        <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+        <div>
+          <h4>В базе знаний нет подходящей статьи</h4>
+          <p>Не нашёл материалов по этому вопросу. Попробуйте переформулировать или обратитесь в поддержку.</p>
+          <div class="actions">
+            <button class="btn-sm">Переформулировать</button>
+            <button class="btn-sm primary">Написать в поддержку</button>
+          </div>
+        </div>
+      </div>
+    </div>`,
+
+  unauth: () => `
+    <div class="notice notice-err">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <div>
+        <h4>Нет доступа к базе знаний</h4>
+        <p>Сессия помощника истекла или доступ не выдан. Переоткройте портал; если не поможет — обратитесь к администратору.</p>
+        <div class="actions"><button class="btn-sm primary">Повторить</button></div>
+      </div>
+    </div>`,
+
+  error: () => `
+    ${userMsg('Как настроить фильтры в отчёте?')}
+    <div class="notice notice-err">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+      <div>
+        <h4>Помощник временно недоступен</h4>
+        <p>Сервис не отвечает. Вопрос сохранён — можно отправить повторно.</p>
+        <div class="actions">
+          <button class="btn-sm primary">Повторить запрос</button>
+          <button class="btn-sm">Написать в поддержку</button>
+        </div>
+      </div>
+    </div>`,
+
+  expired: () => `
+    <div class="notice notice-info">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>
+      <div>
+        <h4>Диалог начат заново</h4>
+        <p>Предыдущая беседа хранилась 24 часа и была очищена на сервере. История сообщений недоступна, но можно задать вопрос снова.</p>
+      </div>
+    </div>
+    ${STATES.empty()}`,
+
+  rated: () => `
+    ${userMsg('Как настроить фильтры в отчёте?')}
+    <div class="msg msg-bot">
+      ${ANSWER_HTML}
+      ${thumbs([0], 'single')}
+      ${sources([{ title: 'Как настроить фильтры отчёта', chunks: 3, url: '#article-215341' }])}
+      ${foot({ rated: 'down' })}
+      <div class="notice notice-info" style="margin-top:10px">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div style="width:100%">
+          <h4>Что было не так?</h4>
+          <p>Отзыв поможет улучшить базу знаний. Необязательно.</p>
+          <div class="actions">
+            <button class="btn-sm">Ответ не по теме</button>
+            <button class="btn-sm">Неполный ответ</button>
+            <button class="btn-sm">Фактическая ошибка</button>
+          </div>
+          <div class="actions" style="margin-top:8px">
+            <button class="btn-sm primary">Отправить отзыв</button>
+            <button class="btn-sm">Написать в поддержку</button>
+          </div>
+        </div>
+      </div>
+    </div>`,
+};
+
+function render(state) {
+  log.innerHTML = STATES[state] ? STATES[state]() : STATES.empty();
+  log.scrollTop = log.scrollHeight;
+  body.dataset.state = state;
+  document.querySelectorAll('#stateList button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.state === state));
+  });
+}
+
+/* ────────── Взаимодействие ────────── */
+
+const openChat = () => { body.dataset.open = 'true'; document.getElementById('composer').focus(); };
+const closeChat = () => { body.dataset.open = 'false'; };
+
+document.getElementById('chatHeaderBtn').onclick = openChat;
+document.getElementById('chatFabBtn').onclick = openChat;
+document.getElementById('closeBtn').onclick = closeChat;
+document.getElementById('clearBtn').onclick = () => render('empty');
+
+document.getElementById('entrySeg').onclick = (e) => {
+  const btn = e.target.closest('button[data-entry]');
+  if (!btn) return;
+  body.dataset.entry = btn.dataset.entry;
+  document.querySelectorAll('#entrySeg button').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b === btn));
+  });
+};
+
+document.getElementById('stateList').onclick = (e) => {
+  const btn = e.target.closest('button[data-state]');
+  if (!btn) return;
+  render(btn.dataset.state);
+  openChat();
+};
+
+document.getElementById('demoToggle').onclick = () => {
+  body.dataset.demo = body.dataset.demo === 'collapsed' ? 'expanded' : 'collapsed';
+};
+
+/* Композер */
+const composer = document.getElementById('composer');
+const counter = document.getElementById('counter');
+const sendBtn = document.getElementById('sendBtn');
+
+composer.addEventListener('input', () => {
+  composer.style.height = 'auto';
+  composer.style.height = Math.min(composer.scrollHeight, 120) + 'px';
+  counter.textContent = `${composer.value.length} / 1000`;
+  counter.classList.toggle('over', composer.value.length > 950);
+  sendBtn.disabled = composer.value.trim().length === 0;
+});
+
+composer.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+
+sendBtn.onclick = send;
+
+log.addEventListener('click', (e) => {
+  const starter = e.target.closest('.starter');
+  if (starter) { composer.value = starter.textContent; composer.dispatchEvent(new Event('input')); send(); return; }
+
+  const thumb = e.target.closest('.thumb[data-img]');
+  if (thumb) { openLightbox(Number(thumb.dataset.img)); return; }
+
+  const like = e.target.closest('.foot-btn.like');
+  if (like) { like.classList.toggle('active'); like.parentElement.querySelector('.down')?.classList.remove('active'); return; }
+
+  const down = e.target.closest('.foot-btn.down');
+  if (down) { render('rated'); }
+});
+
+/* Имитация запроса: шаги → ответ (стриминга в API нет) */
+function send() {
+  const text = composer.value.trim() || 'Как настроить фильтры в отчёте?';
+  composer.value = ''; composer.dispatchEvent(new Event('input'));
+
+  log.innerHTML = userMsg(text) + `
+    <div class="msg msg-bot" id="pending">
+      <div class="steps">
+        <div class="step active" data-i="0"><span class="dot"></span> Поиск по базе знаний</div>
+        <div class="step" data-i="1"><span class="dot"></span> Сборка контекста</div>
+        <div class="step" data-i="2"><span class="dot"></span> Генерация ответа</div>
+      </div>
+    </div>`;
+  log.scrollTop = log.scrollHeight;
+
+  const steps = log.querySelectorAll('.step');
+  const marks = ['0,9 с', '0,1 с', '1,5 с'];
+  let i = 0;
+  const tick = () => {
+    if (i > 0) {
+      steps[i - 1].classList.remove('active');
+      steps[i - 1].classList.add('done');
+      steps[i - 1].insertAdjacentHTML('beforeend', `<span class="ms">${marks[i - 1]}</span>`);
+    }
+    if (i < steps.length) {
+      steps[i].classList.add('active');
+      i += 1;
+      setTimeout(tick, i === 3 ? 1500 : 900);
+    } else {
+      render('answer');
+    }
+  };
+  setTimeout(tick, 900);
+}
+
+/* ────────── Лайтбокс ────────── */
+
+let lbIndex = 0;
+let lbZoom = 1;
+
+function openLightbox(i) {
+  lbIndex = i; lbZoom = 1;
+  paintLightbox();
+  body.dataset.lightbox = 'true';
+}
+
+function paintLightbox() {
+  const img = IMAGES[lbIndex];
+  document.getElementById('lbImg').src = img.src;
+  document.getElementById('lbImg').alt = img.title;
+  document.getElementById('lbImg').style.transform = `scale(${lbZoom})`;
+  document.getElementById('lbTitle').textContent = img.title;
+  document.getElementById('lbCaption').textContent = img.caption;
+  document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${IMAGES.length}`;
+  document.getElementById('lbZoomVal').textContent = Math.round(lbZoom * 100) + '%';
+  const src = document.getElementById('lbSource');
+  src.href = img.url;
+  src.textContent = `Источник: ${img.article} ↗`;
+}
+
+const closeLb = () => { body.dataset.lightbox = 'false'; };
+const stepLb = (d) => { lbIndex = (lbIndex + d + IMAGES.length) % IMAGES.length; lbZoom = 1; paintLightbox(); };
+const zoomLb = (d) => { lbZoom = Math.min(3, Math.max(0.5, lbZoom + d)); paintLightbox(); };
+
+document.getElementById('lbClose').onclick = closeLb;
+document.getElementById('lbPrev').onclick = () => stepLb(-1);
+document.getElementById('lbNext').onclick = () => stepLb(1);
+document.getElementById('lbZoomIn').onclick = () => zoomLb(0.25);
+document.getElementById('lbZoomOut').onclick = () => zoomLb(-0.25);
+document.getElementById('lbDownload').onclick = closeLb;
+document.querySelector('.lb-stage').addEventListener('click', (e) => {
+  if (e.target.classList.contains('lb-stage')) closeLb();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (body.dataset.lightbox === 'true') {
+    if (e.key === 'Escape') closeLb();
+    if (e.key === 'ArrowLeft') stepLb(-1);
+    if (e.key === 'ArrowRight') stepLb(1);
+    if (e.key === '+' || e.key === '=') zoomLb(0.25);
+    if (e.key === '-') zoomLb(-0.25);
+    return;
+  }
+  if (e.key === 'Escape' && body.dataset.open === 'true') closeChat();
+});
+
+render('empty');
+</script>
+</body>
+</html>

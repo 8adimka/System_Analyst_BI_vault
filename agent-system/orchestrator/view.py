@@ -26,6 +26,11 @@ class IsolationUnavailable(RuntimeError):
 
 _HISTORY = {"legacy", "history", "archive", "archives", "migration", "migrations", "old", "drafts"}
 _SECRET_NAMES = {"доступы.txt", "auth.json", ".env", ".netrc", "credentials", "id_rsa", "id_ed25519"}
+_RESEARCH_SKILLS = (
+    "codebase-investigator", "requirements-clarifier", "jira-task-writer",
+    "task-reviser", "consistency-reviewer", "evidence-reviewer",
+)
+_RUNTIME_INSTRUCTIONS = "agent-system/runtime/AGENTS.md"
 _PROXY_ENV = tuple(name for upper in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY")
                    for name in (upper, upper.lower()))
 _CERT_ENV = {"SSL_CERT_FILE": False, "SSL_CERT_DIR": True, "CODEX_CA_CERTIFICATE": False}
@@ -99,10 +104,13 @@ def _canonical_file(path: Path, workspace: Path) -> Path:
     if path != path.resolve() or not path.is_file() or not path.is_relative_to(workspace):
         raise AccessDenied("Input must be an existing regular workspace file without symlinks")
     relative = path.relative_to(workspace)
-    if any(p in {".agent", ".git", ".codex", ".aws"} for p in relative.parts):
+    if any(p in {".agent", ".agents", ".git", ".codex", ".aws"} for p in relative.parts):
         raise AccessDenied("Private history and credentials cannot be input sources")
-    if relative.parts[:2] == (".private", "runtime"):
-        raise AccessDenied("Other runs and drafts cannot be input sources")
+    if relative.parts[:2] in {(".private", "runtime"), (".private", "development"),
+                             (".private", "mockups")}:
+        raise AccessDenied("Other runs, development artifacts and drafts cannot be input sources")
+    if relative.as_posix() in {"AGENTS.md", "AGENT.md"}:
+        raise AccessDenied("Interactive instructions cannot replace runtime instructions")
     if path.name.lower() in _SECRET_NAMES or path.name.startswith(".env."):
         raise AccessDenied("Credential files cannot be input sources")
     return path
@@ -134,15 +142,21 @@ class PreparedView:
 
     def _files(self, role: str = "reviewer") -> list[Path]:
         files = set(self.sources) | set(self.analyst_sources)
-        for pattern in ("AGENTS.md", "agent-system/standards/**/*.md", ".agents/skills/**/SKILL.md", ".codex/agents/*.toml"):
+        # Interactive developer instructions and skills are a separate context.
+        # An allowlist prevents newly installed roles from entering blind review.
+        patterns = (_RUNTIME_INSTRUCTIONS, "agent-system/standards/**/*.md",
+                    *(f".agents/skills/{skill}/SKILL.md" for skill in _RESEARCH_SKILLS),
+                    ".codex/agents/analyst.toml", ".codex/agents/reviewer.toml")
+        for pattern in patterns:
             for path in self.workspace.glob(pattern):
                 if path.is_file() and path == path.resolve():
                     files.add(path)
         if self.include_corporate:
             knowledge = self.workspace / ".private" / "knowledge"
-            manifest = knowledge / "sources.json"
-            if manifest.is_file() and manifest == manifest.resolve():
-                files.add(manifest)
+            for name in ("sources.json", "fullstack-sources.json"):
+                manifest = knowledge / name
+                if manifest.is_file() and manifest == manifest.resolve():
+                    files.add(manifest)
             # This one extracted normative checklist is an explicit input; the
             # rest of legacy (migration notes and historical drafts) stays hidden.
             checklist = knowledge / "legacy" / "domain-checks.md"
@@ -208,7 +222,13 @@ class PreparedView:
                 argv += ["--ro-bind", path, path]
         directories: set[Path] = {self.workspace, home, Path.home()}
         files = self._files(role)
-        mounts: list[tuple[Path, Path]] = [(p, p) for p in files]
+        # Codex discovers the root AGENTS.md automatically. Supply the analytics
+        # entrypoint at that location instead of the interactive developer file.
+        # A missing/unsafe runtime entrypoint never falls back to the host root.
+        runtime_instructions = self.workspace / _RUNTIME_INSTRUCTIONS
+        mounts: list[tuple[Path, Path]] = [
+            (p, self.workspace / "AGENTS.md" if p == runtime_instructions else p) for p in files
+        ]
         network_environment, certificates = _network_environment(self.workspace)
         mounts.extend((p, p) for p in certificates)
         masked: list[Path] = []

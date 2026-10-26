@@ -40,6 +40,92 @@ class ViewTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         return completed.stdout
 
+    def analytics_and_developer_files(self):
+        analytics = {
+            "agent-system/runtime/AGENTS.md": "synthetic read-only analytics instructions",
+            "agent-system/standards/review-protocol.md": "synthetic review protocol",
+            ".codex/agents/analyst.toml": "synthetic analyst role",
+            ".codex/agents/reviewer.toml": "synthetic reviewer role",
+        }
+        for skill in ("codebase-investigator", "requirements-clarifier", "jira-task-writer",
+                      "task-reviser", "consistency-reviewer", "evidence-reviewer"):
+            analytics[f".agents/skills/{skill}/SKILL.md"] = "synthetic research skill: " + skill
+        developer = {
+            "AGENTS.md": "synthetic full-stack default instructions",
+            "AGENT.md": "synthetic developer entrypoint",
+            ".codex/config.toml": 'sandbox_mode = "workspace-write"',
+            ".codex/agents/fullstack.toml": "synthetic full-stack role",
+            ".agents/skills/portal-fullstack/SKILL.md": "synthetic implementation skill",
+            ".agents/skills/portal-html-mockup/SKILL.md": "synthetic HTML mockup skill",
+            ".agents/skills/codebase-wiki/SKILL.md": "synthetic Wiki-writing skill",
+            ".private/development/topic/notes.md": "synthetic developer working notes",
+            ".private/mockups/topic/index.html": "synthetic developer HTML mockup",
+        }
+        for relative, value in (analytics | developer).items():
+            path = self.workspace / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(value)
+        return analytics, developer
+
+    def test_instruction_mounts_use_analytics_entrypoint_and_research_allowlist(self):
+        analytics, developer = self.analytics_and_developer_files()
+        view = self.new_view()
+        for role in ("analyst", "reviewer"):
+            with self.subTest(role=role), patch.dict(os.environ, {}, clear=True):
+                command = view.command(role, "/usr/bin/true")
+            mounts = {Path(command[index+2]): Path(command[index+1])
+                      for index, value in enumerate(command) if value == "--ro-bind"}
+            runtime = self.workspace / "agent-system/runtime/AGENTS.md"
+            self.assertEqual(mounts[self.workspace / "AGENTS.md"], runtime)
+            self.assertNotIn(self.workspace / "AGENTS.md", mounts.values())
+            for relative in analytics:
+                if relative != "agent-system/runtime/AGENTS.md":
+                    self.assertEqual(mounts[self.workspace / relative], self.workspace / relative)
+            for relative in developer:
+                if relative != "AGENTS.md":
+                    self.assertNotIn(self.workspace / relative, mounts)
+
+    def test_missing_or_symlink_runtime_instructions_never_use_interactive_fallback(self):
+        interactive = self.workspace / "AGENTS.md"
+        interactive.write_text("synthetic full-stack default instructions")
+        runtime = self.workspace / "agent-system/runtime/AGENTS.md"
+        runtime.parent.mkdir(parents=True)
+        view = self.new_view()
+        for kind in ("missing", "symlink"):
+            if kind == "symlink":
+                runtime.symlink_to(interactive)
+            with self.subTest(kind=kind), patch.dict(os.environ, {}, clear=True):
+                command = view.command("reviewer", "/usr/bin/true")
+            mounts = [(command[index+1], command[index+2])
+                      for index, value in enumerate(command) if value == "--ro-bind"]
+            self.assertFalse(any(str(interactive) in mount or str(runtime) in mount for mount in mounts))
+
+    @unittest.skipUnless(shutil.which("bwrap"), "bubblewrap is not installed")
+    def test_physical_analytics_view_excludes_developer_context_and_artifacts(self):
+        analytics, developer = self.analytics_and_developer_files()
+        paths = [str(self.workspace / relative) for relative in analytics | developer]
+        script = ("import json,pathlib; paths=" + repr(paths) +
+                  "; print(json.dumps({p: pathlib.Path(p).read_text() if pathlib.Path(p).is_file() else None for p in paths}))")
+        view = self.new_view()
+        for role in ("analyst", "reviewer"):
+            with self.subTest(role=role), patch.dict(os.environ, {}, clear=True):
+                result = json.loads(self.run_view(view, script, role=role))
+                self.assertEqual(result[str(self.workspace / "AGENTS.md")],
+                                 analytics["agent-system/runtime/AGENTS.md"])
+                for relative, value in analytics.items():
+                    expected = None if relative == "agent-system/runtime/AGENTS.md" else value
+                    self.assertEqual(result[str(self.workspace / relative)], expected)
+                for relative in developer:
+                    if relative != "AGENTS.md":
+                        self.assertIsNone(result[str(self.workspace / relative)])
+                denied = subprocess.run(view.command(role, "/usr/bin/python3", ["-c",
+                    "from pathlib import Path; Path('AGENTS.md').write_text('changed')"]),
+                    capture_output=True, text=True, timeout=15)
+                self.assertNotEqual(denied.returncode, 0)
+        self.assertEqual((self.workspace / "AGENTS.md").read_text(), developer["AGENTS.md"])
+        self.assertEqual((self.workspace / "agent-system/runtime/AGENTS.md").read_text(),
+                         analytics["agent-system/runtime/AGENTS.md"])
+
     def test_network_environment_uses_only_proxy_and_certificate_allowlist(self):
         certificates = self.workspace.parent / "certificates"
         certificates.mkdir()
@@ -184,7 +270,10 @@ class ViewTests(unittest.TestCase):
         self.assertGreater(int(output.strip()), 0)
 
     def test_history_sources_are_refused(self):
-        for relative in ("topic/.agent/draft.txt", ".private/runtime/old/draft.txt", "Доступы.txt", ".env"):
+        for relative in ("topic/.agent/draft.txt", ".private/runtime/old/draft.txt",
+                         ".private/development/topic/notes.md", ".private/mockups/topic/index.html",
+                         ".agents/skills/portal-fullstack/SKILL.md", ".codex/agents/fullstack.toml",
+                         "AGENTS.md", "AGENT.md", "Доступы.txt", ".env"):
             path = self.workspace / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("synthetic")
@@ -237,6 +326,9 @@ class ViewTests(unittest.TestCase):
             ".private/repositories/project/src.py": "synthetic code",
             ".private/repositories/project/.env": "synthetic secret",
             ".private/repositories/project/.git/config": "synthetic credentials",
+            ".private/knowledge/sources.json": '{"registry": "research sources"}',
+            ".private/knowledge/fullstack-sources.json": '{"registry": "development sources"}',
+            ".private/knowledge/unlisted-draft.json": '{"draft": "hidden"}',
         }
         for relative, value in files.items():
             path = self.workspace / relative
@@ -253,18 +345,25 @@ class ViewTests(unittest.TestCase):
                 self.skipTest("host disables unprivileged namespaces")
             self.assertEqual(completed.returncode, 0, completed.stderr)
             result = json.loads(completed.stdout)
-            for relative in list(files)[:4] + [".private/knowledge/legacy/old.md"]:
+            for relative in list(files)[:4] + [".private/knowledge/legacy/old.md",
+                                               ".private/knowledge/unlisted-draft.json"]:
                 self.assertIsNone(result[str(self.workspace / relative)])
             self.assertEqual(result[str(self.workspace / ".private/knowledge/architecture/overview.md")], "current wiki")
             self.assertEqual(result[str(self.workspace / ".private/knowledge/legacy/domain-checks.md")], "normative checks")
             self.assertEqual(result[str(self.workspace / ".private/repositories/project/src.py")], "synthetic code")
             self.assertIsNone(result[str(self.workspace / ".private/repositories/project/.env")])
             self.assertEqual(result[str(self.workspace / ".private/repositories/project/.git/config")], "")
-            write_script = "from pathlib import Path; Path(" + repr(str(self.source)) + ").write_text('changed')"
-            denied = subprocess.run(view.command("reviewer", "/usr/bin/python3", ["-c", write_script]),
-                                    capture_output=True, text=True, timeout=15)
-            self.assertNotEqual(denied.returncode, 0)
-            self.assertEqual(self.source.read_text(), "synthetic input")
+            manifests = [self.workspace / ".private/knowledge" / name
+                         for name in ("sources.json", "fullstack-sources.json")]
+            for manifest in manifests:
+                self.assertEqual(result[str(manifest)], files[str(manifest.relative_to(self.workspace))])
+            for path in [self.source, *manifests]:
+                expected = path.read_text()
+                write_script = "from pathlib import Path; Path(" + repr(str(path)) + ").write_text('changed')"
+                denied = subprocess.run(view.command("reviewer", "/usr/bin/python3", ["-c", write_script]),
+                                        capture_output=True, text=True, timeout=15)
+                self.assertNotEqual(denied.returncode, 0)
+                self.assertEqual(path.read_text(), expected)
         finally:
             view.close()
 

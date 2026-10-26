@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ошибка отдельной визуализации — широкая визуализация</title>
+  <style>
+    @import url("https://cdn.jsdelivr.net/npm/@fontsource/golos-ui@4.5.3/index.css");
+    :root {
+      --background: #f8f9fa;
+      --border: #dcdee3;
+      --heading: #0c0e1b;
+      --description: #606879;
+      --warning: #aeb3bf;
+      --link: #216fc5;
+      --link-hover: #14589c;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { min-width: 0; min-height: 100%; margin: 0; }
+    body { font-family: "Golos UI", Arial, sans-serif; background: #fff; color: var(--heading); }
+    .visualization-error {
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      background: var(--background);
+      overflow: hidden;
+    }
+    .error-content { width: 690px; max-width: calc(100% - 48px); margin: 116px auto 80px; }
+    .warning-icon { display: block; transform: translateX(1px); width: 72px; height: 64px; color: var(--warning); }
+    h1 { margin: 50px 0 0; font-size: 35.8px; line-height: 45px; font-weight: 700; letter-spacing: 0; white-space: nowrap; color: var(--heading); }
+    .description { margin: 24px 0 0; font-size: 28px; line-height: 39px; font-weight: 400; color: var(--description); }
+    .email { display: inline-block; margin-top: 20px; font-size: 28px; line-height: 35px; font-weight: 400; color: var(--link); text-decoration: none; }
+    .download {
+      display: flex; width: max-content; max-width: 100%; align-items: center; gap: 9px;
+      margin-top: 56px;
+      font-size: 28px; line-height: 36px;
+      color: var(--link); font-weight: 600; text-decoration: none;
+    }
+    .download-icon { width: 28px; height: 28px; flex: none; }
+    a:hover { color: var(--link-hover); }
+    a:focus-visible { outline: 3px solid var(--link); outline-offset: 4px; border-radius: 3px; }
+    
+    .next-line { white-space: nowrap; }
+    @media (max-width: 800px) {
+      .error-content { margin: 62px auto 70px; max-width: calc(100% - 58px); }
+      h1 { white-space: normal; font-size: clamp(22px, 4.6vw, 34px); line-height: 1.24; }
+      .description, .email, .download { font-size: clamp(17px, 3vw, 25px); }
+      .description { line-height: 1.4; }
+      .download { line-height: 1.3; }
+      .next-line { white-space: normal; }
+    }
+    @media (max-width: 460px) {
+      .error-content { margin: 42px auto 60px; }
+      .warning-icon { width: 55px; height: 49px; }
+      h1 { margin-top: 34px; }
+      .description { margin-top: 18px; }
+      .download { margin-top: 35px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Макет одного ошибочного виджета: без шапки страницы и без боковой панели. -->
+  <main class="visualization-error" role="alert" aria-labelledby="error-title" aria-describedby="error-description">
+    <div class="error-content">
+      <svg class="warning-icon" viewBox="0 0 72 64" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M36 5 L67 58 H5 Z" stroke="currentColor" stroke-width="5.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M36 24 V40" stroke="currentColor" stroke-width="5.8" stroke-linecap="butt"/>
+        <path d="M36 47 V52" stroke="currentColor" stroke-width="5.8" stroke-linecap="butt"/>
+      </svg>
+      <h1 id="error-title">Что-то пошло не так. <span class="next-line">Уже разбираемся</span></h1>
+      <p class="description" id="error-description">Вы можете скачать файл с детальной информацией об ошибке и сообщить нам на почту</p>
+      <a class="email" href="mailto:112@modusbi.ru">112@modusbi.ru</a>
+      <a class="download" id="download-error" href="#" download="information-about-error.txt">
+        <svg class="download-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M14 3 V19 M7 13 L14 20 L21 13 M4 24 H24" stroke="currentColor" stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter"/>
+        </svg>
+        <span>Скачать текст ошибки</span>
+      </a>
+    </div>
+  </main>
+  <script>
+    // Демонстрационная загрузка: реальные детали ошибки должен подставлять продукт.
+    document.getElementById('download-error').addEventListener('click', function (event) {
+      event.preventDefault();
+      const text = 'Экран ошибки отдельной визуализации\n' +
+        'Демонстрационный HTML-макет.\n' +
+        'Реальные диагностические сведения в макет не переданы.\n';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'information-about-error.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  </script>
+</body>
+</html>

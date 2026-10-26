@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ошибка загрузки данных — узкая визуализация</title>
+  <style>
+    @import url("https://cdn.jsdelivr.net/npm/@fontsource/golos-ui@4.5.3/index.css");
+    :root {
+      --background: #f8f9fa;
+      --border: #dcdee3;
+      --heading: #0c0e1b;
+      --description: #606879;
+      --warning: #aeb3bf;
+      --link: #216fc5;
+      --link-hover: #14589c;
+      --accent: #f47a55;
+      --accent-hover: #ea704b;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { min-width: 0; min-height: 100%; margin: 0; }
+    body { font-family: "Golos UI", Arial, sans-serif; background: #fff; color: var(--heading); }
+    /* Narrow visualization specimen (also works as an embedded widget). */
+    .visualization-error {
+      width: 100%;
+      max-width: 460px;
+      border: 2px solid var(--border);
+      border-radius: 25px;
+      background: var(--background);
+      overflow: hidden;
+      container-type: inline-size;
+    }
+    .error-content { min-width: 0; margin: 64px 32px 24px; }
+    .warning-icon { display: block; transform: translateX(1px); width: 72px; height: 64px; color: var(--warning); }
+    h1 { margin: 42px 0 0; font-size: 33px; line-height: 1.24; font-weight: 700; letter-spacing: 0; color: var(--heading); overflow-wrap: break-word; }
+    .description { margin: 22px 0 0; font-size: 25px; line-height: 1.4; font-weight: 400; color: var(--description); }
+    /* Shared action styles: identical to the agreed full-report error screen. */
+    .download-row { margin: 24px 0 0; }
+    .download-link { display:inline-flex; align-items:center; gap:10px; color:#2a82ea; font-size:23px; line-height:1; text-decoration:none; font-weight:400; }
+    .download-link:hover { text-decoration:underline; text-underline-offset:4px; }
+    .download-link svg { width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+    .support-row { margin: 24px 0 0; }
+    .support-button { display:inline-flex; align-items:center; justify-content:center; padding:15px 26px; background:var(--accent); color:#fff; border-radius:8px; text-decoration:none; font-size:23px; line-height:1.1; font-weight:400; }
+    .support-button:hover, .support-button:focus-visible { background:var(--accent-hover); }
+    a:focus-visible { outline: 3px solid var(--link); outline-offset: 4px; border-radius: 3px; }
+    
+    /* Layout follows the tile width, not only the browser viewport. */
+    .download-link { max-width:100%; line-height:1.2; }
+    .download-link svg { flex:0 0 24px; }
+    .download-link span { min-width:0; }
+    .support-button { max-width:100%; text-align:center; }
+    @container (max-width: 380px) {
+      .error-content { margin: 46px 24px 24px; }
+      .warning-icon { width: 62px; height: 55px; }
+      h1 { margin-top: 34px; font-size: 28px; }
+      .description { margin-top: 20px; font-size: 21px; }
+      .download-row { margin-top: 28px; }
+      .download-link { font-size: 21px; }
+      .support-button { font-size: 20px; padding:14px 19px; }
+    }
+    @container (max-width: 300px) {
+      .error-content { margin: 34px 17px 24px; }
+      .warning-icon { width: 54px; height: 48px; }
+      h1 { font-size: 25px; }
+      .description { font-size: 18px; }
+      .download-link { font-size: 18px; }
+      .support-button { font-size: 17px; padding:13px 13px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Макет одного ошибочного виджета: без шапки страницы и без боковой панели. -->
+  <main class="visualization-error" role="alert" aria-labelledby="error-title" aria-describedby="error-description">
+    <div class="error-content">
+      <svg class="warning-icon" viewBox="0 0 72 64" aria-hidden="true" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M36 5 L67 58 H5 Z" stroke="currentColor" stroke-width="5.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M36 24 V40" stroke="currentColor" stroke-width="5.8" stroke-linecap="butt"/>
+        <path d="M36 47 V52" stroke="currentColor" stroke-width="5.8" stroke-linecap="butt"/>
+      </svg>
+      <h1 id="error-title">Не удалось загрузить данные</h1>
+      <p class="description" id="error-description">Обновите страницу или повторите попытку позже</p>
+      <div class="download-row">
+        <a class="download-link" id="download-error" href="#" download="information-about-error.txt">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>
+          <span>Скачать информацию об ошибке</span>
+        </a>
+      </div>
+      <div class="support-row">
+        <a class="support-button" href="https://portal.frprf.ru/online/gisp/" target="_blank" rel="noopener noreferrer">Техническая поддержка</a>
+      </div>
+    </div>
+  </main>
+  <script>
+    // Демонстрационная загрузка: реальные детали ошибки должен подставлять продукт.
+    document.getElementById('download-error').addEventListener('click', function (event) {
+      event.preventDefault();
+      const text = 'Не удалось загрузить данные визуализации\n' +
+        'Демонстрационный HTML-макет.\n' +
+        'Реальные диагностические сведения в макет не переданы.\n';
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'information-about-error.txt';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  </script>
+</body>
+</html>

@@ -7,7 +7,7 @@ from pydantic import Field
 
 from .access import ArtifactGateway
 from .inputs import digest, repositories, verify_evidence
-from .models import Draft, Message, Research, Review, unresolved
+from .models import Draft, Message, Research, Review, pending_readability, tracked_findings, unresolved
 from .sdk_adapter import EmptyThreadError
 from .segmented import DraftPart, MAX_DRAFT_PARTS, combine_parts, part_prompt
 
@@ -29,6 +29,7 @@ class State(Message):
     cycles: int = 0
     bonus_used: bool = False
     bonus_active: bool = False
+    readability_revision_used: bool = False
     answers: list[str] = Field(default_factory=list)
     questions: list[str] = Field(default_factory=list)
     wait_reason: str = ""
@@ -218,7 +219,7 @@ class Pipeline:
             ids = [f.id for f in result.findings]
             if len(ids) != len(set(ids)):
                 raise ValueError("Повторяющиеся ID замечаний")
-            if state.reviews and any(f.id not in ids for f in unresolved(state.reviews[-1])):
+            if state.reviews and any(f.id not in ids for f in tracked_findings(state.reviews[-1])):
                 raise ValueError("Ревью пропустило ранее незакрытые замечания")
         self._check_versions(state)
         if not path.exists():
@@ -255,7 +256,7 @@ class Pipeline:
         if not review.findings:
             text += "Замечаний не выявлено.\n"
         for finding in review.findings:
-            text += f"\n## {finding.id}: {finding.severity}, {finding.status}\n\n{finding.claim}\n\nМесто: {finding.draft_anchor}\n\nВлияние: {finding.impact}\n\nИсправление: {finding.requested_change}\n\nСвидетельства:\n"
+            text += f"\n## {finding.id}: {finding.category}, {finding.severity}, {finding.status}\n\n{finding.claim}\n\nМесто: {finding.draft_anchor}\n\nВлияние: {finding.impact}\n\nИсправление: {finding.requested_change}\n\nСвидетельства:\n"
             for evidence in finding.evidence:
                 text += f"\n- {evidence.path} — {evidence.symbol}, версия {evidence.revision}: {evidence.observation}\n"
         if review.questions:
@@ -311,6 +312,7 @@ class Pipeline:
                     else:
                         # Analyst does not receive the independent reviewer's conclusions.
                         prompt += "\nИсследуй исходники самостоятельно и подготовь компактную полную постановку Jira wiki по стандартам. Верни Draft; вопросов максимум 3, если ответ невозможно найти по источникам."
+                    prompt += "\nПеред возвратом Draft выполни проход «Ясность и редактура» из requirements-quality.md; улучшай формулировки без изменения смысла, условий и обязательности требований."
                     prompt += "\nОшибки формата: " + json.dumps(state.style_errors, ensure_ascii=False)
                     state.draft = self._call(state, "analyst", state.stage.lower(), prompt, Draft)
                     state.version += 1
@@ -323,7 +325,7 @@ class Pipeline:
                     if state.cycles >= (6 if state.bonus_active else 5):
                         self._wait(state, ["Лимит ревью достигнут; решите незакрытые замечания."], "review")
                         return state
-                    prompt = base_prompt(state) + "\nСопоставь текущую версию с твоим ранее зафиксированным независимым исследованием. Проверь реальные исходники, полноту, отрицательные сценарии, данные, предусловия, терминологию, техническую реалистичность, трассировку требований и AC. Нельзя закрыть замечание только со слов аналитика: проверь новую версию. Сохраняй ID проблем; у закрытых укажи доказательство исправления. Недоказанное возражение требует исследования. Верни Review.\n" + json.dumps({"version": state.version, "draft": state.draft.model_dump(), "previous_review": state.reviews[-1].model_dump() if state.reviews else None}, ensure_ascii=False)
+                    prompt = base_prompt(state) + "\nСопоставь текущую версию с твоим ранее зафиксированным независимым исследованием. Проверь реальные исходники, полноту, отрицательные сценарии, данные, предусловия, терминологию, техническую реалистичность, трассировку требований и AC. Примени «Ясность и редактура» из requirements-quality.md, отделяя редактуру от содержательной неоднозначности. Нельзя закрыть замечание только со слов аналитика: проверь новую версию. Сохраняй ID проблем, включая открытые readability/minor; у закрытых укажи доказательство исправления. Недоказанное возражение требует исследования. Верни Review.\n" + json.dumps({"version": state.version, "draft": state.draft.model_dump(), "previous_review": state.reviews[-1].model_dump() if state.reviews else None}, ensure_ascii=False)
                     review = self._call(state, "reviewer", "review", prompt, Review)
                     self._review_report(state, review)
                     previous = state.reviews[-1] if state.reviews else None
@@ -335,13 +337,23 @@ class Pipeline:
                     open_findings = unresolved(review)
                     # Missing prior findings cannot silently turn into approval.
                     present = {f.id for f in review.findings}
-                    omitted = [f for f in unresolved(previous) if f.id not in present] if previous else []
+                    omitted = [f for f in tracked_findings(previous) if f.id not in present] if previous else []
                     if omitted:
                         raise ValueError("Ревью пропустило ранее незакрытые замечания; нужно явно проверить их статус")
                     questions = list(dict.fromkeys(review.questions + state.draft.questions))
                     if questions:
                         questions = list(dict.fromkeys(questions + extract_open_questions(state.draft.jira)))
                     if not open_findings and not questions and not style_errors:
+                        # One editing-only revision shares the ordinary review budget.
+                        # Persist the attempt before any analyst turn so retries cannot
+                        # turn a transport failure into another editorial allowance.
+                        if (pending_readability(review) and not state.readability_revision_used
+                                and state.cycles < 5 and not state.bonus_active):
+                            state.readability_revision_used = True
+                            state.events.append(f"readability-revision-{state.version}-{state.cycles}")
+                            state.stage = state.retry_stage = "REVISION"
+                            save(self.gateway, state)
+                            continue
                         return self._finish(state, "APPROVED")
                     repeated = False
                     if previous:

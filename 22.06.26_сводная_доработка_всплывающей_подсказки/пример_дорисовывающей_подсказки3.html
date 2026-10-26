@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modus BI · Многострочная дорисовывающая подсказка</title>
+  <style>
+    :root {
+      --mbi-bg: #f4f7fb;
+      --mbi-surface: #ffffff;
+      --mbi-surface-2: #f8fbff;
+      --mbi-ink: #162033;
+      --mbi-muted: #657084;
+      --mbi-line: #dce3ef;
+      --mbi-line-strong: #bcc9da;
+      --mbi-primary: #355cff;
+      --mbi-primary-2: #7b5cff;
+      --mbi-accent: #00b3c7;
+      --mbi-good: #0d9f67;
+      --mbi-warn: #d98b00;
+      --mbi-danger: #e45858;
+      --mbi-shadow: 0 18px 50px rgba(28, 44, 74, 0.13);
+      --mbi-shadow-soft: 0 10px 28px rgba(28, 44, 74, 0.08);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 10px;
+      --cell-x: 16px;
+      --cell-y: 14px;
+      --line-height: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--mbi-ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(53, 92, 255, 0.16), transparent 31%),
+        radial-gradient(circle at 88% 0%, rgba(0, 179, 199, 0.17), transparent 29%),
+        radial-gradient(circle at 70% 78%, rgba(123, 92, 255, 0.10), transparent 34%),
+        linear-gradient(180deg, #fbfdff 0%, var(--mbi-bg) 48%, #eef3fb 100%);
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-card,
+    .rules-card,
+    .table-card,
+    .state-card,
+    .notes-card {
+      border: 1px solid rgba(220, 227, 239, 0.92);
+      background: rgba(255, 255, 255, 0.86);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--mbi-shadow-soft);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      padding: 32px;
+      min-height: 300px;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(53, 92, 255, 0.08), transparent 42%),
+        linear-gradient(320deg, rgba(0, 179, 199, 0.08), transparent 46%);
+    }
+
+    .brand-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 34px;
+      color: #42506a;
+      font-weight: 760;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--mbi-primary), var(--mbi-primary-2) 55%, var(--mbi-accent));
+      box-shadow: 0 10px 24px rgba(53, 92, 255, 0.28);
+      font-weight: 850;
+    }
+
+    h1 {
+      position: relative;
+      max-width: 780px;
+      margin: 0 0 14px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 0.97;
+      letter-spacing: -0.055em;
+    }
+
+    .lead {
+      position: relative;
+      max-width: 780px;
+      margin: 0;
+      color: var(--mbi-muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .rules-card {
+      padding: 26px;
+    }
+
+    .rules-card h2,
+    .table-card h2,
+    .state-card h2,
+    .notes-card h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .rules-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rules-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: var(--mbi-muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .rule-dot {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      color: var(--mbi-primary);
+      background: rgba(53, 92, 255, 0.1);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .table-card {
+      position: relative;
+      z-index: 1;
+      overflow: visible;
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toolbar-title strong {
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .toolbar-title span {
+      color: var(--mbi-muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(53, 92, 255, 0.18);
+      border-radius: 999px;
+      color: #2946c8;
+      background: rgba(53, 92, 255, 0.08);
+      font-size: 13px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mbi-good);
+      box-shadow: 0 0 0 5px rgba(13, 159, 103, 0.12);
+    }
+
+    .table-shell {
+      position: relative;
+      overflow: visible;
+      border: 1px solid var(--mbi-line);
+      border-radius: 18px;
+      background: var(--mbi-surface);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+    }
+
+    .data-grid {
+      position: relative;
+      overflow: visible;
+      min-width: 980px;
+    }
+
+    .grid-row {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 190px 310px 250px 230px;
+      min-height: 96px;
+      background: var(--mbi-surface);
+    }
+
+    .grid-row:hover,
+    .grid-row:focus-within {
+      z-index: 30;
+    }
+
+    .grid-row + .grid-row {
+      border-top: 1px solid var(--mbi-line);
+    }
+
+    .grid-head {
+      z-index: 70;
+      min-height: 44px;
+      color: #5c6880;
+      background: linear-gradient(180deg, #f9fbfe, #f3f7fc);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .grid-cell {
+      position: relative;
+      min-height: inherit;
+      padding: 0 var(--cell-x);
+      border-right: 1px solid var(--mbi-line);
+      overflow: visible;
+      background: inherit;
+    }
+
+    .grid-head .grid-cell {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      background: transparent;
+    }
+
+    .grid-cell:last-child { border-right: 0; }
+
+    .grid-row:not(.grid-head):hover .grid-cell,
+    .grid-row:not(.grid-head):focus-within .grid-cell {
+      background: #fbfdff;
+    }
+
+    .meta-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 7px;
+      color: var(--mbi-muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .meta-cell strong {
+      color: var(--mbi-ink);
+      font-size: 14px;
+      letter-spacing: -0.015em;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 9px;
+      border-radius: 999px;
+      color: #415071;
+      background: rgba(101, 112, 132, 0.10);
+      font-size: 12px;
+      font-weight: 760;
+    }
+
+    .tag.good { color: #087a51; background: rgba(13, 159, 103, 0.11); }
+    .tag.warn { color: #9b6500; background: rgba(217, 139, 0, 0.12); }
+    .tag.blue { color: #2946c8; background: rgba(53, 92, 255, 0.09); }
+
+    .redraw-cell {
+      cursor: default;
+    }
+
+    .redraw-cell:hover,
+    .redraw-cell:focus-within {
+      z-index: 90;
+    }
+
+    .redraw-text {
+      --visible-lines: 3;
+      --collapsed-height: calc((var(--line-height) * var(--visible-lines)) + 8px);
+      --expanded-height: var(--collapsed-height);
+      position: absolute;
+      left: var(--cell-x);
+      top: var(--cell-y);
+      display: block;
+      width: calc(100% - (var(--cell-x) * 2));
+      max-width: calc(100% - (var(--cell-x) * 2));
+      max-height: var(--collapsed-height);
+      padding: 2px 8px 6px;
+      margin-left: -8px;
+      margin-top: -2px;
+      overflow: hidden;
+      border-radius: 11px;
+      color: var(--mbi-ink);
+      background: transparent;
+      outline: 1px solid transparent;
+      box-shadow: none;
+      font-size: 14px;
+      line-height: var(--line-height);
+      letter-spacing: -0.012em;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: normal;
+      transition:
+        max-height 220ms cubic-bezier(.2,.85,.2,1),
+        background 150ms ease,
+        color 150ms ease,
+        box-shadow 150ms ease,
+        outline-color 150ms ease;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .redraw-text::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(53, 92, 255, 0.10), rgba(0, 179, 199, 0.08));
+      opacity: 0;
+      transition: opacity 150ms ease;
+      z-index: -1;
+    }
+
+    .redraw-text::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 22px;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0), var(--mbi-surface) 82%);
+      opacity: 0;
+      transition: opacity 150ms ease;
+    }
+
+    .redraw-cell.is-overflowing .redraw-text::after {
+      opacity: 1;
+    }
+
+    .redraw-cell.is-overflowing:hover .redraw-text,
+    .redraw-cell.is-overflowing:focus-within .redraw-text {
+      max-height: var(--expanded-height);
+      overflow: visible;
+      color: #0c1630;
+      background: rgba(255, 255, 255, 0.97);
+      outline-color: rgba(53, 92, 255, 0.28);
+      box-shadow:
+        0 16px 34px rgba(29, 44, 76, 0.18),
+        0 2px 8px rgba(29, 44, 76, 0.10);
+      z-index: 120;
+    }
+
+    .redraw-cell.is-overflowing:hover .redraw-text::before,
+    .redraw-cell.is-overflowing:focus-within .redraw-text::before {
+      opacity: 1;
+    }
+
+    .redraw-cell.is-overflowing:hover .redraw-text::after,
+    .redraw-cell.is-overflowing:focus-within .redraw-text::after {
+      opacity: 0;
+    }
+
+    .redraw-cell:not(.is-overflowing):hover .redraw-text,
+    .redraw-cell:not(.is-overflowing):focus-within .redraw-text {
+      background: rgba(255, 255, 255, 0.72);
+      outline-color: rgba(188, 201, 218, 0.7);
+    }
+
+    .redraw-text:focus-visible {
+      outline-color: rgba(53, 92, 255, 0.55);
+      box-shadow: 0 0 0 4px rgba(53, 92, 255, 0.12), 0 14px 30px rgba(29, 44, 76, 0.16);
+    }
+
+    .state-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 22px 0 24px;
+    }
+
+    .state-card {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .state-card p {
+      margin: 0 0 14px;
+      color: var(--mbi-muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .mini-table {
+      position: relative;
+      display: grid;
+      grid-template-columns: 214px 214px;
+      width: 428px;
+      border: 1px solid var(--mbi-line);
+      border-radius: 14px;
+      background: #fff;
+      overflow: visible;
+    }
+
+    .mini-row {
+      display: contents;
+    }
+
+    .mini-cell {
+      position: relative;
+      min-height: 82px;
+      border-right: 1px solid var(--mbi-line);
+      border-bottom: 1px solid var(--mbi-line);
+      background: #fff;
+      overflow: visible;
+    }
+
+    .mini-row:last-child .mini-cell { border-bottom: 0; }
+    .mini-cell:nth-child(2n) { border-right: 0; }
+
+    .mini-text {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      width: 180px;
+      max-height: 46px;
+      padding: 1px 7px 5px;
+      margin-left: -7px;
+      overflow: hidden;
+      border-radius: 9px;
+      color: var(--mbi-ink);
+      font-size: 13px;
+      line-height: 20px;
+      background: transparent;
+    }
+
+    .mini-text.is-expanded {
+      max-height: 128px;
+      background: rgba(255, 255, 255, 0.97);
+      outline: 1px solid rgba(53, 92, 255, 0.28);
+      box-shadow: 0 14px 28px rgba(29, 44, 76, 0.16);
+      z-index: 30;
+    }
+
+    .mini-cell.masked .mini-text::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0), #fff 82%);
+    }
+
+    .mini-text.is-expanded::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(53, 92, 255, 0.10), rgba(0, 179, 199, 0.08));
+      z-index: -1;
+    }
+
+    .notes-card {
+      padding: 24px;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .note {
+      padding: 16px;
+      border: 1px solid var(--mbi-line);
+      border-radius: var(--radius-md);
+      background: #fff;
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--mbi-muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    code {
+      padding: 2px 6px;
+      border: 1px solid rgba(53, 92, 255, 0.16);
+      border-radius: 7px;
+      color: #2946c8;
+      background: rgba(53, 92, 255, 0.07);
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1040px) {
+      .hero,
+      .state-grid,
+      .notes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-shell {
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        width: min(100vw - 24px, 1180px);
+        padding-top: 24px;
+      }
+
+      .hero-card,
+      .rules-card,
+      .table-card,
+      .notes-card {
+        border-radius: 18px;
+      }
+
+      .hero-card,
+      .rules-card,
+      .table-card,
+      .notes-card {
+        padding: 18px;
+      }
+
+      .table-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero" aria-label="Описание паттерна">
+      <article class="hero-card">
+        <div class="brand-row">
+          <div class="brand-mark">M</div>
+          <span>Modus BI · Interaction reference</span>
+        </div>
+        <h1>Многострочная дорисовывающая подсказка</h1>
+        <p class="lead">
+          При наведении не появляется отдельный tooltip. Уже отрисованный текстовый слой остаётся на своём месте,
+          сохраняет ширину ячейки и продолжает раскрываться вниз, перекрывая нижние строки таблицы при необходимости.
+        </p>
+      </article>
+
+      <aside class="rules-card" aria-label="Правила поведения">
+        <h2>Ключевые правила</h2>
+        <ul class="rules-list">
+          <li><span class="rule-dot">1</span><span>Исходные строки не меняют позицию, межстрочный интервал и ширину.</span></li>
+          <li><span class="rule-dot">2</span><span>Раскрывается тот же текстовый элемент, а не новая карточка с дублирующим текстом.</span></li>
+          <li><span class="rule-dot">3</span><span>Расширение идёт вертикально: колонка визуально наращивается в высоту.</span></li>
+          <li><span class="rule-dot">4</span><span>Оверлей выходит на передний план и может перекрывать нижние ячейки, не влияя на раскладку сетки.</span></li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="table-card" aria-labelledby="table-title">
+      <div class="table-toolbar">
+        <div class="toolbar-title">
+          <strong id="table-title">Демонстрационная BI-таблица</strong>
+          <span>Наведите на ячейки с длинными описаниями: текст дорисуется вниз в исходной ширине колонки.</span>
+        </div>
+        <span class="pill"><span class="pulse"></span> width fixed · height redraw</span>
+      </div>
+
+      <div class="table-shell">
+        <div class="data-grid" role="table" aria-label="Референсная таблица с многострочной дорисовкой текста">
+          <div class="grid-row grid-head" role="row">
+            <div class="grid-cell" role="columnheader">Проект</div>
+            <div class="grid-cell" role="columnheader">Описание сценария</div>
+            <div class="grid-cell" role="columnheader">Комментарий аналитика</div>
+            <div class="grid-cell" role="columnheader">Статус / владелец</div>
+          </div>
+
+          <div class="grid-row" role="row">
+            <div class="grid-cell meta-cell" role="cell">
+              <strong>Revenue Board</strong>
+              <span>Дашборд продаж</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Проверить, что при наведении на многострочное описание оно не становитсяОтдельнойВсплывающейПодсказкой, а продолжает отрисовываться внутри той же ширины ячейки, сохраняя уже видимые строки без смещения.</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Нижняя часть текста должна выходить поверх соседних строк таблицы, но не изменять высоту строки в layout. Это важно для плотных BI-таблиц с большим количеством показателей.</span>
+            </div>
+            <div class="grid-cell meta-cell" role="cell">
+              <div class="tag-row"><span class="tag good">Готово</span><span class="tag blue">UX</span></div>
+              <span>Ответственный: Вадим</span>
+            </div>
+          </div>
+
+          <div class="grid-row" role="row">
+            <div class="grid-cell meta-cell" role="cell">
+              <strong>Planning Hub</strong>
+              <span>Финансовое планирование</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Если строка обрезана по высоте, раскрытие продолжается вниз: последняя видимая строка не пересчитывается иначе, а последующие строки дорисовываются под ней до конца исходного текста.</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Дополнительный фон и мягкая тень нужны только для читаемости и отделения слоя от нижних ячеек. Они не должны восприниматься как новая подсказка или отдельный компонент.</span>
+            </div>
+            <div class="grid-cell meta-cell" role="cell">
+              <div class="tag-row"><span class="tag warn">На ревью</span><span class="tag">Prototype</span></div>
+              <span>Проверить на плотных таблицах</span>
+            </div>
+          </div>
+
+          <div class="grid-row" role="row">
+            <div class="grid-cell meta-cell" role="cell">
+              <strong>Operations Monitor</strong>
+              <span>Операционные метрики</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Короткий многострочный текст не должен получать агрессивное раскрытие. Если весь контент уже помещается в заданное количество строк, состояние наведения может быть почти незаметным.</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Для клавиатурной доступности такой же эффект можно включать по focus-within: пользователь табом попадает в ячейку и получает тот же слой дорисовки.</span>
+            </div>
+            <div class="grid-cell meta-cell" role="cell">
+              <div class="tag-row"><span class="tag blue">A11y</span><span class="tag good">Stable</span></div>
+              <span>Hover + focus behavior</span>
+            </div>
+          </div>
+
+          <div class="grid-row" role="row">
+            <div class="grid-cell meta-cell" role="cell">
+              <strong>Client Registry</strong>
+              <span>Реестр клиентов</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Сверхдлинное описание процесса согласования, в котором перечисляются несколько участников, этапы проверки, условия перехода между статусами, исключения для повторной обработки и комментарии по отображению в интерфейсе. При наведении весь этот блок должен раскрыться вниз, оставаясь строго в ширине исходной ячейки.</span>
+            </div>
+            <div class="grid-cell redraw-cell" role="cell" tabindex="0">
+              <span class="redraw-text" data-visible-lines="3">Такой вариант нужен там, где расширение вправо невозможно: например, в последней колонке таблицы, в узком сайдбаре или в интерфейсе с закреплёнными колонками.</span>
+            </div>
+            <div class="grid-cell meta-cell" role="cell">
+              <div class="tag-row"><span class="tag warn">Edge case</span></div>
+              <span>Очень длинный контент</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="state-grid" aria-label="Сравнение состояний">
+      <article class="state-card">
+        <h2>Состояние покоя</h2>
+        <p>Ячейка показывает ограниченное количество строк. Текст уже находится в правильной позиции, а нижняя маска только намекает на продолжение.</p>
+        <div class="mini-table" aria-hidden="true">
+          <div class="mini-row">
+            <div class="mini-cell masked">
+              <div class="mini-text">Описание не помещается в высоту ячейки и поэтому визуально обрезается после нескольких строк, не создавая отдельной подсказки.</div>
+            </div>
+            <div class="mini-cell"></div>
+          </div>
+          <div class="mini-row">
+            <div class="mini-cell"></div>
+            <div class="mini-cell"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="state-card">
+        <h2>Состояние наведения</h2>
+        <p>Тот же текстовый слой поднимается выше соседей по z-index, подсвечивается и продолжает рисоваться вниз в той же ширине.</p>
+        <div class="mini-table" aria-hidden="true">
+          <div class="mini-row">
+            <div class="mini-cell">
+              <div class="mini-text is-expanded">Описание не помещается в высоту ячейки и поэтому визуально обрезается после нескольких строк, не создавая отдельной подсказки.</div>
+            </div>
+            <div class="mini-cell"></div>
+          </div>
+          <div class="mini-row">
+            <div class="mini-cell"></div>
+            <div class="mini-cell"></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="notes-card" aria-labelledby="notes-title">
+      <h2 id="notes-title">Технические акценты для реализации</h2>
+      <div class="notes-grid">
+        <article class="note">
+          <strong>Одна текстовая сущность</strong>
+          <p>В DOM раскрывается тот же <code>.redraw-text</code>. Дублирующий tooltip не создаётся.</p>
+        </article>
+        <article class="note">
+          <strong>Фиксированная ширина</strong>
+          <p>На hover меняется только <code>max-height</code> и визуальный слой. <code>width</code> остаётся равной ширине ячейки.</p>
+        </article>
+        <article class="note">
+          <strong>Без влияния на сетку</strong>
+          <p>Абсолютное позиционирование позволяет перекрывать нижние строки, не пересчитывая высоту строки таблицы.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function syncMultilineRedrawCells() {
+      document.querySelectorAll('.redraw-cell').forEach((cell) => {
+        const text = cell.querySelector('.redraw-text');
+        if (!text) return;
+
+        const visibleLines = Number(text.dataset.visibleLines || 3);
+        const computed = window.getComputedStyle(text);
+        const lineHeight = parseFloat(computed.lineHeight);
+        const paddingTop = parseFloat(computed.paddingTop);
+        const paddingBottom = parseFloat(computed.paddingBottom);
+        const collapsedHeight = Math.ceil(lineHeight * visibleLines + paddingTop + paddingBottom);
+
+        text.style.setProperty('--visible-lines', visibleLines);
+        text.style.setProperty('--collapsed-height', `${collapsedHeight}px`);
+
+        // Сначала убираем ограничение, чтобы честно измерить полный текст
+        const previousMaxHeight = text.style.maxHeight;
+        text.style.maxHeight = 'none';
+        const expandedHeight = Math.ceil(text.scrollHeight + 2);
+        text.style.maxHeight = previousMaxHeight;
+
+        text.style.setProperty('--expanded-height', `${expandedHeight}px`);
+        cell.classList.toggle('is-overflowing', expandedHeight > collapsedHeight + 1);
+      });
+    }
+
+    window.addEventListener('load', syncMultilineRedrawCells);
+    window.addEventListener('resize', syncMultilineRedrawCells);
+  </script>
+</body>
+</html>

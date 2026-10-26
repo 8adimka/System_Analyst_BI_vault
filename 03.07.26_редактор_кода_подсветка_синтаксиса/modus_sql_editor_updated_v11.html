@@ -1,0 +1,1993 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modus — Произвольные наборы данных · SQL-редактор и превью данных</title>
+
+
+<style>
+:root{
+  --primary:#5294de; --primary-dark:#467ebd; --primary-sel:rgba(82,148,222,.08); --primary-sel-2:rgba(82,148,222,.14);
+  --secondary:#ffab00; --page:#f2f2f2; --menu:#fff; --menu-text:#4c5d83; --menu-selected:#f4f8ff; --menu-accent:#3491f7;
+  --editor-line:#dce3eb; --editor-ink:#142d49; --editor-active:rgba(59,130,246,.08); --table-line:#ccc; --table-stripe:rgba(0,0,0,.05);
+  --text:rgba(0,0,0,.87); --text-2:rgba(0,0,0,.6); --act:rgba(0,0,0,.56); --dis:rgba(0,0,0,.38); --dis-bg:rgba(0,0,0,.12);
+  --divider:rgba(0,0,0,.12); --border:rgba(0,0,0,.23); --paper:#fff; --bg:#ECEFF3;
+  --ok-bg:#EDF7ED; --ok:#2E7D32; --ok-text:#1E4620; --err-bg:#FDEDED; --err:#D32F2F; --err-text:#5F2120;
+  --el1:0 1px 3px rgba(0,0,0,.12);
+  --el2:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);
+  --el24:0 11px 15px -7px rgba(0,0,0,.2),0 24px 38px 3px rgba(0,0,0,.14),0 9px 46px 8px rgba(0,0,0,.12);
+  --font:Arial,Verdana,'Helvetica CY','Geneva CY',sans-serif; --mono:monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-size:14px;line-height:16px}
+body{font-family:var(--font);color:var(--text);background:var(--bg);font-size:14px;letter-spacing:.17px}
+button{font:inherit;color:inherit}
+svg{display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- Фоновая страница: редактор правила (шаблон B) ---------- */
+.page{padding:16px 24px 24px;min-height:100%;display:flex;flex-direction:column;gap:16px}
+.crumbs{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.crumbs nav{display:flex;align-items:center;gap:8px;font-size:14px}
+.crumbs nav a{color:var(--text-2);text-decoration:none}
+.crumbs nav a:hover{color:var(--primary)}
+.meta{display:flex;gap:24px;font-size:12px;letter-spacing:.4px;color:var(--text-2);text-align:right}
+.meta b{display:block;font-weight:400;color:var(--dis);font-size:11px}
+.card{background:var(--paper);border-radius:4px;box-shadow:var(--el1)}
+.hdr{display:flex;align-items:center;gap:16px;padding:12px 16px;flex-wrap:wrap}
+.field-ro{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.field-ro span{font-size:12px;letter-spacing:.4px;color:var(--text-2)}
+.tf{height:40px;border:1px solid var(--border);border-radius:4px;padding:0 12px;font:inherit;font-size:16px;min-width:260px;color:var(--text);background:#fff}
+.src{display:flex;align-items:center;gap:8px}
+.logo{width:32px;height:32px;border:1px solid var(--divider);border-radius:4px;display:grid;place-items:center;font-size:10px;font-weight:600;color:#336791;background:#fff}
+.spacer{flex:1}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--divider);padding:0 8px}
+.tab{height:48px;padding:0 16px;border:none;background:none;text-transform:uppercase;font-weight:500;font-size:14px;letter-spacing:.4px;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent}
+.tab[aria-selected=true]{color:var(--primary);border-color:var(--primary)}
+.tabbody{padding:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.query-mini{flex:1;min-width:280px;font-family:var(--mono);font-size:13px;background:#F6F7F9;border:1px solid var(--divider);border-radius:4px;padding:10px 12px;white-space:pre;overflow:hidden;text-overflow:ellipsis;color:var(--text-2);max-height:64px}
+
+/* ---------- Кнопки ---------- */
+.btn{height:36px;padding:0 16px;border-radius:4px;font-weight:500;font-size:14px;letter-spacing:.4px;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .15s,box-shadow .15s}
+.btn-lg{height:42px}
+.btn-primary{background:var(--primary);color:#fff;border:none;box-shadow:var(--el2)}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:disabled{background:var(--dis-bg);color:var(--dis);box-shadow:none;cursor:default}
+.btn-outlined{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+.btn-outlined:hover{background:var(--primary-sel)}
+.btn-dark{background:#fff;color:var(--text);border:1px solid var(--text)}
+.btn-dark:hover{background:rgba(0,0,0,.04)}
+.btn-text{background:none;border:none;color:var(--primary);padding:0 8px}
+.btn-text:hover{background:var(--primary-sel)}
+.ib{width:36px;height:36px;border:none;background:none;border-radius:50%;display:grid;place-items:center;color:var(--act);cursor:pointer;flex-shrink:0}
+.ib:hover{background:rgba(0,0,0,.06)}
+.ib.sm{width:32px;height:32px}
+.ib[aria-pressed=true]{color:var(--primary);background:var(--primary-sel)}
+
+/* ---------- Диалог ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;z-index:10}
+.scrim[hidden]{display:none}
+.dlg{width:min(1520px,100%);height:min(880px,100%);background:var(--paper);border-radius:4px;box-shadow:var(--el24);display:flex;flex-direction:column;overflow:hidden}
+.dlg-h{height:64px;flex-shrink:0;display:flex;align-items:center;gap:16px;padding:0 12px 0 24px;border-bottom:1px solid var(--divider)}
+.dlg-h h2{margin:0;font-size:20px;font-weight:500;line-height:1.4}
+.dlg-h .sub{font-size:12px;letter-spacing:.4px;color:var(--text-2)}
+.dlg-f{height:68px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 24px;border-top:1px solid var(--divider)}
+.chk{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;font-size:14px}
+.chk input{width:18px;height:18px;margin:0;accent-color:var(--primary);cursor:pointer}
+.kbd{font-family:var(--mono);font-size:11px;color:var(--text-2);border:1px solid var(--divider);border-radius:3px;padding:1px 5px;margin-right:8px}
+
+.work{flex:1;min-height:0;display:grid;grid-template-columns:var(--lw,300px) 8px minmax(0,1fr) 8px var(--rw,280px);transition:grid-template-columns .2s}
+.work.resizing{transition:none;cursor:col-resize;user-select:none}
+.work.resizing *{cursor:col-resize !important}
+
+/* Разделители панелей */
+.split{position:relative;cursor:col-resize;outline:none;background:var(--bg);touch-action:none}
+.split::before{content:none}
+.split .grip{position:absolute;top:50%;left:-4px;width:16px;height:40px;margin-top:-20px;border-radius:8px;background:#fff;border:1px solid var(--divider);box-shadow:var(--el1);display:grid;place-items:center;color:var(--act);opacity:0;transition:opacity .15s;pointer-events:none}
+.split:hover .grip,.split.active .grip,.split:focus-visible .grip{opacity:1;color:var(--primary);border-color:var(--primary)}
+.split .wbadge{position:absolute;top:50%;left:14px;transform:translateY(32px);background:rgba(97,97,97,.92);color:#fff;font-size:11px;font-weight:500;padding:2px 6px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;z-index:5}
+.split.right-split .wbadge{left:auto;right:14px}
+.split.active .wbadge{opacity:1}
+
+/* Боковые панели */
+.side{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff}
+.side.left{border-right:1px solid var(--divider)}
+.side.right{border-left:1px solid var(--divider)}
+.side-h{display:flex;align-items:center;gap:8px;padding:12px 6px 8px 16px}
+.side-h .t{flex:1;font-weight:500;letter-spacing:.1px;line-height:1.57;white-space:nowrap}
+.side-h .t small{font-weight:400;color:var(--text-2);font-size:14px}
+.search{margin:0 16px 10px;height:40px;border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--act)}
+.search:focus-within{border:2px solid var(--primary);padding:0 9px}
+.search input{border:none;outline:none;font:inherit;font-size:14px;color:var(--text);width:100%;background:none}
+.search .clr{border:none;background:none;color:var(--act);cursor:pointer;padding:2px;display:none}
+.search.has .clr{display:block}
+.hint{padding:0 16px 8px;font-size:12px;letter-spacing:.4px;color:var(--text-2);line-height:1.66}
+.scroll{flex:1;overflow-y:auto;padding:0 8px 12px}
+.scroll::-webkit-scrollbar{width:8px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(0,0,0,.16);border-radius:4px}
+.empty{padding:24px 12px;text-align:center;color:var(--text-2);font-size:13px;line-height:1.5}
+.collapsed-strip{display:none;flex-direction:column;align-items:center;padding-top:12px;gap:12px}
+.collapsed-strip .vt{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--text-2);font-weight:500}
+.work.l-off .side.left > :not(.collapsed-strip),.work.r-off .side.right > :not(.collapsed-strip){display:none}
+.work.l-off .side.left .collapsed-strip,.work.r-off .side.right .collapsed-strip{display:flex}
+
+.trow{width:100%;height:36px;border:none;background:none;border-radius:4px;display:flex;align-items:center;gap:8px;padding:0 8px;cursor:pointer;text-align:left;font-size:14px}
+.trow:hover{background:var(--primary-sel)}
+.trow.open{background:var(--primary-sel);color:var(--primary-dark)}
+.trow .car{width:16px;display:grid;place-items:center;color:var(--act);transition:transform .15s}
+.trow.open .car{transform:rotate(90deg)}
+.trow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.trow .cnt{font-size:12px;color:var(--text-2)}
+.frow{width:100%;height:32px;border:none;background:none;border-radius:4px;display:flex;align-items:center;gap:8px;padding:0 8px 0 40px;cursor:pointer;font-size:13px;text-align:left}
+.frow:hover{background:var(--primary-sel)}
+.frow:hover .add{opacity:1}
+.ty{width:30px;font-family:var(--mono);font-size:10.5px;color:var(--primary);text-align:center;flex-shrink:0}
+.frow .fn{flex:1;font-family:var(--mono);font-size:12.5px}
+.frow .add{opacity:0;color:var(--act);display:flex}
+.trow,.frow,.fnb{user-select:none}
+.trow:focus-visible,.frow:focus-visible,.fnb:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+[draggable=true]{cursor:grab}
+[draggable=true]:active{cursor:grabbing}
+.is-dragging{opacity:.45}
+.trow .grip-ic{opacity:0;color:var(--act);display:flex}
+.trow:hover .grip-ic{opacity:1}
+.trow:hover .cnt{display:none}
+
+/* Призрак перетаскивания */
+.ghost{position:fixed;top:-200px;left:-200px;display:flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 8px;background:#fff;border:1px solid var(--primary);border-radius:4px;box-shadow:var(--el2);font-family:var(--mono);font-size:13px;color:var(--primary-dark);white-space:nowrap;pointer-events:none}
+.ghost .k{font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:#fff;background:var(--primary);border-radius:3px;padding:2px 5px}
+
+/* Зона сброса в редакторе */
+.ed-card{position:relative;transition:box-shadow .15s}
+.ed-card.drop-ready{box-shadow:0 0 0 2px rgba(92,130,229,.35),var(--el1)}
+.ed-card.drop-over{box-shadow:0 0 0 2px var(--primary),var(--el1)}
+.ed-card.drop-over .code{background:rgba(92,130,229,.04)}
+.drop-caret{position:absolute;width:2px;height:20px;background:var(--primary);border-radius:1px;pointer-events:none;z-index:3;display:none}
+.drop-caret::before{content:'';position:absolute;top:-3px;left:-3px;width:8px;height:2px;background:var(--primary)}
+.drop-caret::after{content:'';position:absolute;bottom:-3px;left:-3px;width:8px;height:2px;background:var(--primary)}
+.drop-hint{position:absolute;top:56px;right:16px;z-index:4;background:var(--primary);color:#fff;font-size:12px;font-weight:500;letter-spacing:.2px;padding:6px 10px;border-radius:4px;box-shadow:var(--el2);pointer-events:none;display:none;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-card.drop-over .drop-hint{display:block}
+.drop-empty{position:absolute;inset:48px 0 0 52px;display:none;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+.drop-empty div{border:2px dashed var(--primary);border-radius:4px;padding:16px 20px;color:var(--primary-dark);background:rgba(92,130,229,.06);font-size:14px;text-align:center;line-height:1.5}
+.ed-card.drop-ready.is-empty .drop-empty{display:flex}
+#meas{position:absolute;visibility:hidden;white-space:pre;font:inherit;top:0;left:0}
+mark{background:rgba(92,130,229,.22);color:inherit;border-radius:2px}
+
+.grp{border-bottom:1px solid rgba(0,0,0,.08)}
+.grp-h{width:100%;height:40px;border:none;background:none;border-radius:4px;display:flex;align-items:center;gap:8px;padding:0 8px;cursor:pointer;font-size:12px;font-weight:500;letter-spacing:.4px;text-transform:uppercase;text-align:left}
+.grp-h:hover{background:var(--primary-sel)}
+.grp-h .nm{flex:1}
+.grp-h .cnt{font-weight:400;color:var(--text-2)}
+.grp-h .car{color:var(--act);transition:transform .15s}
+.grp.open .grp-h .car{transform:rotate(180deg)}
+.grp-b{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:2px 8px 12px}
+.grp.open .grp-b{display:grid}
+.fnb{height:46px;border:1px solid var(--divider);background:#fff;border-radius:4px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 10px;cursor:pointer;text-align:left;transition:border-color .12s,background .12s}
+.fnb:hover{border-color:var(--primary);background:var(--primary-sel)}
+.fnb .f{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--primary-dark)}
+.fnb .d{font-size:11px;line-height:14px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+/* Центр */
+.center{display:flex;flex-direction:column;gap:16px;padding:16px;min-height:0;min-width:0;background:var(--bg)}
+.ed-card{flex:1;min-height:180px;display:flex;flex-direction:column;background:#fff;border-radius:4px;box-shadow:var(--el1);overflow:hidden}
+.ed-bar{height:48px;flex-shrink:0;display:flex;align-items:center;gap:4px;padding:0 6px 0 16px;border-bottom:1px solid var(--divider)}
+.ed-bar .t{flex:1;font-weight:500;letter-spacing:.1px}
+.ed-bar .t .dirty{font-weight:400;font-size:12px;color:var(--text-2);margin-left:8px}
+.pos{font-size:12px;letter-spacing:.4px;color:var(--text-2);padding:0 8px;white-space:nowrap}
+.ed{flex:1;min-height:0;display:flex;position:relative;font-family:var(--mono);font-size:14px;line-height:24px}
+.gut{width:52px;flex-shrink:0;background:#F6F7F9;border-right:1px solid rgba(0,0,0,.08);overflow:hidden;color:var(--dis);text-align:right;padding:12px 12px 12px 0;user-select:none}
+.gut div.cur{color:var(--text-2);font-weight:500}
+.gut div.bad{color:var(--err);font-weight:500}
+.code{flex:1;position:relative;min-width:0}
+.code pre,.code textarea{position:absolute;inset:0;margin:0;padding:12px 16px;font:inherit;line-height:inherit;letter-spacing:0;white-space:pre;overflow:auto;tab-size:2;border:none}
+.code pre{pointer-events:none;color:var(--text)}
+.code textarea{color:transparent;caret-color:var(--primary);background:transparent;resize:none;outline:none}
+.code textarea::selection{background:rgba(92,130,229,.25)}
+.code textarea::placeholder{color:var(--dis)}
+.code .ln-hl{position:absolute;left:0;right:0;height:24px;background:var(--primary-sel);pointer-events:none;transition:top .05s}
+.code .ln-err{position:absolute;left:0;right:0;height:24px;background:rgba(211,47,47,.08);border-left:2px solid var(--err);pointer-events:none}
+.kw{color:var(--primary-dark);font-weight:500}
+.fnk{color:#8E44AD}
+.str{color:#B26A00}
+.num{color:#0B7A75}
+.tbl{color:var(--ok);font-weight:500}
+.cmt{color:var(--dis);font-style:italic}
+.op{color:var(--text-2)}
+
+.res{flex-shrink:0;background:#fff;border-radius:4px;box-shadow:var(--el1);overflow:hidden;display:flex;flex-direction:column;max-height:46%}
+.res[hidden]{display:none}
+.alert{display:flex;align-items:flex-start;gap:12px;padding:10px 12px 10px 16px}
+.alert .ic{margin-top:1px;flex-shrink:0}
+.alert .tx{flex:1;display:flex;flex-direction:column;gap:2px;padding-top:1px}
+.alert .tx b{font-weight:500}
+.alert.ok{background:var(--ok-bg);color:var(--ok-text)}
+.alert.err{background:var(--err-bg);color:var(--err-text)}
+.alert.info{background:#E9F1FC;color:#1A3E72}
+.alert .btn-text{height:30px;font-size:13px}
+.alert.err .btn-text{color:var(--err)}
+.alert.err .btn-text:hover{background:rgba(211,47,47,.08)}
+.prev-wrap{overflow:auto}
+table.prev{width:100%;border-collapse:collapse;font-size:14px}
+table.prev th{position:sticky;top:0;background:#fff;height:40px;padding:0 16px;text-align:left;font-weight:500;color:var(--text-2);border-bottom:1px solid var(--divider);white-space:nowrap}
+table.prev td{height:32px;padding:0 16px;border-bottom:1px solid rgba(0,0,0,.06);white-space:nowrap}
+table.prev tr:hover td{background:rgba(0,0,0,.02)}
+table.prev .n{color:var(--text-2);width:48px}
+.prev-f{display:flex;align-items:center;gap:16px;justify-content:flex-end;padding:6px 12px;font-size:12px;color:var(--text-2);border-top:1px solid var(--divider)}
+.spin{width:18px;height:18px;border:2px solid rgba(92,130,229,.25);border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* Тултип-тост */
+.toast{position:fixed;top:20px;left:50%;transform:translate(-50%,-12px);background:var(--ok-bg);color:var(--ok-text);box-shadow:var(--el2);border-radius:4px;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* Свёрнутый редактор */
+.mini{position:fixed;right:24px;bottom:24px;background:#fff;border-radius:4px;box-shadow:var(--el24);display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;z-index:20}
+.mini[hidden]{display:none}
+.mini .t{font-weight:500}
+.mini .s{font-size:12px;color:var(--text-2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}
+
+@media (max-width:1100px){
+  .grp-b{grid-template-columns:1fr}
+}
+@media (max-width:820px){
+  .work{grid-template-columns:minmax(0,1fr) !important}
+  .side,.split{display:none}
+  .scrim{padding:0}
+  .dlg{height:100%;border-radius:0}
+  .dlg-f{flex-wrap:wrap;height:auto;padding:12px 16px}
+  .chk{flex-basis:100%}
+}
+
+/* ========== ПОРТАЛ — обычный режим по макету Modus ========== */
+body{background:var(--page)}
+.portal{display:flex;min-height:100vh;font:14px/16px var(--font);color:#333;letter-spacing:0}
+.portal *{box-sizing:border-box}
+.portal-side{width:254px;flex:none;min-height:100vh;background:var(--menu);border-right:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.portal-brand{height:96px;flex:none;padding:26px 0 30px 14px;position:relative;display:flex;align-items:flex-start}
+.portal-logo{width:197px;height:40px;display:block}
+.portal-back{position:absolute;right:40px;top:8px;font-size:28px;border:0;background:transparent;color:#86939d;cursor:pointer;line-height:1}
+.portal-nav{flex:1;overflow:auto;margin-top:1px}
+.portal-navitem{min-height:36px;display:flex;align-items:center;gap:10px;padding:10px 8px 10px 4px;margin-top:-1px;border-left:3px solid transparent;color:var(--menu-text);text-decoration:none;font-size:14px;white-space:nowrap}
+.portal-navitem svg{flex:none;width:16px;height:16px;color:inherit}
+.portal-navitem.active{background:var(--menu-selected);color:#161b24;border-left-color:#d4e7fc}
+.portal-navitem:hover{background:#edf3fc}
+.portal-navitem.active:hover{background:var(--menu-selected)}
+.portal-side-bottom{height:48px;flex:none;display:flex;align-items:flex-end;padding:0 0 4px;color:#8aa0ba;background:#fff}
+.portal-side-tab{display:grid;place-items:center;flex:0 0 60px;width:60px;height:44px;margin:0 auto;border-radius:5px 5px 0 0}
+.portal-side-tab svg{display:block;width:32px;height:32px;fill:currentColor}
+.portal-side-bottom .selected{background:#c1cfe0;color:#445a6a}
+.portal-main{flex:1;min-width:0}
+.portal-top{height:44px;background:#4a4a4a;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 10px;color:#fff;font-size:15px}
+.portal-top-path{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portal-top-actions{display:flex;align-items:center;gap:13px;flex:none}
+.portal-top-actions .infohelp{width:17px;height:17px;border:1.5px solid #fff;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:11px}
+.portal-top-actions .unsaved{font-size:11px;text-align:right;line-height:1.1}
+.portal-yellow{height:30px;min-width:80px;padding:0 24px;background:var(--secondary);color:var(--text);border:none;border-radius:5px;box-shadow:0 2px 5px #0003;cursor:pointer;font:14px var(--font)}
+.portal-yellow:hover{background:#ffba2a}
+.portal-body{padding:0 16px 24px;min-width:0}
+.portal-tabs{overflow-x:auto;overflow-y:hidden;height:46px;display:flex;gap:0;border-bottom:1px solid #bfbfbf;margin-bottom:11px}
+.portal-tab{flex-shrink:0;white-space:nowrap;font:12px Arial,Helvetica,sans-serif;padding:0 15px;color:#646464;border:0;background:none;cursor:pointer;height:46px}
+.portal-tab.active{color:#4d95e6;border-bottom:2px solid #539aea}
+.portal-controls{display:flex;flex-wrap:wrap;align-items:flex-start;min-height:48px;margin-bottom:16px;row-gap:8px}
+.portal-source-control{flex:0 0 250px;width:250px;padding-right:16px}
+.portal-dataset-control{flex-basis:100%;min-width:40%;max-width:400px}
+.portal-dataset-buttons{display:flex;flex:1 1 auto;flex-wrap:wrap;align-items:center;gap:8px;margin-left:8px;padding-top:18px}
+.portal-save-group{display:flex;align-items:center;gap:8px;margin-left:auto}
+.portal-save-group .unsaved{font-size:.8rem;line-height:1;color:#e53935;white-space:nowrap}
+.portal-lbl{font-weight:bold;font-size:.9em;margin:0 0 3px;line-height:15px;display:block}
+.portal-help{display:inline-flex;align-items:center;justify-content:center;border:1.4px solid currentColor;border-radius:50%;height:13px;width:13px;font-size:10px;font-weight:bold;margin-left:3px}
+.portal-select{height:30px;border:1px solid #d4d4d4;border-radius:4px;background:white;padding:0 9px;font:14px var(--font);width:100%;color:#333}
+.portal-blue{height:30px;min-width:80px;border:0;border-radius:5px;background:var(--primary);box-shadow:0 2px 4px #0002;color:white;font:14px var(--font);cursor:pointer;padding:0 13px}
+.portal-blue:hover{background:#347ece}
+.portal-blue:disabled{background:#a8c4e5;cursor:not-allowed}
+.portal-props{display:flex;flex-direction:column;gap:16px;margin:8px 0 16px}
+.portal-proprow{display:grid;grid-template-columns:250px minmax(0,1fr);gap:0;align-items:center;min-height:28px}
+.portal-proprow>b{font-size:.9em}
+.portal-proprow .value{width:50%;font:14px var(--font);border-bottom:1px solid #9f9f9f;padding:6px 0 5px;min-height:27px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portal-proprow .value.readonly{color:#999}
+.portal-proprow .value[contenteditable=true]:focus{outline:none;border-bottom:2px solid #5197e5;background:#fff}
+.portal-sql-label{font-size:12px;font-weight:bold;margin-bottom:3px}
+.portal-sql-label .eye{color:#5394e2;margin-left:10px;vertical-align:middle}
+.portal-editor-wrap{display:grid;grid-template-columns:minmax(0,1fr) 168px;gap:16px;align-items:start}
+.portal-editor{position:relative;height:200px;min-height:120px;resize:none;border:1px solid #d9dde5;border-radius:10px;background:#fff;display:flex;overflow:hidden;box-shadow:0 2px 12px rgba(16,24,40,.08);font:14px/1.4 var(--mono)}
+.portal-editor-gutter{width:30px;flex:none;background:#f8fafc;color:#64748b;text-align:right;overflow:hidden;padding:4px 5px 0 0;border-right:1px solid #e4e7ec;user-select:none}
+.portal-editor-gutter div{height:19.6px}
+.portal-editor-code{flex:1;position:relative;min-width:0}
+.portal-editor-code pre,.portal-editor-code textarea{position:absolute;inset:0;box-sizing:border-box;margin:0;border:0;outline:0;background:transparent;padding:4px 6px;white-space:pre;overflow:auto;tab-size:2;font:inherit;line-height:inherit;letter-spacing:0}
+.portal-editor-code pre{pointer-events:none;color:#1f2937}
+.portal-editor-code textarea{color:transparent;caret-color:#242424;resize:none;width:100%;height:100%;-webkit-text-fill-color:transparent}
+.portal-editor-code textarea::selection{background:#9abbf56b}
+.portal-editor-code .kw{color:#8a16b5}.portal-editor-code .str{color:#ed351e}.portal-editor-code .cmt{color:#a75c22;font-style:normal}.portal-editor-code .fnk{color:#0033a0;font-weight:600}.portal-editor-code .tbl{color:#222f46}.portal-editor-code .op{color:#242424}
+.portal-query-buttons{display:flex;flex-direction:column;gap:4px}
+.portal-query-buttons .portal-blue{width:100%;min-width:0}
+.portal-preview{border:1px solid #dedede;border-radius:3px;background:white;margin:9px 0 17px;overflow:hidden;box-shadow:0 1px 2px #0001}
+.portal-preview-head{height:34px;padding:0 7px 0 10px;display:flex;align-items:center;gap:14px;font-size:13px}
+.portal-preview-head strong{font-size:13px}
+.portal-success{font-size:11px;color:#29b64b;display:flex;align-items:center;gap:6px}
+.portal-success svg{width:14px;height:14px}
+.portal-preview-head .right{margin-left:auto;display:flex;gap:8px}
+.portal-iconbtn{width:28px;height:27px;border:1px solid #e0e0e0;background:white;border-radius:3px;color:#222;display:grid;place-items:center;cursor:pointer}
+.portal-iconbtn:hover{background:#f2f6fc}
+.portal-iconbtn:disabled{opacity:.4;cursor:default}
+.portal-preview-content{display:flex;flex-direction:column;height:247px;min-height:115px;resize:none;overflow:hidden}
+.portal-preview-content[hidden]{display:none}
+.portal-data-scroll{max-height:205px;overflow:auto;flex:1;min-height:0}
+/* В обычном превью размер меняется только у области со строками. */
+#normalPreviewContent .portal-data-scroll{max-height:none;flex:1 1 auto;min-height:0}
+#normalPreviewFooter{flex:0 0 34px;min-height:34px;max-height:34px}
+.portal-preview-footer{min-height:34px;display:flex;gap:23px;justify-content:center;align-items:center;font-size:13px;border-top:1px solid #e3e3e3;color:#222}
+/* Полноширинная горизонтальная полоса для вертикального изменения высоты. */
+.portal-resize-bar{height:8px;min-height:8px;flex:none;display:block;position:relative;cursor:row-resize;touch-action:none;user-select:none;background:#f7f9fc;border-top:1px solid #dce5f1;outline-offset:-2px}
+.portal-resize-bar::after{content:"";position:absolute;width:14px;height:3px;border-radius:2px;left:50%;top:2px;transform:translateX(-50%);background:#c2cfdf;pointer-events:none}
+.portal-resize-bar:hover,.portal-resize-bar:focus-visible,.portal-resize-bar.dragging{background:#eaf2fc}
+.portal-resize-bar:hover::after,.portal-resize-bar:focus-visible::after,.portal-resize-bar.dragging::after{background:#5294e6}
+#normalEditor .portal-resize-bar{position:absolute;z-index:3;bottom:0;left:0;right:0;height:7px;min-height:7px;border-bottom-left-radius:5px;border-bottom-right-radius:5px}
+#normalEditor .portal-editor-code pre,#normalEditor .portal-editor-code textarea{padding-bottom:11px}
+#normalPreviewContent .portal-resize-bar{flex:0 0 8px}
+.portal-link{border:0;background:transparent;color:#1689ff;font:13px Arial;cursor:pointer;padding:5px}
+.portal-link:hover{text-decoration:underline}
+.portal-link:disabled{color:#aaa;cursor:not-allowed;text-decoration:none}
+.portal-preview-message{margin:10px 0;background:#fdf2f1;border:1px solid #eac8c8;border-radius:3px;padding:10px 13px;color:#aa2424;font-size:12px}
+.portal-rls{margin-top:23px;font-size:12px}
+.portal-rls .rls-heading{font-weight:bold;margin-bottom:15px}
+.portal-rls .rls-eye{color:#5799e4;font-size:16px;margin-left:12px}
+.portal-rls .field-label{font-weight:bold;margin:0 0 8px}
+.portal-fields{border-collapse:collapse;width:100%;table-layout:fixed;font:.9rem/16px var(--font)}
+.portal-fields th{height:26px;background:#ccc;font-weight:bold;border:1px solid #ccc;padding:3px}
+.portal-fields td{height:26px;border:1px solid #ccc;padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portal-fields tbody tr{background:#fafafa}
+.portal-fields tbody tr:nth-child(even){background:#f6f6f6}
+.portal-fields td:nth-child(5),.portal-fields td:nth-child(7){color:#999}
+.portal-fields td:last-child{text-align:center;color:#428fe0}
+.portal-fields .italic{color:#aaa;font-style:italic}
+.portal-fields-scroll{width:100%;max-width:100%;overflow-x:auto}
+/* Уточнение геометрии по скриншотам портала */
+.portal-props{margin-bottom:16px}
+.portal-sql-label{display:flex;align-items:center;gap:3px}
+.portal-sql-label .eye{margin-left:9px;display:inline-flex}
+.portal-rls .rls-heading{display:flex;align-items:center;gap:4px}
+.portal-rls .rls-eye{display:inline-flex;margin-left:9px}
+.portal-query-buttons .portal-blue{white-space:nowrap;font-size:14px;padding:0 8px}
+/* Расширенный редактор остаётся самостоятельным модальным окном */
+.dlg{font-family:var(--font)}
+.res{max-height:49%;min-height:0}
+.res .portal-data-scroll{max-height:none;overflow:auto;flex:1;min-height:0}
+.res .portal-preview-footer{flex:none;padding:5px 8px}
+.res .portal-preview-head{border-bottom:1px solid var(--divider);flex:none}
+.res .portal-success{font-size:12px}
+.ed-bar .ib[disabled]{opacity:.35;cursor:default}
+.ed-bar .ib[disabled]:hover{background:transparent}
+.preview-settings-scrim{position:fixed;inset:0;z-index:100;background:#0007;display:flex;align-items:center;justify-content:center;padding:20px}
+.preview-settings-scrim[hidden]{display:none}
+.preview-settings-card{width:min(445px,100%);background:white;border-radius:6px;box-shadow:0 10px 35px #0003;padding:23px 25px;font:14px Arial;line-height:1.5}
+.preview-settings-card h2{font-size:19px;margin:0 0 14px;font-weight:600}
+.preview-settings-card label{display:block;font-weight:bold;margin-bottom:7px}
+.preview-settings-card select{height:39px;padding:0 12px;width:100%;border:1px solid #b6beca;border-radius:4px;background:#fff;font-size:14px}
+.preview-settings-card p{font-size:12px;color:#666;margin:11px 0}
+.preview-settings-card .setting-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:23px}
+.preview-settings-card .setting-actions button{height:34px;border-radius:3px;padding:0 16px;cursor:pointer;border:1px solid #bfc8d6;background:#fff;font:13px Arial}
+.preview-settings-card .setting-actions button.primary{border:0;background:#5193e3;color:#fff}
+.portal-hide-link{border:1px solid #d7dce4;background:#fff;border-radius:3px;padding:4px 10px;height:24px;line-height:14px;color:#4a6f9f;font:12px Arial,Helvetica,sans-serif;cursor:pointer}
+.portal-hide-link:hover{background:#f4f8fd;text-decoration:none}
+@media(max-width:1180px){.portal-side{width:197px}.portal-controls{grid-template-columns:190px minmax(235px,1fr) 128px 85px}.portal-controls>.selectsave{display:none}.portal-proprow{grid-template-columns:205px minmax(190px,1fr)}.portal-query-buttons{width:140px}.portal-editor-wrap{grid-template-columns:minmax(0,1fr) 140px}}
+@media(max-width:760px){.portal-side{width:53px}.portal-navitem{justify-content:center;font-size:0}.portal-brand .portal-logo{display:none}.portal-controls{grid-template-columns:1fr 1fr}.portal-controls>.portal-blue{min-width:0}.portal-proprow{grid-template-columns:140px minmax(0,1fr)}.portal-editor-wrap{grid-template-columns:minmax(0,1fr)}.portal-query-buttons{flex-direction:row;width:100%}.portal-query-buttons .portal-blue{width:auto}.portal-top-path{font-size:11px}.portal-side-bottom{padding:4px;justify-content:center}.portal-side-bottom>*:not(:first-child){display:none}}
+
+
+/* ===== Визуальная структура расширенного редактора: текущий интерфейс Modus ===== */
+/* Только модальное окно и его дочерние элементы. Обычный режим не затрагивается. */
+.scrim{padding:32px;background:rgba(0,0,0,.5)}
+.dlg{width:100%;max-width:none;height:min(calc(75vh + 119px),calc(100dvh - 64px));max-height:none;
+    border-radius:5px;background:#fff;box-shadow:0 9px 30px #0003;
+    font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:0}
+.dlg-h{height:55px;min-height:55px;border:0;padding:12px 20px 16px;gap:0}
+.dlg-h h2{font:500 18px/27px var(--font);color:var(--text)}
+.dlg-h .sub,.dlg-h #btnClose{display:none}
+.dlg .work{padding:0 20px;grid-template-columns:var(--lw,244px) var(--lg,21px) minmax(0,1fr) var(--rg,21px) var(--rw,244px);gap:0;background:#fff}
+.dlg .side,.dlg .ed-card{border:1px solid var(--editor-line);border-radius:9px;background:#fff;overflow:hidden;box-shadow:none}
+.dlg .side.left,.dlg .side.right{border:1px solid var(--editor-line)}
+.dlg .side-h,.dlg .ed-bar{height:38px;min-height:38px;padding:0 10px;border-bottom:1px solid var(--editor-line);background:#fff}
+.dlg .side-h .t,.dlg .ed-bar .t{display:flex;align-items:center;gap:9px;min-width:0;white-space:nowrap;
+  color:var(--editor-ink);font:600 13px var(--font);letter-spacing:0}
+.dlg .side-h .t svg,.dlg .ed-bar .t svg{flex-shrink:0;width:16px;height:16px;color:var(--editor-ink)}
+.dlg .side.left .side-h .t svg{width:19px;height:19px}
+.dlg .side-h .t small{display:none}
+.dlg .side-h > button{display:none}
+.dlg .search{height:32px;min-height:32px;margin:12px 12px 10px;padding:0 10px;border:1px solid #d4dce8;
+    border-radius:8px;color:#657184;gap:7px}
+.dlg .search input{font:12px Arial,Helvetica,sans-serif;min-width:0}
+.dlg .search input::placeholder{color:#657184}
+.dlg .search svg{height:16px;width:16px}
+.dlg .search:focus-within{padding:0 9px;border:2px solid var(--primary)}
+.dlg .hint{display:none}
+.dlg .scroll{padding:0 5px 0 10px;scrollbar-color:#a4bad4 transparent;scrollbar-width:thin}
+.dlg .trow{height:27px;padding:0 3px;gap:5px;color:#4b4b4b;border-radius:2px;font:12px Arial,Helvetica,sans-serif}
+.dlg .trow .car{width:13px;color:#8796aa}
+.dlg .trow .car svg{width:12px;height:12px}
+.dlg .trow > svg{height:13px;width:13px;color:#75849c;opacity:.9 !important}
+.dlg .trow .nm{min-width:0}
+.dlg .trow .cnt,.dlg .trow .grip-ic{display:none}
+.dlg .trow.open{background:#eef5fd;color:#284a6c}
+.dlg .frow{height:28px;padding:0 6px 0 28px;gap:6px;font:12px var(--font);color:#303030}
+.dlg .frow .fn{font:12px var(--font);min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dlg .frow .ty{font-size:9px;width:24px}
+.dlg .split{background:#fff;cursor:col-resize}
+.dlg .split .grip{opacity:1;left:calc(50% - 8px);top:50%;width:16px;height:28px;margin-top:-14px;
+    background:white;border:1px solid var(--editor-line);border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,.07);
+    color:var(--primary);pointer-events:auto;cursor:col-resize;touch-action:none;user-select:none;z-index:3}
+.dlg .split .grip:hover{background:#f5f8fd;color:var(--primary);border-color:var(--primary)}
+.dlg .split .grip:focus-visible{outline:2px solid #609bf0}
+.dlg .split.right-split .grip{left:calc(50% - 8px)}
+/* В свёрнутом виде ручка находится внутри полоски панели 40px. */
+.dlg .work.l-off .left-split .grip{left:-28px;cursor:pointer}
+.dlg .work.r-off .right-split .grip{left:19px;cursor:pointer}
+.dlg .work.l-off .left-split .grip svg,.dlg .work.r-off .right-split .grip svg{transform:rotate(180deg)}
+.dlg .split .wbadge{z-index:6}
+.dlg .collapsed-strip{gap:0;padding:0}
+.dlg .collapsed-strip>.ib{width:100%;height:38px;border:0;border-bottom:1px solid var(--editor-line);border-radius:0;color:var(--editor-ink)}
+.dlg .collapsed-strip>.ib svg{width:19px;height:19px}
+.dlg .side.right .collapsed-strip>.ib svg{width:16px;height:16px}
+.dlg .collapsed-strip .vt{display:none}
+.dlg .collapsed-strip .vt{font:11px Arial,Helvetica,sans-serif;writing-mode:vertical-rl;transform:rotate(180deg)}
+.dlg .center{padding:0;gap:9px;background:#fff;min-width:0}
+.dlg .ed-card{min-height:175px;flex:1}
+.dlg .ed-bar{gap:3px;padding:0 10px}
+.dlg .ed-bar .t{flex:1}
+.dlg .ed-bar .t .dirty{font:11px Arial,Helvetica,sans-serif;color:#909eaf}
+.dlg .ed-bar .pos{display:none}
+.dlg .ed-bar .ib{height:25px;width:25px;min-width:25px;border:1px solid #dfe6f0;border-radius:4px;
+    background:#fff;color:#5b7799}
+.dlg .ed-bar .ib svg{width:15px;height:15px}
+.dlg .ed-bar .ib:hover{background:#f0f6ff;color:#4386dc}
+.dlg .ed-bar .ib[disabled]{opacity:.35;cursor:default}
+.dlg .ed-bar .ib[disabled]:hover{background:#fff}
+.dlg .preview-toggle-wrapper{display:flex}
+.dlg .ed{font:14px/1.4 var(--mono)}
+.dlg .gut{width:30px;padding:4px 5px 4px 0;background:#fff;border-right:0;color:#64748b;
+    font:14px/1.4 var(--mono)}
+.dlg .gut div{height:19.6px}
+.dlg .gut div.cur{color:#64748b;font-weight:normal;background:var(--editor-active)}
+.dlg .code pre,.dlg .code textarea{padding:4px 6px;font:14px/1.4 var(--mono)}
+.dlg .code pre{color:#1f2937}
+.dlg .code textarea{caret-color:#111827}
+.dlg .code .ln-hl{height:19.6px;background:var(--editor-active)}
+.dlg .code .ln-err{height:19.6px}
+.dlg .code .kw{color:#a010b4;font-weight:normal}
+.dlg .code .str{color:#e12d1a}
+.dlg .code .cmt{color:#a65316;font-style:normal}
+.dlg .code .fnk{color:#0033a0;font-weight:600}
+.dlg .code .tbl{color:#2c3d59;font-weight:normal}
+.dlg .code .op{color:#323f54}
+.dlg .side.right .search{display:none}
+.dlg .side.right .scroll{padding:8px 6px 12px 8px}
+.dlg .side.right .grp{border-bottom:0}
+.dlg .side.right .grp-h{height:29px;padding:0 4px;gap:5px;font:12px Arial,Helvetica,sans-serif;
+    letter-spacing:0;text-transform:none;font-weight:normal;color:var(--editor-ink)}
+.dlg .side.right .grp-h .car{order:-1;color:#557897;transform:rotate(-90deg)}
+.dlg .side.right .grp-h .car svg{width:11px;height:11px}
+.dlg .side.right .grp-h .cnt{display:none}
+.dlg .side.right .grp.open .grp-h .car{transform:none}
+.dlg .side.right .grp-b{grid-template-columns:1fr;gap:2px;padding:2px 3px 5px 15px}
+.dlg .side.right .fnb{height:28px;padding:0 6px;display:flex;align-items:flex-start;justify-content:center;
+    border:0;border-radius:2px;background:#fff;box-shadow:none;cursor:pointer}
+.dlg .side.right .fnb:hover{background:#f9f9f9}
+.dlg .side.right .fnb .f{font:12px var(--font);color:#303030}
+.dlg .side.right .fnb .d{display:none}
+.dlg .res{flex:0 0 min(39%,320px);max-height:46%;min-height:0;border:1px solid var(--editor-line);border-radius:9px;
+    background:#fff;box-shadow:none;overflow:hidden}
+.dlg .res .portal-preview-head{min-height:35px;height:35px;padding:0 10px;gap:11px;background:#fff;border-bottom:1px solid #e2e7ed}
+.dlg .res .portal-preview-head strong{font:bold 12px Arial,Helvetica,sans-serif}
+.dlg .res .portal-success{font:11px Arial,Helvetica,sans-serif;color:#29a849}
+.dlg .res .portal-data-scroll{flex:1;min-height:0;overflow:auto;max-height:none}
+.dlg .res .portal-preview-footer{min-height:33px}
+.dlg .dlg-f{height:64px;min-height:64px;padding:16px 20px 12px;border:0;gap:12px}
+.dlg .chk{font:13px Arial,Helvetica,sans-serif;gap:4px;color:#333}
+.dlg .chk input{width:16px;height:16px;accent-color:#5293e5}
+.dlg .btn{height:36px;min-height:36px;font:500 14px var(--font);letter-spacing:0;
+    text-transform:none;border-radius:5px;padding:0 14px;box-shadow:none;justify-content:center}
+.dlg #btnCheck{border:1px solid var(--primary);color:var(--primary);background:transparent}
+.dlg #btnCheck:hover{background:#edf5ff}
+/* Подсветка повторной проверки после изменения ранее проверенного SQL. */
+.portal-query-buttons #normalCheck.needs-check,
+.dlg #btnCheck.needs-check{background:#ffab00;color:#111;border-color:#ffab00}
+.portal-query-buttons #normalCheck.needs-check:hover,
+.dlg #btnCheck.needs-check:hover{background:#ffba2a;color:#111;border-color:#ffba2a}
+
+.dlg #btnMin{border:1px solid var(--primary);background:var(--primary);color:#fff;min-width:86px;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.dlg #btnMin:hover{background:#3c83d6}
+.dlg #btnCancel{border:1px solid #c4cada;border-radius:5px;padding:0 16px;color:#142d49;background:transparent;box-shadow:none;font-weight:500}
+.dlg #btnCancel:hover{background:rgba(20,45,73,.06)}
+@media(max-width:1100px){
+  .dlg .work{grid-template-columns:var(--lw,185px) 15px minmax(0,1fr) 15px var(--rw,185px)}
+  .dlg .side.right .grp-b{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .scrim{padding:0}
+  .dlg{height:100vh;max-height:none;border-radius:0}
+  .dlg .work{grid-template-columns:minmax(0,1fr)!important}
+  .dlg .side,.dlg .split{display:none}
+  .dlg .dlg-f{height:auto;padding:8px 13px;min-height:54px;flex-wrap:wrap}
+  .dlg .chk{flex:1 0 100%}
+}
+
+
+/* ===== Превью данных: единый дизайн по образцу простого набора данных Modus ===== */
+/* Превью: оформление таблицы простых облачных наборов данных. */
+.portal-data-table{width:100%;border-collapse:collapse;table-layout:auto;font:14px/16px var(--font);color:var(--text);background:#fff}
+.portal-data-table th,.portal-data-table td{width:1%;min-width:80px;min-height:20px;padding:4px;border:0;border-right:1px solid var(--table-line);white-space:nowrap;text-align:left}
+.portal-data-table th:last-child,.portal-data-table td:last-child{border-right-color:transparent}
+.portal-data-table th{position:sticky;top:0;z-index:2;background:#fff;color:var(--primary);border-bottom:1px solid var(--table-line);font-size:.9em;font-weight:bold;vertical-align:top}
+.portal-data-table tbody tr{background:transparent}
+.portal-data-table tbody tr:nth-child(odd){background:var(--table-stripe)}
+.portal-data-table .preview-th-inner{display:flex;align-items:flex-start;height:22px;white-space:nowrap}
+.portal-data-table .preview-type{display:inline-flex;flex:0 0 16px;width:16px;height:16px;margin-right:5px;color:inherit}
+.portal-data-table .preview-type svg{display:block;flex:none;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1;stroke-linecap:round;stroke-linejoin:round}
+.portal-data-table .preview-field-name{margin:2px;line-height:16px;font-size:inherit;font-weight:inherit}
+.portal-data-table th.preview-rownum,.portal-data-table td.preview-rownum{width:0%;min-width:50px;max-width:50px;padding:4px}
+.portal-data-table th.preview-rownum{color:var(--primary)}
+.portal-data-table .preview-sort-trigger{width:23px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;background:none;border:0;border-radius:3px;color:var(--primary);cursor:pointer;margin-left:auto;padding:2px}
+.portal-data-table .preview-sort-trigger:hover,.portal-data-table .preview-sort-trigger[aria-expanded="true"]{background:var(--primary-sel)}
+.portal-data-table .preview-sort-trigger.sorted{color:var(--editor-ink)}
+.portal-data-table .preview-sort-trigger svg{display:block;width:15px;height:15px}
+
+.preview-sort-menu{position:fixed;z-index:120;min-width:198px;background:#fff;border:1px solid #d8e0ed;border-radius:5px;
+  box-shadow:0 5px 20px #0002;padding:5px 0;font:13px Arial,Helvetica,sans-serif}
+.preview-sort-menu[hidden]{display:none}
+.preview-sort-menu button{display:flex;align-items:center;gap:9px;width:100%;padding:10px 12px;border:0;background:#fff;
+  text-align:left;color:#303840;font:13px Arial,Helvetica,sans-serif;cursor:pointer}
+.preview-sort-menu button:hover,.preview-sort-menu button.active{background:#ecf4ff;color:#327ddd}
+.preview-sort-menu button svg{width:16px;height:16px;flex:none;color:#6594ce}
+.preview-sort-menu button.active::after{content:'✓';margin-left:auto;color:#4c93e6;font-weight:bold}
+/* Normal mode: a resize handle BELOW the fixed footer, not between rows and controls */
+#normalPreviewContent .portal-resize-bar{flex:0 0 8px}
+#normalPreviewContent .portal-data-scroll{flex:1 1 auto;max-height:none;min-height:0}
+#normalPreviewContent #normalPreviewFooter{flex:0 0 34px;height:34px;min-height:34px;max-height:34px}
+/* Expanded mode: a separate draggable separator between SQL and results. */
+.dlg .center{gap:0}
+.dlg .ed-card{flex:1 1 0;min-height:175px}
+.dlg .res{flex:0 0 245px;max-height:none;min-height:115px;min-width:0}
+.dlg .expanded-preview-resize{height:11px;min-height:11px;flex:0 0 11px;display:block;position:relative;
+  cursor:row-resize;background:#fff;touch-action:none;user-select:none;outline-offset:-1px}
+.dlg .expanded-preview-resize[hidden]{display:none}
+.dlg .expanded-preview-resize::after{content:'';position:absolute;height:4px;width:76px;left:50%;top:3px;
+  transform:translateX(-50%);border-radius:5px;background:#ced9e8;pointer-events:none}
+.dlg .expanded-preview-resize:hover::after,.dlg .expanded-preview-resize.dragging::after,.dlg .expanded-preview-resize:focus-visible::after{background:#5194e8}
+/* Portal-consistent settings dialog (matches existing material-style dialogs). */
+.preview-settings-scrim{background:rgba(0,0,0,.52)}
+.preview-settings-card{width:min(445px,100%);border-radius:5px;padding:21px 24px 22px;background:#fff;
+  font:14px Arial,Helvetica,sans-serif;line-height:1.45;box-shadow:0 16px 38px rgba(0,0,0,.25)}
+.preview-settings-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:25px}
+.preview-settings-card h2{font:normal 18px Arial,Helvetica,sans-serif;color:#292929;margin:0}
+.preview-settings-info{display:inline-flex;align-items:center;justify-content:center;border:1.4px solid #4c4c4c;
+  width:14px;height:14px;border-radius:50%;font:bold 10px Arial;color:#444;flex:none}
+.preview-settings-card label{display:block;color:#777;font-size:13px;font-weight:normal;margin:0 0 1px}
+.preview-settings-select{position:relative;border-bottom:1px solid #999}
+.preview-settings-select:focus-within{border-bottom:2px solid #5697e6}
+.preview-settings-card select{appearance:auto;width:100%;border:0;border-radius:0;outline:0;height:36px;padding:0 2px;background:#fff;
+  color:#353535;font:14px Arial,Helvetica,sans-serif;cursor:pointer}
+.preview-settings-card p{font-size:12px;color:#777;line-height:1.5;margin:12px 0 0}
+.preview-settings-card .setting-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:25px}
+.preview-settings-card .setting-actions button{min-width:99px;height:30px;padding:0 14px;border:1px solid #e0e0e0;
+  border-radius:5px;background:#fff;color:#333;box-shadow:0 2px 5px #0002;font:14px var(--font);cursor:pointer}
+.preview-settings-card .setting-actions button:hover{background:#f4f7fc}
+.preview-settings-card .setting-actions button.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.preview-settings-card .setting-actions button.primary:hover{background:#3d82d5}
+
+/* v6: fixed geometry across pristine, modified, checking and checked states. */
+.portal-query-buttons #normalCheck{
+  box-sizing:border-box;
+  border:1px solid transparent;
+  /* Геометрия проверки не меняется между состояниями. */
+  height:30px;
+}
+.dlg #btnCheck{box-sizing:border-box;border-width:1px;min-width:140px;transition:none}
+.portal-query-buttons #normalCheck{transition:none}
+.dlg .ed-bar .t{position:relative}
+.dlg .ed-bar .t .dirty{position:absolute;left:116px;top:50%;transform:translateY(-50%);pointer-events:none}
+#saveStatus{display:inline-block;min-width:74px;text-align:right}
+/* Errors appear above the page, rather than inserting height into the editor's layout. */
+#normalAlert.portal-preview-message{
+  position:fixed;top:54px;right:35px;max-width:min(600px,calc(100vw - 50px));
+  width:max-content;z-index:55;box-shadow:0 4px 16px #0002;
+}
+
+/* Адаптация базовой компоновки и доступные состояния. */
+:where(button,a,select,input,[contenteditable=true]):focus-visible{outline:2px solid var(--menu-accent);outline-offset:2px}
+.dlg .trow:hover,.dlg .frow:hover{background:#f9f9f9}
+.dlg .trow.open{background:#f5f9ff;color:#303030}
+.dlg .fnb:focus-visible,.dlg .frow:focus-visible,.dlg .trow:focus-visible{outline-color:var(--menu-accent)}
+body.modal-open{overflow:hidden}
+@media(max-width:1180px){
+  .portal-side{width:230px}
+  .portal-dataset-control{flex:1 1 250px;min-width:0;max-width:none}
+  .portal-dataset-buttons{flex-basis:100%;margin-left:0;padding-top:0}
+  .portal-proprow{grid-template-columns:250px minmax(0,1fr)}
+  .portal-proprow .value{width:100%}
+}
+@media(max-width:1100px){.dlg .work{grid-template-columns:var(--lw,244px) var(--lg,21px) minmax(0,1fr) var(--rg,21px) var(--rw,244px)}}
+@media(max-width:820px){
+  .scrim{padding:0}.dlg{height:100dvh;max-height:none;border-radius:0}
+  .dlg .work{padding:0 12px;grid-template-columns:minmax(0,1fr)!important}
+  .dlg .side,.dlg .split{display:none}.dlg .dlg-f{height:auto;min-height:64px;padding:12px;flex-wrap:wrap}
+  .dlg .chk{flex-basis:100%}.dlg .res .portal-success{display:none}
+}
+@media(max-width:760px){
+  .portal-side{width:53px}.portal-brand{height:68px;padding:0}.portal-back{right:12px}
+  .portal-navitem{min-height:36px;padding:10px 8px 10px 4px;font-size:0}
+  .portal-source-control,.portal-dataset-control{flex:1 1 200px;width:auto;min-width:0;max-width:none;padding-right:0}
+  .portal-controls{gap:8px}.portal-dataset-buttons{margin-left:0}.portal-save-group{margin-left:auto}
+  .portal-proprow{grid-template-columns:minmax(125px,45%) minmax(0,1fr)}
+  .portal-top-path{font-size:12px}.portal-query-buttons{width:100%}
+  .portal-query-buttons .portal-blue{flex:1;height:auto;min-height:30px;white-space:normal}
+  .portal-fields{min-width:850px}
+}
+
+/* Подтверждение отмены поверх расширенного редактора. */
+.discard-scrim{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.5)}
+.discard-scrim[hidden]{display:none}
+.discard-card{width:min(444px,100%);padding:20px 24px 12px;border-radius:4px;background:#fff;color:var(--text);font:14px/16px var(--font);box-shadow:var(--el24)}
+.discard-card p{margin:0;font:inherit}
+.discard-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:32px}
+.discard-actions button{height:30px;min-width:80px;padding:4px 24px;border:0;border-radius:5px;background:#fff;color:var(--text);font:14px var(--font);cursor:pointer;box-shadow:var(--el2)}
+.discard-actions button:hover{background:#f5f5f5}
+.discard-actions button.primary{background:var(--primary);color:#fff}
+.discard-actions button.primary:hover{background:var(--primary-dark)}
+</style>
+</head>
+<body>
+
+
+<!-- ===== Страница портала: обычный редактор ===== -->
+<div class="portal" id="portal">
+ <aside class="portal-side" aria-label="Навигация по настройкам">
+  <div class="portal-brand"><svg class="portal-logo" role="img" aria-label="Modus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 3401 687">
+  <g clip-path="url(#a)">
+    <path fill="url(#b)" d="m786.804 311.526 182.531 363.056h215.375L874.774 57.216c-8.85-19.663-24.266-36.52-44.955-46.8A95.367 95.367 0 0 0 786.802.415a95.376 95.376 0 0 0-43.02 10.001c-20.687 10.28-36.105 27.134-44.953 46.8L388.888 674.582h215.38l182.531-363.056h.005Z"/>
+    <path fill="url(#c)" d="M604.272 674.582h-215.38L652.08 150.535c13.163-26.167 44.493-21.932 54.123.236h.009l80.576 160.76-182.516 363.051Z"/>
+    <path fill="#1752E8" d="M2054.82 614.864c-62.66 0-113.64-50.942-113.64-113.567 0-62.625 50.98-113.574 113.64-113.574 62.66 0 113.63 50.949 113.63 113.574s-50.97 113.567-113.63 113.567Zm1239.03-154.967h-107.74c-20.07 0-36.39-16.322-36.39-36.385 0-20.054 16.32-36.365 36.39-36.365h181.19V316.44h-181.19c-59.07 0-107.13 48.036-107.13 107.072 0 59.043 48.06 107.085 107.13 107.085h107.74c20.07 0 36.4 16.316 36.4 36.372 0 20.054-16.33 36.378-36.4 36.378h-210.68v70.701h210.68c59.08 0 107.14-48.036 107.14-107.079 0-59.049-48.06-107.072-107.14-107.072Zm-825.96 154.967c-62.65 0-113.64-50.942-113.64-113.567 0-62.625 50.99-113.574 113.64-113.574 62.66 0 113.64 50.949 113.64 113.574s-50.98 113.567-113.64 113.567Zm113.64-258.393c-31.36-24.624-70.76-39.459-113.64-39.459-101.67 0-184.39 82.665-184.39 184.283 0 101.604 82.72 184.276 184.39 184.276 101.67 0 184.38-82.672 184.38-184.276V188.697h-70.74v167.774Zm-898.56-40.166c-40.03 0-75.98 17.45-100.95 45.015-24.97-27.562-60.92-45.015-100.96-45.015-75.16 0-136.32 61.123-136.32 136.249v222.647h70.74V452.554c0-36.146 29.43-65.54 65.58-65.54 36.17 0 65.59 29.394 65.59 65.54v222.647h70.75V452.554c0-36.146 29.41-65.54 65.57-65.54s65.58 29.394 65.58 65.54v222.647h70.74V452.554c0-75.126-61.15-136.249-136.32-136.249Zm1272.09 213.109c0 45.443-36.99 86.298-82.46 86.298-45.46 0-82.46-36.977-82.46-82.414v-211.39h-70.74v211.39c0 84.419 68.73 153.115 153.2 153.115 84.48 0 153.21-68.696 153.21-153.115v-211.39h-70.75v207.508-.002Zm-900.24-212.402c-101.68 0-184.39 82.665-184.39 184.283 0 101.604 82.71 184.276 184.39 184.276 101.66 0 184.37-82.672 184.37-184.276 0-101.618-82.71-184.283-184.37-184.283Z"/>
+    <path fill="url(#d)" fill-rule="evenodd" d="m302.438 501.712 86.911 172.87h215.517L390.408 247.404c-8.85-19.663-24.267-36.52-44.955-46.8a95.36 95.36 0 0 0-43.018-10.001 95.367 95.367 0 0 0-43.019 10.001c-20.687 10.28-36.106 27.134-44.953 46.8L.004 674.582h215.517l86.912-172.87h.005Z" clip-rule="evenodd"/>
+    <path fill="url(#e)" fill-rule="evenodd" d="m.053 674.582 167.683-333.884c13.163-26.166 44.491-21.931 54.121.239h.011l80.576 160.76-86.916 172.885H.053Z" clip-rule="evenodd"/>
+  </g>
+  <defs>
+    <linearGradient id="b" x1="786.8" x2="786.8" y1=".414" y2="674.582" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3491F7"/>
+      <stop offset="1" stop-color="#1752E8"/>
+    </linearGradient>
+    <linearGradient id="c" x1="587.84" x2="587.84" y1="132.489" y2="674.582" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1752E8"/>
+      <stop offset="1" stop-color="#3491F7"/>
+    </linearGradient>
+    <linearGradient id="d" x1="302.435" x2="302.435" y1="190.602" y2="674.582" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1DE1D3"/>
+      <stop offset="1" stop-color="#703DAA"/>
+    </linearGradient>
+    <linearGradient id="e" x1="151.249" x2="151.249" y1="322.653" y2="674.582" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#703EAA"/>
+      <stop offset="1" stop-color="#1FDCD2"/>
+    </linearGradient>
+    <clipPath id="a">
+      <path fill="#fff" d="M0 .415h3401v686H0z"/>
+    </clipPath>
+  </defs>
+</svg><button class="portal-back" aria-label="Назад"><svg width="28" height="28" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M427 277v-42h-260l119 -120l-30 -30l-171 171l171 171l30 -30l-119 -120h260z"/></svg></button></div>
+  <nav class="portal-nav"><a href="#" class="portal-navitem" title="Источники"><svg width="16" height="16" viewBox="0 0 1536 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M768 768q237 0 443 43t325 127v-170q0 -69 -103 -128t-280 -93.5t-385 -34.5t-385 34.5t-280 93.5t-103 128v170q119 -84 325 -127t443 -43zM768 0q237 0 443 43t325 127v-170q0 -69 -103 -128t-280 -93.5t-385 -34.5t-385 34.5t-280 93.5t-103 128v170q119 -84 325 -127 t443 -43zM768 384q237 0 443 43t325 127v-170q0 -69 -103 -128t-280 -93.5t-385 -34.5t-385 34.5t-280 93.5t-103 128v170q119 -84 325 -127t443 -43zM768 1536q208 0 385 -34.5t280 -93.5t103 -128v-128q0 -69 -103 -128t-280 -93.5t-385 -34.5t-385 34.5t-280 93.5 t-103 128v128q0 69 103 128t280 93.5t385 34.5z"/></svg><span>Источники</span></a><a href="#" class="portal-navitem active" title="Наборы данных"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M85 277v-42h43v42h-43zM43 213v86h426v-86h-426zM128 363v42h-43v-42h43zM43 427h426v-86h-426v86zM85 149v-42h43v42h-43zM43 85v86h426v-86h-426z"/></svg><span>Наборы данных</span></a><a href="#" class="portal-navitem" title="Загрузка из Excel"><svg width="16" height="16" viewBox="0 0 1536 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M1468 1156q28 -28 48 -76t20 -88v-1152q0 -40 -28 -68t-68 -28h-1344q-40 0 -68 28t-28 68v1600q0 40 28 68t68 28h896q40 0 88 -20t76 -48zM1024 1400v-376h376q-10 29 -22 41l-313 313q-12 12 -41 22zM1408 -128v1024h-416q-40 0 -68 28t-28 68v416h-768v-1536h1280z M429 106v-106h281v106h-75l103 161q5 7 10 16.5t7.5 13.5t3.5 4h2q1 -4 5 -10q2 -4 4.5 -7.5t6 -8t6.5 -8.5l107 -161h-76v-106h291v106h-68l-192 273l195 282h67v107h-279v-107h74l-103 -159q-4 -7 -10 -16.5t-9 -13.5l-2 -3h-2q-1 4 -5 10q-6 11 -17 23l-106 159h76v107 h-290v-107h68l189 -272l-194 -283h-68z"/></svg><span>Загрузка из Excel</span></a><a href="#" class="portal-navitem" title="Отчеты"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M277 448h171v-128h-171v128zM277 64v213h171v-213h-171zM64 64v128h171v-128h-171zM64 235v213h171v-213h-171z"/></svg><span>Отчеты</span></a><a href="#" class="portal-navitem" title="Компоненты"><svg width="16" height="16" viewBox="0 0 2048 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M640 640v-512h-256v512h256zM1024 1152v-1024h-256v1024h256zM2048 0v-128h-2048v1536h128v-1408h1920zM1408 896v-768h-256v768h256zM1792 1280v-1152h-256v1152h256z"/></svg><span>Компоненты</span></a><a href="#" class="portal-navitem" title="Фасеты"><svg width="16" height="16" viewBox="0 0 1664 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M1482 486q46 -26 59.5 -77.5t-12.5 -97.5l-64 -110q-26 -46 -77.5 -59.5t-97.5 12.5l-266 153v-307q0 -52 -38 -90t-90 -38h-128q-52 0 -90 38t-38 90v307l-266 -153q-46 -26 -97.5 -12.5t-77.5 59.5l-64 110q-26 46 -12.5 97.5t59.5 77.5l266 154l-266 154 q-46 26 -59.5 77.5t12.5 97.5l64 110q26 46 77.5 59.5t97.5 -12.5l266 -153v307q0 52 38 90t90 38h128q52 0 90 -38t38 -90v-307l266 153q46 26 97.5 12.5t77.5 -59.5l64 -110q26 -46 12.5 -97.5t-59.5 -77.5l-266 -154z"/></svg><span>Фасеты</span></a><a href="#" class="portal-navitem" title="Профили доступа к отчетам"><svg aria-hidden="true"
+  xmlns='http://www.w3.org/2000/svg'
+  viewBox='0 0 12 12'
+  fill="currentColor"
+>
+  <path d='M7.84 8.69l.91.72zM13.2 11.97l-.13.1c-.19.15-.4.27-.61.36l-.15.06-.16 1.15h-1.46l-.16-1.15-.15-.06c-.21-.09-.42-.21-.6-.36l-.14-.1-1.07.44-.73-1.26.73 1.26 1.07-.44.13.1c.2.15.4.27.61.36l.15.06.16 1.15h1.46l.16-1.15.15-.06c.22-.1.42-.21.6-.36l.14-.1 1.07.44.73-1.26-.73 1.26-1.07-.44zM8.73 10.28a2.8 2.8 0 000 0l.02.16-.02-.16zM14.09 9.41l.91-.72-.91.72zM14.09 10.44l.02-.16c.02-.15.02-.25.02-.36 0 .1 0 .21-.02.36l-.02.16z' />
+  <path d='M14.09 10.44l.02-.16a2.8 2.8 0 000-.71l-.02-.16.91-.72-.72-1.25-1.08.43-.13-.1c-.19-.14-.4-.26-.61-.35l-.15-.07-.16-1.14h-1.46l-.16 1.14-.15.07c-.22.09-.42.2-.6.35l-.14.1-1.07-.43-.73 1.25.91.72-.02.16a2.8 2.8 0 000 .7l.02.17-.9.71.72 1.26 1.07-.44.13.1c.2.15.4.27.61.36l.15.06.16 1.15h1.46l.16-1.15.15-.06c.22-.1.42-.21.6-.36l.14-.1 1.07.44.73-1.26-.91-.71zm-2.67 1.17a1.68 1.68 0 110-3.37 1.68 1.68 0 010 3.37zM0 8.63h4.85v3.63H0zM6.06 1.36h4.85v3.63H6.06z' />
+  <path d='M7.43 10.75l.72-.56a2.93 2.93 0 010-.53l-.72-.56a.49.49 0 01-.12-.63l.8-1.38c.12-.2.37-.3.6-.21l.85.34c.14-.1.3-.19.45-.26l.1-.75H6.07v6.06h1.77l-.52-.9a.48.48 0 01.12-.62zM0 1.36h4.85v6.06H0z' />
+  <path d='M14.1 9.57a2.8 2.8 0 000 0l-.01-.16.02.16zM9.64 7.87l.13-.1c.19-.14.4-.26.61-.35l.15-.07.16-1.14h1.46l.16 1.14.15.07c.21.09.42.2.61.35l.13.1 1.08-.43.72 1.25-.72-1.25-1.08.43-.13-.1c-.19-.14-.4-.27-.61-.35l-.15-.07-.16-1.14h-1.46l-.16 1.14-.15.07c-.22.09-.42.2-.6.35l-.14.1-1.07-.43-.73 1.25.73-1.25 1.07.43zM14.09 10.44l.91.71zM8.75 10.44l-.91.71.91-.71zM8.75 9.4l-.02.17a2.8 2.8 0 010 0l.02-.16z' />
+</svg><span>Профили доступа к отчетам</span></a><a href="#" class="portal-navitem" title="Профили наборов данных"><svg aria-hidden="true"
+  xmlns='http://www.w3.org/2000/svg'
+  viewBox='0 0 15 11'
+  fill="currentColor"
+>
+  <path d='M14.47 0H0v2.9H14.47V0zM2.89 2.17H1.45V.72h1.44v1.45z' />
+  <path
+    d='M1.45 5.03H2.9v1.45H1.45zM17.87 8.73a3.54 3.54 0 000-.9l-.03-.2 1.16-.9-.92-1.6-1.36.56-.16-.13c-.25-.19-.5-.34-.78-.45l-.19-.08-.2-1.45h-1.84l-.2 1.45-.2.08c-.27.11-.54.27-.77.45l-.17.13-1.36-.55-.91 1.59 1.15.9-.03.2a3.55 3.55 0 000 .9l.03.2-1.15.91.91 1.6 1.36-.56.17.13c.24.18.5.34.77.45l.2.08.2 1.45h1.84l.2-1.45.19-.08c.28-.12.54-.27.77-.45l.17-.13 1.36.55.92-1.59-1.16-.9.03-.2zM1.45 9.37H2.9v1.45H1.45z'
+    fill='none'
+  />
+  <path d='M9.41 9.33l.88-.68H0v2.89h10.08l-.82-1.42a.61.61 0 01.15-.79zM2.9 10.82H1.45V9.37h1.44v1.45zM9.26 6.45l1.22-2.14H0V7.2h9.38a.6.6 0 01-.12-.75zm-6.37.03H1.45V5.03h1.44v1.45z' />
+  <path
+    fill='#fff'
+    d='M9.89 6.8z'
+  />
+  <path d='M17.87 8.73a3.54 3.54 0 000-.9l-.03-.2 1.16-.9-.92-1.6-1.36.56-.16-.13c-.25-.19-.5-.34-.78-.45l-.19-.08-.2-1.45h-1.84l-.2 1.45-.2.08c-.27.11-.54.27-.77.45l-.17.13-1.36-.55-.91 1.59 1.15.9-.03.2a3.55 3.55 0 000 .9l.03.2-1.15.91.91 1.6 1.36-.56.17.13c.24.18.5.34.77.45l.2.08.2 1.45h1.84l.2-1.45.19-.08c.28-.12.54-.27.77-.45l.17-.13 1.36.55.92-1.59-1.16-.9.03-.2zm-3.4 1.69a2.13 2.13 0 110-4.27 2.13 2.13 0 010 4.27z' />
+</svg><span>Профили наборов данных</span></a><a href="#" class="portal-navitem" title="Профили экспорта"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M235 171v64h-214v42h214v64l85 -85zM448 448c23 0 43 -19 43 -43v-299c0 -23 -20 -42 -43 -42h-384c-23 0 -43 19 -43 42v86h43v-86h384v300h-384v-86h-43v85c0 23 20 43 43 43h384z"/></svg><span>Профили экспорта</span></a><a href="#" class="portal-navitem" title="Настройки безопасности"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M192 235c14 0 32 -2 51 -6c-44 -24 -51 -56 -51 -74v-48h-149v53c0 50 99 75 149 75zM352 213c39 0 117 -19 117 -58v-48h-234v48c0 39 78 58 117 58zM192 277c-35 0 -64 29 -64 64s29 64 64 64s64 -29 64 -64s-29 -64 -64 -64zM352 256c-29 0 -53 24 -53 53s24 54 53 54 s53 -25 53 -54s-24 -53 -53 -53z"/></svg><span>Настройки безопасности</span></a><a href="#" class="portal-navitem" title="Лицензия"><svg width="16" height="16" viewBox="0 0 1792 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M832 1024q0 80 -56 136t-136 56t-136 -56t-56 -136q0 -42 19 -83q-41 19 -83 19q-80 0 -136 -56t-56 -136t56 -136t136 -56t136 56t56 136q0 42 -19 83q41 -19 83 -19q80 0 136 56t56 136zM1683 320q0 -17 -49 -66t-66 -49q-9 0 -28.5 16t-36.5 33t-38.5 40t-24.5 26 l-96 -96l220 -220q28 -28 28 -68q0 -42 -39 -81t-81 -39q-40 0 -68 28l-671 671q-176 -131 -365 -131q-163 0 -265.5 102.5t-102.5 265.5q0 160 95 313t248 248t313 95q163 0 265.5 -102.5t102.5 -265.5q0 -189 -131 -365l355 -355l96 96q-3 3 -26 24.5t-40 38.5t-33 36.5 t-16 28.5q0 17 49 66t66 49q13 0 23 -10q6 -6 46 -44.5t82 -79.5t86.5 -86t73 -78t28.5 -41z"/></svg><span>Лицензия</span></a><a href="#" class="portal-navitem" title="Пользователи"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M256 213c57 0 171 -28 171 -85v-43h-342v43c0 57 114 85 171 85zM256 256c-47 0 -85 38 -85 85s38 86 85 86s85 -39 85 -86s-38 -85 -85 -85z"/></svg><span>Пользователи</span></a><a href="#" class="portal-navitem" title="Переменные"><svg width="16" height="16" viewBox="0 0 1536 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M352 128v-128h-352v128h352zM704 256q26 0 45 -19t19 -45v-256q0 -26 -19 -45t-45 -19h-256q-26 0 -45 19t-19 45v256q0 26 19 45t45 19h256zM864 640v-128h-864v128h864zM224 1152v-128h-224v128h224zM1536 128v-128h-736v128h736zM576 1280q26 0 45 -19t19 -45v-256 q0 -26 -19 -45t-45 -19h-256q-26 0 -45 19t-19 45v256q0 26 19 45t45 19h256zM1216 768q26 0 45 -19t19 -45v-256q0 -26 -19 -45t-45 -19h-256q-26 0 -45 19t-19 45v256q0 26 19 45t45 19h256zM1536 640v-128h-224v128h224zM1536 1152v-128h-864v128h864z"/></svg><span>Переменные</span></a><a href="#" class="portal-navitem" title="Темы интерфейса"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M373 256c18 0 32 14 32 32s-14 32 -32 32s-32 -14 -32 -32s14 -32 32 -32zM309 341c18 0 32 14 32 32s-14 32 -32 32s-32 -14 -32 -32s14 -32 32 -32zM203 341c18 0 32 14 32 32s-14 32 -32 32s-32 -14 -32 -32s14 -32 32 -32zM139 256c18 0 32 14 32 32s-14 32 -32 32 s-32 -14 -32 -32s14 -32 32 -32zM256 448c106 0 192 -77 192 -171c0 -59 -48 -106 -107 -106h-37c-18 0 -32 -14 -32 -32c0 -8 3 -15 8 -21s8 -14 8 -22c0 -18 -14 -32 -32 -32c-106 0 -192 86 -192 192s86 192 192 192z"/></svg><span>Темы интерфейса</span></a><a href="#" class="portal-navitem" title="Настройки кэширования"><svg width="16" height="16" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path transform="translate(0,512) scale(1,-1)" d="M128 256h64l-85 -85l-86 85h64c0 94 77 171 171 171c33 0 65 -10 91 -27l-31 -31c-18 10 -38 15 -60 15c-71 0 -128 -57 -128 -128zM405 341l86 -85h-64c0 -94 -77 -171 -171 -171c-33 0 -65 10 -91 27l31 31c18 -10 38 -15 60 -15c71 0 128 57 128 128h-64z"/></svg><span>Настройки кэширования</span></a><a href="#" class="portal-navitem" title="Настройки портала"><svg width="16" height="16" viewBox="0 0 1920 1792" fill="currentColor" aria-hidden="true"><path transform="translate(0,1536) scale(1,-1)" d="M896 640q0 106 -75 181t-181 75t-181 -75t-75 -181t75 -181t181 -75t181 75t75 181zM1664 128q0 52 -38 90t-90 38t-90 -38t-38 -90q0 -53 37.5 -90.5t90.5 -37.5t90.5 37.5t37.5 90.5zM1664 1152q0 52 -38 90t-90 38t-90 -38t-38 -90q0 -53 37.5 -90.5t90.5 -37.5 t90.5 37.5t37.5 90.5zM1280 731v-185q0 -10 -7 -19.5t-16 -10.5l-155 -24q-11 -35 -32 -76q34 -48 90 -115q7 -11 7 -20q0 -12 -7 -19q-23 -30 -82.5 -89.5t-78.5 -59.5q-11 0 -21 7l-115 90q-37 -19 -77 -31q-11 -108 -23 -155q-7 -24 -30 -24h-186q-11 0 -20 7.5t-10 17.5 l-23 153q-34 10 -75 31l-118 -89q-7 -7 -20 -7q-11 0 -21 8q-144 133 -144 160q0 9 7 19q10 14 41 53t47 61q-23 44 -35 82l-152 24q-10 1 -17 9.5t-7 19.5v185q0 10 7 19.5t16 10.5l155 24q11 35 32 76q-34 48 -90 115q-7 11 -7 20q0 12 7 20q22 30 82 89t79 59q11 0 21 -7 l115 -90q34 18 77 32q11 108 23 154q7 24 30 24h186q11 0 20 -7.5t10 -17.5l23 -153q34 -10 75 -31l118 89q8 7 20 7q11 0 21 -8q144 -133 144 -160q0 -8 -7 -19q-12 -16 -42 -54t-45 -60q23 -48 34 -82l152 -23q10 -2 17 -10.5t7 -19.5zM1920 198v-140q0 -16 -149 -31 q-12 -27 -30 -52q51 -113 51 -138q0 -4 -4 -7q-122 -71 -124 -71q-8 0 -46 47t-52 68q-20 -2 -30 -2t-30 2q-14 -21 -52 -68t-46 -47q-2 0 -124 71q-4 3 -4 7q0 25 51 138q-18 25 -30 52q-149 15 -149 31v140q0 16 149 31q13 29 30 52q-51 113 -51 138q0 4 4 7q4 2 35 20 t59 34t30 16q8 0 46 -46.5t52 -67.5q20 2 30 2t30 -2q51 71 92 112l6 2q4 0 124 -70q4 -3 4 -7q0 -25 -51 -138q17 -23 30 -52q149 -15 149 -31zM1920 1222v-140q0 -16 -149 -31q-12 -27 -30 -52q51 -113 51 -138q0 -4 -4 -7q-122 -71 -124 -71q-8 0 -46 47t-52 68 q-20 -2 -30 -2t-30 2q-14 -21 -52 -68t-46 -47q-2 0 -124 71q-4 3 -4 7q0 25 51 138q-18 25 -30 52q-149 15 -149 31v140q0 16 149 31q13 29 30 52q-51 113 -51 138q0 4 4 7q4 2 35 20t59 34t30 16q8 0 46 -46.5t52 -67.5q20 2 30 2t30 -2q51 71 92 112l6 2q4 0 124 -70 q4 -3 4 -7q0 -25 -51 -138q17 -23 30 -52q149 -15 149 -31z"/></svg><span>Настройки портала</span></a></nav>
+  <div class="portal-side-bottom"><span class="portal-side-tab" role="img" aria-label="Главное меню"><svg aria-hidden="true"
+    viewBox='0 0 32 32'
+    fill='currentColor'
+    xmlns='http://www.w3.org/2000/svg'
+  >
+    <rect
+      x='9'
+      y='15'
+      width='14'
+      height='2'
+    />
+    <rect
+      x='9'
+      y='20'
+      width='14'
+      height='2'
+    />
+    <rect
+      x='9'
+      y='10'
+      width='14'
+      height='2'
+    />
+  </svg></span><span class="portal-side-tab selected" role="img" aria-label="Настройки"><svg aria-hidden="true"
+    viewBox='0 0 32 32'
+    fill='currentColor'
+  >
+    <rect
+      x='14'
+      y='15'
+      width='4'
+      height='2'
+    />
+    <rect
+      x='20'
+      y='17'
+      width='4'
+      height='2'
+    />
+    <rect
+      x='8'
+      y='13'
+      width='4'
+      height='2'
+    />
+    <rect
+      x='15'
+      y='18'
+      width='2'
+      height='4'
+    />
+    <rect
+      x='9'
+      y='16'
+      width='2'
+      height='6'
+    />
+    <rect
+      x='21'
+      y='20'
+      width='2'
+      height='2'
+    />
+    <rect
+      x='21'
+      y='10'
+      width='2'
+      height='6'
+    />
+    <rect
+      x='15'
+      y='10'
+      width='2'
+      height='4'
+    />
+    <rect
+      x='9'
+      y='10'
+      width='2'
+      height='2'
+    />
+  </svg></span><span class="portal-side-tab" role="img" aria-label="Пользователь"><svg aria-hidden="true"
+    viewBox='0 0 32 32'
+    fill='currentColor'
+    xmlns='http://www.w3.org/2000/svg'
+  >
+    <path d='M19.93,12c0,2.76-1.78,6-4,6s-4-3.24-4-6a3.67,3.67,0,0,1,4-4A3.68,3.68,0,0,1,19.93,12Z' />
+    <path d='M20.61,17.91a5.91,5.91,0,0,1-9.22,0C9.34,18.62,8,19.78,8,21.1V24H24V21.1C24,19.78,22.66,18.62,20.61,17.91Z' />
+  </svg></span></div>
+ </aside>
+ <main class="portal-main">
+  <header class="portal-top"><div class="portal-top-path">Настройки&nbsp; → &nbsp;Наборы данных&nbsp; → &nbsp;Произвольные наборы данных</div><div class="portal-top-actions"><span class="infohelp">?</span></div></header>
+  <div class="portal-body">
+   <div class="portal-tabs"><button class="portal-tab active">Произвольные наборы данных</button><button class="portal-tab">Простые и составные наборы данных</button></div>
+   <div class="portal-controls">
+    <div class="portal-source-control"><label class="portal-lbl" for="srcSelect">Источники данных <span class="portal-help">i</span></label><select class="portal-select" id="srcSelect"><option>dwh_dev_portal</option></select></div>
+    <div class="portal-dataset-control"><label class="portal-lbl" for="datasetSelect">Наборы данных <span class="portal-help">i</span></label><select class="portal-select" id="datasetSelect"><option>crn_demo_dataset_3</option></select></div>
+    <div class="portal-dataset-buttons"><button class="portal-blue" id="addDataset">Добавить набор</button>
+    <button class="portal-yellow" id="deleteDataset">Удалить</button>
+    <div class="portal-save-group"><span class="unsaved" id="saveStatus">Не сохранено!</span><button class="portal-yellow" id="savePage">Сохранить</button></div></div>
+   </div>
+   <div class="portal-props">
+    <div class="portal-proprow"><b>Имя источника данных <span class="portal-help">i</span></b><div class="value readonly">dwh_dev_portal</div></div>
+    <div class="portal-proprow"><b>Имя набора данных <span class="portal-help">i</span></b><div class="value">crn_demo_dataset_3</div></div>
+    <div class="portal-proprow"><b>Отображаемое наименование <span class="portal-help">i</span></b><div class="value" id="displayName" contenteditable="true" spellcheck="false">crn_demo_dataset_3</div></div>
+   </div>
+   <div class="portal-sql-label">SQL Запрос <span class="portal-help">i</span> <span class="eye"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div>
+   <div class="portal-editor-wrap">
+    <div class="portal-editor" id="normalEditor"><div class="portal-editor-gutter" id="normalGut"></div><div class="portal-editor-code"><pre id="normalHighlight" aria-hidden="true"></pre><textarea id="normalSql" spellcheck="false" aria-label="SQL-запрос в обычном редакторе"></textarea></div><div class="portal-resize-bar" id="normalEditorResize" role="separator" aria-orientation="horizontal" aria-label="Изменить высоту SQL-редактора" tabindex="0" title="Перетащите вверх или вниз, чтобы изменить высоту редактора"></div></div>
+    <div class="portal-query-buttons"><button class="portal-blue" id="normalCheck">Проверить запрос</button><button class="portal-blue" id="openEditor">Расширенный редактор</button></div>
+   </div>
+   <div id="normalAlert" class="portal-preview-message" hidden role="alert"></div>
+   <section class="portal-preview" id="normalPreview" hidden aria-label="Превью данных">
+    <div class="portal-preview-head"><strong>Превью данных</strong><span class="portal-success"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7 12l3 3 6-6"/></svg> Данные загружены</span><span class="right"><button class="portal-iconbtn" id="normalSettings" title="Настройки превью данных" aria-label="Настройки превью данных"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4l.6 2.2 2 1 2-.9 2.5 2.5-.9 2 .9 2 2.1.7v4l-2.1.6-.9 2 .9 2-2.5 2.5-2-.9-2 1L14 24h-4l-.6-2.3-2-1-2 .9-2.5-2.5.9-2-.9-2L.8 14v-4l2.1-.7.9-2-.9-2 2.5-2.5 2 .9 2-1z" transform="translate(1 0) scale(.9)"/><circle cx="12" cy="12" r="3"/></svg></button><button class="portal-iconbtn" id="normalCollapse" aria-label="Свернуть превью данных" title="Свернуть превью данных"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button></span></div>
+    <div class="portal-preview-content" id="normalPreviewContent"><div class="portal-data-scroll" id="normalDataScroll"></div><div class="portal-preview-footer" id="normalPreviewFooter"></div><div class="portal-resize-bar" id="normalPreviewResize" role="separator" aria-orientation="horizontal" aria-label="Изменить высоту таблицы превью" tabindex="0" title="Перетащите вверх или вниз, чтобы показать больше или меньше строк"></div></div>
+   </section>
+   <section class="portal-rls"><div class="rls-heading">Настройки RLS <span class="portal-help">i</span><span class="rls-eye"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div><div class="field-label">Поля</div>
+    <div class="portal-fields-scroll" role="region" aria-label="Поля набора данных" tabindex="0"><table class="portal-fields"><colgroup><col style="width:28px"><col style="width:25%"><col style="width:22%"><col style="width:8%"><col style="width:13%"><col style="width:22%"><col style="width:6%"><col style="width:37px"></colgroup><thead><tr><th colspan="2">Имя поля</th><th>Алиас</th><th>Тип</th><th>Описание</th><th>Иерархия</th><th>Уровень</th><th></th></tr></thead><tbody><tr><td></td><td>amount</td><td>Количество, шт</td><td>Число</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td>⚙</td><td>change_date</td><td>Дата изменения данных</td><td>Дата</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>fed_okrug_full_name</td><td>Федеральный округ</td><td>Строка</td><td class="">Тест</td><td>Тест</td><td>1</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>fed_okrug_short_name</td><td>ФО</td><td>Строка</td><td class="italic">Нет</td><td>Тест</td><td>2</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td>⚙</td><td>local_date</td><td>local_date</td><td>Дата</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>manager_id</td><td>ID менеджера</td><td>Число</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>month_name</td><td>Месяц_название</td><td>Строка</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>month_num</td><td>Месяц_номер</td><td>Число</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td>♧</td><td>order_date</td><td>Дата заказа</td><td>Дата</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td>♧</td><td>order_date_2</td><td>Дата заказа 2</td><td>Дата</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>summa_rub</td><td>Сумма, руб.</td><td>Число</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr><tr><td></td><td>test_for_delete2</td><td>test_for_delete2</td><td>Строка</td><td class="italic">Нет</td><td>Нет</td><td>Нет</td><td><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></td></tr></tbody></table></div>
+   </section>
+  </div>
+ </main>
+</div>
+
+<!-- ===== Диалог ===== -->
+<div class="scrim" id="scrim" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <div class="dlg-h">
+      <div style="flex:1;min-width:0">
+        <h2 id="dlgTitle">Расширенный редактор</h2>
+        <div class="sub">Произвольный набор данных: crn_demo_dataset_3 · Источник: dwh_dev_portal</div>
+      </div>
+      <button class="ib" id="btnClose" aria-label="Закрыть редактор" title="Закрыть">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="work" id="work">
+      <!-- Таблицы -->
+      <aside class="side left" aria-label="Таблицы источника">
+        <div class="collapsed-strip">
+          <button class="ib sm" data-toggle="l" aria-label="Показать таблицы" title="Показать таблицы">
+            <svg aria-hidden="true"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  
+  <ellipse cx="12" cy="5" rx="9" ry="3" fill="none" stroke="currentColor" stroke-width="1.6" />
+  <path d="M3 5v14a9 3 0 0 0 18 0V5" fill="none" stroke="currentColor" stroke-width="1.6" />
+  <path d="M3 12a9 3 0 0 0 18 0" fill="none" stroke="currentColor" stroke-width="1.6" />
+</svg></button>
+          <span class="vt">Таблицы</span>
+        </div>
+        <div class="side-h">
+          <div class="t"><svg aria-hidden="true"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  
+  <ellipse cx="12" cy="5" rx="9" ry="3" fill="none" stroke="currentColor" stroke-width="1.6" />
+  <path d="M3 5v14a9 3 0 0 0 18 0V5" fill="none" stroke="currentColor" stroke-width="1.6" />
+  <path d="M3 12a9 3 0 0 0 18 0" fill="none" stroke="currentColor" stroke-width="1.6" />
+</svg><span>dwh_dev_portal</span> <small id="tCount"></small></div>
+          <button class="ib sm" data-toggle="l" aria-label="Скрыть панель таблиц" title="Скрыть панель">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        </div>
+        <label class="search" id="tSearchBox">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="sr">Поиск таблиц и полей</span>
+          <input id="tSearch" type="text" placeholder="Поиск таблиц и полей" autocomplete="off">
+          <button class="clr" type="button" aria-label="Очистить поиск" data-clear="tSearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </label>
+        <div class="hint">Нажмите или перетащите таблицу или поле в запрос</div>
+        <div class="scroll" id="tList"></div>
+      </aside>
+
+      <div class="split left-split" id="splitL" role="separator" aria-orientation="vertical" aria-label="Ширина панели таблиц" aria-valuemin="0" aria-valuemax="100" tabindex="0" title="Потяните, чтобы изменить ширину. Двойной клик — исходный размер">
+        <span class="grip" role="button" tabindex="0" data-toggle="l" title="Скрыть / показать таблицы" aria-label="Скрыть / показать таблицы"><svg width="11" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m10 3-5 5 5 5"/></svg></span>
+        <span class="wbadge" id="badgeL"></span>
+      </div>
+
+      <!-- Редактор -->
+      <section class="center" aria-label="Редактор запроса">
+        <div class="ed-card" id="edCard">
+          <div class="drop-hint" id="dropHint"></div>
+          <div class="drop-empty"><div>Отпустите таблицу — запрос<br><b>select * from …</b> соберётся автоматически</div></div>
+          <div class="ed-bar">
+            <div class="t"><svg aria-hidden="true"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  
+  <path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+</svg><span>SQL-запрос</span><span class="dirty" id="dirty"></span></div>
+            <span class="pos" id="pos">Строка 1, столбец 1</span>
+            <button class="ib" id="btnPreviewSettings" aria-label="Настройки превью данных" title="Настройки превью данных"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4l.6 2.2 2 1 2-.9 2.5 2.5-.9 2 .9 2 2.1.7v4l-2.1.6-.9 2 .9 2-2.5 2.5-2-.9-2 1L14 24h-4l-.6-2.3-2-1-2 .9-2.5-2.5.9-2-.9-2L.8 14v-4l2.1-.7.9-2-.9-2 2.5-2.5 2 .9 2-1z" transform="translate(1 0) scale(.9)"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <span class="preview-toggle-wrapper" title="Превью данных"><button class="ib" id="btnPreviewToggle" disabled title="Превью данных" aria-label="Превью данных" aria-pressed="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 10h18M9 10v9M15 10v9"/></svg></button></span>
+            <button class="ib" id="btnFocus" aria-pressed="false" aria-label="Режим фокуса: скрыть боковые панели" title="Скрыть боковые панели">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button>
+          </div>
+          <div class="ed">
+            <div class="gut" id="gut"></div>
+            <div class="code">
+              <div class="ln-hl" id="lnHl"></div>
+              <div class="ln-err" id="lnErr" hidden></div>
+              <div class="drop-caret" id="dropCaret"></div>
+              <span id="meas">0000000000</span>
+              <pre id="hl" aria-hidden="true"></pre>
+              <textarea id="sql" spellcheck="false" aria-label="Текст SQL-запроса" placeholder="Введите запрос, например: select * from test_torgi;"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="expanded-preview-resize" id="expandedPreviewResize" role="separator" aria-orientation="horizontal" aria-label="Изменить соотношение высоты SQL-редактора и превью данных" tabindex="0" title="Перетащите вверх для увеличения превью или вниз для увеличения редактора" hidden></div>
+        <div class="res" id="res" hidden aria-live="polite"></div>
+      </section>
+
+      <div class="split right-split" id="splitR" role="separator" aria-orientation="vertical" aria-label="Ширина панели функций" aria-valuemin="0" aria-valuemax="100" tabindex="0" title="Потяните, чтобы изменить ширину. Двойной клик — исходный размер">
+        <span class="grip" role="button" tabindex="0" data-toggle="r" title="Скрыть / показать функции" aria-label="Скрыть / показать функции"><svg width="11" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 3 5 5-5 5"/></svg></span>
+        <span class="wbadge" id="badgeR"></span>
+      </div>
+
+      <!-- Функции -->
+      <aside class="side right" aria-label="Функции и операторы">
+        <div class="collapsed-strip">
+          <button class="ib sm" data-toggle="r" aria-label="Показать функции" title="Показать функции">
+            <svg aria-hidden="true"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  
+  <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" />
+  <path d="M9 17c2 0 2.8-1 2.8-2.8V10c0-2 1-3.3 3.2-3M9 11.2h5.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+</svg></button>
+          <span class="vt">Функции</span>
+        </div>
+        <div class="side-h">
+          <div class="t"><svg aria-hidden="true"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  
+  <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" />
+  <path d="M9 17c2 0 2.8-1 2.8-2.8V10c0-2 1-3.3 3.2-3M9 11.2h5.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+</svg><span>Функции</span></div>
+          <button class="ib sm" data-toggle="r" aria-label="Скрыть панель функций" title="Скрыть панель">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <label class="search" id="fSearchBox">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="sr">Поиск функций</span>
+          <input id="fSearch" type="text" placeholder="Поиск функций" autocomplete="off">
+          <button class="clr" type="button" aria-label="Очистить поиск" data-clear="fSearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </label>
+        <div class="hint">Нажмите — вставка в позицию курсора, или перетащите в нужное место</div>
+        <div class="scroll" id="fList"></div>
+      </aside>
+    </div>
+
+    <div class="dlg-f">
+      <label class="chk"><input type="checkbox" id="withTable"> Добавлять имя таблицы при вставке поля</label>
+      <button class="btn btn-outlined" id="btnCheck" title="Проверить запрос · Ctrl+Enter">Проверить запрос</button>
+      <button class="btn btn-outlined" id="btnCancel">Отмена</button>
+      <button class="btn btn-primary" id="btnMin">Принять</button>
+    </div>
+  </div>
+</div>
+
+<div class="ghost" id="ghost" aria-hidden="true"><span class="k" id="ghostK"></span><span id="ghostT"></span></div>
+
+
+<div id="settingsScrim" class="preview-settings-scrim" hidden>
+ <div class="preview-settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+  <div class="preview-settings-title"><h2 id="settingsTitle">Настройки превью данных</h2><span class="preview-settings-info" title="Выбранное количество строк загружается при следующей проверке запроса.&#10;Дополнительно можно подгружать по 100 строк кнопкой «Показать ещё 100».&#10;&#10;Не более 1000 строк за одну сессию превью." aria-label="Информация о настройках">i</span></div>
+  <label for="initialRows">Количество строк при проверке запроса</label>
+  <div class="preview-settings-select"><select id="initialRows"><option value="100">100 строк</option><option value="200">200 строк</option><option value="500">500 строк</option><option value="1000">1000 строк</option></select></div>
+  <div class="setting-actions"><button id="cancelSettings" type="button">Отмена</button><button class="primary" id="saveSettings" type="button">Применить</button></div>
+ </div>
+</div>
+
+<div id="discardScrim" class="discard-scrim" hidden>
+ <div class="discard-card" role="alertdialog" aria-modal="true" aria-label="Отмена изменений SQL-запроса" aria-describedby="discardMessage">
+  <p id="discardMessage">Все несохранённые изменения будут потеряны.<br>Продолжить?</p>
+  <div class="discard-actions"><button id="discardNo" type="button">Нет</button><button id="discardYes" type="button" class="primary">Да</button></div>
+ </div>
+</div>
+
+<div id="previewSortMenu" class="preview-sort-menu" role="menu" aria-label="Сортировка колонки" hidden></div>
+
+<div class="toast" id="toast" role="status"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg><span id="toastTx"></span></div>
+
+<script>
+(function(){
+  /* ---------- Данные (демо) ---------- */
+  var TYPES = {
+    int:{i:'123',n:'Число целое'}, dec:{i:'#',n:'Число дробное'}, str:{i:'Tt',n:'Строка'},
+    date:{i:'дата',n:'Дата'}, time:{i:'время',n:'Время'}
+  };
+  var GRIP = '<svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="3" cy="3" r="1.3"/><circle cx="7" cy="3" r="1.3"/><circle cx="3" cy="8" r="1.3"/><circle cx="7" cy="8" r="1.3"/><circle cx="3" cy="13" r="1.3"/><circle cx="7" cy="13" r="1.3"/></svg>';
+  function F(n,t){return {name:n,type:t};}
+  var TABLES = [
+    {name:'fct_account_balance',fields:[F('id','int'),F('amount','dec')]},
+    {name:'Medintsev_test',fields:[F('id','int'),F('value','str')]},
+    {name:'Medintsev_test2',fields:[F('id','int'),F('value','str')]},
+    {name:'Medintsev_test_versioning',fields:[F('id','int'),F('version','int')]},
+    {name:'Test2',fields:[F('id','int'),F('amount','dec')]},
+    {name:'Test4',fields:[F('id','int'),F('amount','dec')]},
+    {name:'Test_MB-974',fields:[F('id','int'),F('value','str')]},
+    {name:'a2_countworkdays',fields:[F('id','int')]},
+    {name:'a2_discountyears',fields:[F('id','int')]},
+    {name:'a2_otgryzkacurrentyear',fields:[F('id','int')]},
+    {name:'a2_salescurrentyear',fields:[F('id','int')]},
+    {name:'crn_demo_dataset_3', fields:[F('amount','int'),F('report_date','date'),F('fed_okrug_full_name','str'),F('fed_okrug_short_name','str'),F('order_date','date'),F('manager_id','int'),F('month_name','str'),F('month_num','int'),F('summa_rub','dec')]},
+    {name:'crn_demo_gant',fields:[F('id','int'),F('name','str')]},
+    {name:'crn_product_type_clsf',fields:[F('id','int'),F('name','str')]},
+    {name:'crn_sales_city_clsf',fields:[F('id','int'),F('city','str')]},
+    {name:'crn_sales_main_form',fields:[F('id','int'),F('amount','dec')]},
+    {name:'crn_sales_regions_clsf',fields:[F('id','int'),F('region','str')]},
+    {name:'accounting', fields:[F('id','int'),F('account','str'),F('amount','dec'),F('posted_at','date')]},
+    {name:'appliances_brand', fields:[F('id','int'),F('brand','str'),F('category','str'),F('price','dec')]},
+    {name:'book_reading_statistics', fields:[F('book_id','int'),F('title','str'),F('readers','int'),F('avg_rating','dec')]},
+    {name:'book_stats_transposed', fields:[F('metric','str'),F('value','dec'),F('period','date')]},
+    {name:'book_stats_with_age', fields:[F('book_id','int'),F('age_group','str'),F('readers','int')]},
+    {name:'bubble_downtime', fields:[F('machine','str'),F('started_at','time'),F('minutes','int')]},
+    {name:'clean_co_finance', fields:[F('id','int'),F('revenue','dec'),F('cost','dec'),F('month','date')]},
+    {name:'cleanin_co', fields:[F('id','int'),F('client','str'),F('order_date','date')]},
+    {name:'cleaning_company', fields:[F('id','int'),F('client','str'),F('service','str'),F('amount','dec'),F('order_date','date')]},
+    {name:'cleaning_company_enriched', fields:[F('id','int'),F('client','str'),F('region','str'),F('amount','dec')]},
+    {name:'cleaning_company_mart', fields:[F('region','str'),F('month','date'),F('revenue','dec')]},
+    {name:'crm_demo_dataset', fields:[F('deal_id','int'),F('stage','str'),F('amount','dec'),F('closed_at','date')]},
+    {name:'d0_cleaning_company', fields:[F('id','int'),F('client','str'),F('amount','dec')]},
+    {name:'demo_categories', fields:[F('id','int'),F('category','str')]},
+    {name:'demo_clients', fields:[F('id','int'),F('name','str'),F('city','str'),F('created_at','date')]},
+    {name:'demo_equipment_model', fields:[F('id','int'),F('model','str'),F('vendor','str')]},
+    {name:'test_torgi', fields:[F('lot_id','int'),F('lot_name','str'),F('start_price','dec'),F('final_price','dec'),F('auction_date','date'),F('region','str')]}
+  ];
+  var GROUPS = [
+    {id:'agg',title:'Агрегация',items:[['SUM','Сумма','fn'],['AVG','Среднее','fn'],['MIN','Минимум','fn'],['MAX','Максимум','fn'],['COUNT','Количество','fn'],['DISTINCT','Уникальные значения','kw']]},
+    {id:'usr',title:'Пользовательские',items:[['AVGD','[описание функции]','fn']]},
+    {id:'str',title:'Строковые',items:[['STR','[описание функции]','fn']]},
+    {id:'math',title:'Математические',items:[['+','Сложение','op'],['-','Вычитание','op'],['/','Деление','op'],['*','Умножение','op']]},
+    {id:'cmp',title:'Сравнение',items:[['=','Равно','op'],['<>','Не равно','op'],['>','Больше','op'],['<','Меньше','op'],['>=','Больше или равно','op'],['<=','Меньше или равно','op']]},
+    {id:'kw',title:'Конструкции',items:[['WHERE','Условие отбора','kw'],['GROUP BY','Группировка','kw'],['ORDER BY','Сортировка','kw'],['LIMIT','Ограничить строки','kw']]}
+  ];
+  var KW = ['select','from','where','group','by','order','having','limit','offset','join','left','right','inner','full','outer','on','as','and','or','not','in','is','null','like','between','distinct','union','all','case','when','then','else','end','asc','desc','with'];
+  var FN = ['sum','avg','min','max','count','avgd','str','coalesce','round','cast','lower','upper'];
+
+  /* ---------- Состояние ---------- */
+  var st = {initialQuery:null, openTable:null, closed:{}, result:'none', lastChecked:null, errLine:null, previewVisible:false, previewSession:null, initialRows:100, checkSeq:0};
+  var $ = function(id){return document.getElementById(id);};
+  var sql = $('sql'), hl = $('hl'), gut = $('gut'), work = $('work');
+  sql.value = 'SELECT *,\norder_date AS order_date_2,    -- Для использования фильтров с переменными по двум периодам\nreport_date AS change_date,\nreport_date AS local_date,\n\'Удалить поле\' AS test_for_delete2,\nCASE WHEN "month_name" = \'Май\' then null else "summa_rub" end as summa_rub_wnull,\ncase\nwhen {!env.value_type!;\'Нет значения\'} = \'Количество, шт.\' then "amount"\nwhen {!env.value_type!;\'Нет значения\'} = \'Сумма, руб.\' then "summa_rub"\nend AS variable_amount_summa\nFROM crn_demo_dataset_3';
+  st.initialQuery = sql.value;
+
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  function tableNames(){return TABLES.map(function(t){return t.name.toLowerCase();});}
+
+  /* ---------- Подсветка ---------- */
+  function highlight(src){
+    var names = tableNames(), out = '', re = /(--[^\n]*)|('(?:[^'\\]|\\.)*'?)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][\w.]*)|([<>=!*+\-/,;()]+)|(\s+|.)/g, m;
+    while((m = re.exec(src))){
+      if(m[1]) out += '<span class="cmt">'+esc(m[1])+'</span>';
+      else if(m[2]) out += '<span class="str">'+esc(m[2])+'</span>';
+      else if(m[3]) out += '<span class="num">'+m[3]+'</span>';
+      else if(m[4]){
+        var w = m[4], lw = w.toLowerCase(), base = lw.split('.')[0];
+        if(KW.indexOf(lw) > -1) out += '<span class="kw">'+esc(w)+'</span>';
+        else if(FN.indexOf(lw) > -1) out += '<span class="fnk">'+esc(w)+'</span>';
+        else if(names.indexOf(lw) > -1 || names.indexOf(base) > -1) out += '<span class="tbl">'+esc(w)+'</span>';
+        else out += esc(w);
+      }
+      else if(m[5]) out += '<span class="op">'+esc(m[5])+'</span>';
+      else out += esc(m[6]);
+    }
+    return out + '\n';
+  }
+
+  function cursorInfo(){
+    var before = sql.value.slice(0, sql.selectionStart).split('\n');
+    return {line: before.length, col: before[before.length-1].length + 1};
+  }
+
+  function render(){
+    hl.innerHTML = highlight(sql.value);
+    var lines = sql.value.split('\n').length, c = cursorInfo(), g = '';
+    for(var i=1;i<=Math.max(lines,1);i++){
+      var cls = i===st.errLine && st.result==='error' ? 'bad' : (i===c.line ? 'cur' : '');
+      g += '<div class="'+cls+'">'+i+'</div>';
+    }
+    gut.innerHTML = g;
+    $('pos').textContent = 'Строка '+c.line+', столбец '+c.col;
+    syncScroll();
+    var changed = sql.value !== (st.lastChecked === null ? st.initialQuery : st.lastChecked);
+    $('dirty').textContent = changed ? (st.lastChecked === null ? '· запрос изменён' : '· изменён после проверки') : '';
+    // Both buttons use the same SQL baseline; only their colors change.
+    $('btnCheck').classList.toggle('needs-check', changed);
+    $('normalCheck').classList.toggle('needs-check', changed);
+    renderNormalCode();
+    $('btnCheck').disabled = !sql.value.trim();
+    $('saveStatus').textContent = changed ? 'Изменено' : 'Не сохранено!';
+    updatePreviewToggle();
+  }
+  function editorMetrics(){
+    var c=getComputedStyle(sql);
+    return {line:parseFloat(c.lineHeight),top:parseFloat(c.paddingTop),left:parseFloat(c.paddingLeft)};
+  }
+  function syncScroll(){
+    hl.scrollTop = sql.scrollTop; hl.scrollLeft = sql.scrollLeft;
+    gut.scrollTop = sql.scrollTop;
+    var c = cursorInfo(), metrics=editorMetrics();
+    $('lnHl').style.top = (metrics.top + (c.line-1)*metrics.line - sql.scrollTop) + 'px';
+    var e = $('lnErr');
+    if(st.result==='error' && st.errLine){ e.hidden = false; e.style.top = (metrics.top + (st.errLine-1)*metrics.line - sql.scrollTop)+'px'; }
+    else e.hidden = true;
+  }
+
+  /* ---------- Вставка ---------- */
+  function insert(text, caretBack){
+    sql.focus();
+    var s = sql.selectionStart, e = sql.selectionEnd, v = sql.value;
+    var prev = v.charAt(s-1), next = v.charAt(e);
+    var pre = (s>0 && prev && !/[\s(,]/.test(prev) && text.charAt(0) !== ',') ? ' ' : '';
+    var post = (next && !/[\s),;]/.test(next)) ? ' ' : '';
+    sql.setRangeText(pre+text+post, s, e, 'end');
+    if(caretBack){ var p = sql.selectionStart - post.length - caretBack; sql.setSelectionRange(p,p); }
+    onEdit();
+  }
+
+  /* ---------- Таблицы ---------- */
+  function mark(text, q){
+    if(!q) return esc(text);
+    var i = text.toLowerCase().indexOf(q);
+    if(i<0) return esc(text);
+    return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));
+  }
+  function renderTables(){
+    var q = $('tSearch').value.trim().toLowerCase(), html = '', shown = 0;
+    $('tSearchBox').classList.toggle('has', !!q);
+    TABLES.forEach(function(t){
+      var tHit = !q || t.name.toLowerCase().indexOf(q) > -1;
+      var fHits = q ? t.fields.filter(function(f){return f.name.toLowerCase().indexOf(q) > -1;}) : [];
+      if(!tHit && !fHits.length) return;
+      shown++;
+      var open = st.openTable === t.name || (q && fHits.length > 0);
+      html += '<div><div class="trow'+(open?' open':'')+'" role="button" tabindex="0" draggable="true" data-table="'+t.name+'" aria-expanded="'+open+'" title="'+t.name+' — нажмите, чтобы раскрыть, или перетащите в редактор">'
+        + '<span class="car"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>'
+        + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="opacity:.7;flex-shrink:0"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 10h18M9 10v9"/></svg>'
+        + '<span class="nm">'+mark(t.name,q)+'</span><span class="cnt">'+t.fields.length+'</span>'
+        + '<span class="grip-ic">'+GRIP+'</span></div>';
+      if(open){
+        var list = (q && !tHit) ? fHits : t.fields;
+        list.forEach(function(f){
+          html += '<div class="frow" role="button" tabindex="0" draggable="true" data-field="'+f.name+'" data-of="'+t.name+'" title="'+TYPES[f.type].n+' — нажмите или перетащите в редактор">'
+            + '<span class="ty">'+TYPES[f.type].i+'</span><span class="fn">'+mark(f.name,q)+'</span><span class="add">'+GRIP+'</span></div>';
+        });
+      }
+      html += '</div>';
+    });
+    $('tList').innerHTML = shown ? html : '<div class="empty">Ничего не найдено.<br>Измените запрос поиска.</div>';
+    $('tCount').textContent = '· ' + (q ? shown+' из '+TABLES.length : TABLES.length);
+  }
+  function fieldText(el){ return $('withTable').checked ? el.dataset.of + '.' + el.dataset.field : el.dataset.field; }
+  $('tList').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-table],[data-field]'); if(!b) return;
+    if(b.dataset.table){
+      st.openTable = st.openTable === b.dataset.table ? null : b.dataset.table; renderTables();
+      var again = $('tList').querySelector('[data-table="'+b.dataset.table+'"]'); if(again && ev.detail===0) again.focus();
+    }
+    else if(b.dataset.field){ insert(fieldText(b)); }
+  });
+  $('tList').addEventListener('dblclick', function(ev){
+    var b = ev.target.closest('[data-table]'); if(b){ insert(b.dataset.table); }
+  });
+
+  /* ---------- Функции ---------- */
+  function renderFns(){
+    var q = $('fSearch').value.trim().toLowerCase(), html = '', any = false;
+    $('fSearchBox').classList.toggle('has', !!q);
+    GROUPS.forEach(function(g){
+      var items = g.items.filter(function(it){return !q || it[0].toLowerCase().indexOf(q)>-1 || it[1].toLowerCase().indexOf(q)>-1;});
+      if(!items.length) return;
+      any = true;
+      var open = q ? true : !st.closed[g.id];
+      html += '<div class="grp'+(open?' open':'')+'"><button class="grp-h" data-grp="'+g.id+'" aria-expanded="'+open+'">'
+        + '<span class="nm">'+g.title+'</span><span class="cnt">'+items.length+'</span>'
+        + '<span class="car"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></button>'
+        + '<div class="grp-b">';
+      items.forEach(function(it){
+        html += '<div class="fnb" role="button" tabindex="0" draggable="true" data-fn="'+esc(it[0])+'" data-kind="'+it[2]+'" title="'+esc(it[0])+' — нажмите или перетащите в редактор"><span class="f">'+esc(it[0])+'</span><span class="d">'+esc(it[1])+'</span></div>';
+      });
+      html += '</div></div>';
+    });
+    $('fList').innerHTML = any ? html : '<div class="empty">Функция не найдена.</div>';
+  }
+  function fnText(el){ return el.dataset.kind==='fn' ? {text:el.dataset.fn+'()', back:1} : {text:el.dataset.fn, back:0}; }
+  $('fList').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-grp],[data-fn]'); if(!b) return;
+    if(b.dataset.grp){ st.closed[b.dataset.grp] = !st.closed[b.dataset.grp]; renderFns(); return; }
+    if(b.dataset.fn){ var t = fnText(b); insert(t.text, t.back); }
+  });
+  /* Клавиатура для role=button */
+  ['tList','fList'].forEach(function(id){
+    $(id).addEventListener('keydown', function(ev){
+      var el = ev.target.closest('[role=button]');
+      if(el && (ev.key==='Enter' || ev.key===' ')){ ev.preventDefault(); el.click(); }
+    });
+  });
+
+  ['tSearch','fSearch'].forEach(function(id){
+    $(id).addEventListener('input', id==='tSearch' ? renderTables : renderFns);
+  });
+  document.querySelectorAll('[data-clear]').forEach(function(b){
+    b.addEventListener('click', function(){ var i = $(b.dataset.clear); i.value=''; i.dispatchEvent(new Event('input')); i.focus(); });
+  });
+
+  /* ---------- Панели: ширина, сворачивание, разделители ---------- */
+  var DEF = {l:244, r:244}, MIN = {l:168, r:168}, MAXP = {l:360, r:360}, COLLAPSED = 40, CENTER_MIN = 420, SPLIT = 21;
+  var pane = {l:DEF.l, r:DEF.r, lOff:false, rOff:false};
+  try { var saved = JSON.parse(localStorage.getItem('modus-sql-panes-portal')||'null'); if(saved) pane = Object.assign(pane, saved); } catch(e){}
+  function savePanes(){ try { localStorage.setItem('modus-sql-panes-portal', JSON.stringify(pane)); } catch(e){} }
+  ['l','r'].forEach(function(side){var width=Number(pane[side]);pane[side]=Number.isFinite(width)?Math.max(MIN[side],Math.min(MAXP[side],width)):DEF[side];});
+  var paneOpened=false;
+  function maxFor(side){
+    if(work.clientWidth < 650) return MAXP[side];
+    var other = side==='l' ? (pane.rOff ? COLLAPSED : pane.r) : (pane.lOff ? COLLAPSED : pane.l);
+    return Math.max(MIN[side], Math.min(MAXP[side], work.clientWidth - other - 2*SPLIT - CENTER_MIN));
+  }
+  function applyPanes(){
+    work.style.setProperty('--lw', (pane.lOff ? COLLAPSED : pane.l) + 'px');
+    work.style.setProperty('--rw', (pane.rOff ? COLLAPSED : pane.r) + 'px');
+    work.style.setProperty('--lg',(pane.lOff?7:SPLIT)+'px');
+    work.style.setProperty('--rg',(pane.rOff?7:SPLIT)+'px');
+    work.classList.toggle('l-off', pane.lOff);
+    work.classList.toggle('r-off', pane.rOff);
+    [['l','splitL','badgeL'],['r','splitR','badgeR']].forEach(function(a){
+      var off = pane[a[0]+'Off'], w = off ? COLLAPSED : pane[a[0]];
+      var el = $(a[1]);
+      el.setAttribute('aria-valuenow', off ? 0 : Math.round((w - MIN[a[0]]) / (MAXP[a[0]] - MIN[a[0]]) * 100));
+      el.setAttribute('aria-valuetext', off ? 'Панель свёрнута' : w + ' пикселей');
+      $(a[2]).textContent = off ? 'Панель свёрнута' : w + ' px';
+      var grip=el.querySelector('.grip');
+      var title=(off?'Развернуть ':'Свернуть ')+(a[0]==='l'?'левую панель':'правую панель');
+      grip.title=title;grip.setAttribute('aria-label',title);grip.setAttribute('aria-expanded',String(!off));
+    });
+    var both = pane.lOff && pane.rOff;
+    $('btnFocus').setAttribute('aria-pressed', both);
+    $('btnFocus').style.color=both?'var(--primary)':'';
+    $('btnFocus').title = both ? 'Показать боковые панели' : 'Скрыть боковые панели';
+    $('btnFocus').setAttribute('aria-label',$('btnFocus').title);
+  }
+  document.querySelectorAll('[data-toggle]').forEach(function(b){
+    if(b.classList.contains('grip')){
+      b.addEventListener('keydown', function(e){if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();b.click();}});
+    }
+    b.addEventListener('click', function(e){
+      if(b._resized && e.detail!==0){b._resized=false;e.preventDefault();e.stopPropagation();return;}
+      var s = b.dataset.toggle; pane[s+'Off'] = !pane[s+'Off'];
+      if(!pane[s+'Off']) pane[s] = Math.min(Math.max(pane[s], MIN[s]), maxFor(s));
+      applyPanes(); savePanes();
+    });
+  });
+  $('btnFocus').addEventListener('click', function(){
+    var both = pane.lOff && pane.rOff;
+    pane.lOff = !both; pane.rOff = !both;
+    applyPanes(); savePanes(); sql.focus();
+  });
+
+  function initSplit(el, side){
+    var startX=0,startW=0,moved=false,tracking=false,pointerId=null,capture=null;
+    var grip=el.querySelector('.grip');
+    function onMove(e){
+      if(!tracking || e.pointerId!==pointerId)return;
+      var dx=(e.clientX-startX)*(side==='l'?1:-1);
+      if(!moved && Math.abs(dx)<3)return;
+      moved=true;grip._resized=true;
+      el.classList.add('active');work.classList.add('resizing');
+      pane[side]=Math.round(Math.min(Math.max(startW+dx,MIN[side]),maxFor(side)));
+      applyPanes();syncScroll();
+    }
+    function onUp(e){
+      if(!tracking || (e && e.pointerId!==undefined && e.pointerId!==pointerId))return;
+      tracking=false;
+      document.removeEventListener('pointermove',onMove);
+      document.removeEventListener('pointerup',onUp);
+      document.removeEventListener('pointercancel',onUp);
+      window.removeEventListener('blur',onUp);
+      if(capture){
+        capture.removeEventListener('lostpointercapture',onUp);
+        if(capture.hasPointerCapture(pointerId))capture.releasePointerCapture(pointerId);
+      }
+      el.classList.remove('active');work.classList.remove('resizing');
+      if(moved)savePanes();
+      pointerId=null;capture=null;
+    }
+    el.addEventListener('pointerdown',function(e){
+      if(e.button!==0 || tracking)return;
+      grip._resized=false;
+      if(pane[side+'Off'])return;
+      e.preventDefault();
+      startX=e.clientX;startW=pane[side];moved=false;tracking=true;pointerId=e.pointerId;
+      capture=e.target.closest('.grip')||el;
+      capture.focus({preventScroll:true});
+      document.addEventListener('pointermove',onMove);
+      document.addEventListener('pointerup',onUp);
+      document.addEventListener('pointercancel',onUp);
+      window.addEventListener('blur',onUp);
+      capture.addEventListener('lostpointercapture',onUp);
+      capture.setPointerCapture(pointerId);
+    });
+    el.addEventListener('dblclick',function(e){
+      if(e.target.closest('.grip'))return;
+      pane[side]=Math.min(DEF[side],maxFor(side));pane[side+'Off']=false;applyPanes();savePanes();
+    });
+    el.addEventListener('keydown', function(e){
+      var step = e.shiftKey ? 48 : 16, dir = 0;
+      if(e.key==='ArrowLeft') dir = side==='l' ? -1 : 1;
+      else if(e.key==='ArrowRight') dir = side==='l' ? 1 : -1;
+      else if(e.key==='Enter'){ e.preventDefault(); pane[side+'Off'] = !pane[side+'Off']; applyPanes(); savePanes(); return; }
+      else if(e.key==='Home'){ e.preventDefault(); pane[side+'Off'] = true; applyPanes(); savePanes(); return; }
+      else if(e.key==='End'){ e.preventDefault(); pane[side+'Off'] = false; pane[side] = maxFor(side); applyPanes(); savePanes(); return; }
+      if(!dir) return;
+      e.preventDefault();
+      if(pane[side+'Off']){ if(dir > 0){ pane[side+'Off'] = false; pane[side] = MIN[side]; } }
+      else {
+        var w = pane[side] + dir*step;
+        if(w < MIN[side]) pane[side+'Off'] = true;
+        else pane[side] = Math.min(w, maxFor(side));
+      }
+      applyPanes(); savePanes();
+      el.classList.add('active'); clearTimeout(el._t); el._t = setTimeout(function(){ el.classList.remove('active'); }, 900);
+    });
+  }
+  initSplit($('splitL'), 'l');
+  initSplit($('splitR'), 'r');
+  window.addEventListener('resize', function(){
+    if(!work.clientWidth) return;
+    ['l','r'].forEach(function(s){ if(!pane[s+'Off']) pane[s] = Math.min(pane[s], maxFor(s)); });
+    applyPanes();
+  });
+
+  /* ---------- Drag-and-drop в редактор ---------- */
+  var DT = 'application/x-modus-sql', drag = null, edCard = $('edCard'), caret = $('dropCaret');
+  function charW(){ return $('meas').getBoundingClientRect().width / 10 || 8.4; }
+  function startDrag(ev, payload, label, kind, srcEl){
+    drag = payload;
+    ev.dataTransfer.effectAllowed = 'copy';
+    ev.dataTransfer.setData(DT, JSON.stringify(payload));
+    ev.dataTransfer.setData('text/plain', payload.text);
+    $('ghostK').textContent = kind; $('ghostT').textContent = label;
+    try { ev.dataTransfer.setDragImage($('ghost'), 14, 16); } catch(e){}
+    srcEl.classList.add('is-dragging');
+    edCard.classList.add('drop-ready');
+    edCard.classList.toggle('is-empty', !sql.value.trim() && payload.kind==='table');
+    $('dropHint').textContent = payload.kind==='table' && !sql.value.trim()
+      ? 'Собрать запрос из «'+payload.label+'»' : 'Вставить «'+payload.text.replace(/\(\)$/,'()')+'»';
+  }
+  function endDrag(){
+    drag = null;
+    document.querySelectorAll('.is-dragging').forEach(function(n){ n.classList.remove('is-dragging'); });
+    edCard.classList.remove('drop-ready','drop-over','is-empty');
+    caret.style.display = 'none';
+  }
+  $('tList').addEventListener('dragstart', function(ev){
+    var el = ev.target.closest('[draggable=true]'); if(!el) return;
+    if(el.dataset.table){
+      startDrag(ev, {kind:'table', text:el.dataset.table, label:el.dataset.table}, el.dataset.table, 'Таблица', el);
+    } else if(el.dataset.field){
+      var t = fieldText(el);
+      startDrag(ev, {kind:'field', text:t, label:t}, t, 'Поле', el);
+    }
+  });
+  $('fList').addEventListener('dragstart', function(ev){
+    var el = ev.target.closest('[draggable=true]'); if(!el) return;
+    var f = fnText(el);
+    startDrag(ev, {kind:'fn', text:f.text, back:f.back, label:el.dataset.fn}, el.dataset.fn, el.dataset.kind==='fn' ? 'Функция' : 'Оператор', el);
+  });
+  document.addEventListener('dragend', endDrag);
+
+  function indexFromPoint(x, y){
+    var r = sql.getBoundingClientRect(), cw = charW(), metrics=editorMetrics();
+    var lines = sql.value.split('\n');
+    var line = Math.floor((y - r.top - metrics.top + sql.scrollTop) / metrics.line);
+    line = Math.max(0, Math.min(lines.length - 1, line));
+    var col = Math.round((x - r.left - metrics.left + sql.scrollLeft) / cw);
+    col = Math.max(0, Math.min(lines[line].length, col));
+    var idx = 0; for(var i=0;i<line;i++) idx += lines[i].length + 1;
+    return {idx: idx + col, line: line, col: col, cw: cw, metrics:metrics};
+  }
+  /* Поле внутри списка колонок SELECT: расставить запятые */
+  function smartField(idx, text){
+    var v = sql.value, before = v.slice(0, idx), after = v.slice(idx);
+    var kws = before.toLowerCase().match(/\b(select|from|where|group|order|having|join|on|limit)\b/g);
+    if(!kws || kws[kws.length-1] !== 'select') return text;
+    var prev = before.replace(/\s+$/,''), next = after.replace(/^\s+/,'');
+    var prevIsHead = /\b(select|distinct)$/i.test(prev);
+    var needBefore = !prevIsHead && prev.length && !/,$/.test(prev);
+    var needAfter = next.length && !/^(,|from\b)/i.test(next);
+    return (needBefore ? ', ' : '') + text + (needAfter ? ',' : '');
+  }
+  function isOurs(ev){ return drag || (ev.dataTransfer && Array.prototype.indexOf.call(ev.dataTransfer.types, DT) > -1); }
+  sql.addEventListener('dragenter', function(ev){ if(isOurs(ev)){ ev.preventDefault(); edCard.classList.add('drop-over'); } });
+  sql.addEventListener('dragover', function(ev){
+    if(!isOurs(ev)) return;
+    ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy';
+    edCard.classList.add('drop-over');
+    var p = indexFromPoint(ev.clientX, ev.clientY);
+    if(!sql.value.trim() && drag && drag.kind==='table'){ caret.style.display='none'; return; }
+    caret.style.display = 'block';
+    caret.style.left = (p.metrics.left + p.col * p.cw - sql.scrollLeft - 1) + 'px';
+    caret.style.top = (p.metrics.top + p.line * p.metrics.line - sql.scrollTop) + 'px';
+    caret.style.height=p.metrics.line+'px';
+  });
+  sql.addEventListener('dragleave', function(ev){
+    if(!isOurs(ev)) return;
+    if(!ev.relatedTarget || !edCard.contains(ev.relatedTarget)){ edCard.classList.remove('drop-over'); caret.style.display='none'; }
+  });
+  sql.addEventListener('drop', function(ev){
+    if(!isOurs(ev)) return;
+    ev.preventDefault();
+    var data = drag;
+    if(!data){ try { data = JSON.parse(ev.dataTransfer.getData(DT)); } catch(e){ return; } }
+    if(data.kind==='table' && !sql.value.trim()){
+      sql.value = 'select *\nfrom ' + data.text + ';';
+      var p0 = sql.value.indexOf('*') + 1; sql.focus(); sql.setSelectionRange(p0 - 1, p0);
+      onEdit(); endDrag(); toast('Запрос собран из таблицы ' + data.text); return;
+    }
+    var p = indexFromPoint(ev.clientX, ev.clientY);
+    var text = data.kind==='field' ? smartField(p.idx, data.text) : data.text;
+    sql.focus(); sql.setSelectionRange(p.idx, p.idx);
+    insert(text, data.back || 0);
+    endDrag();
+  });
+
+  /* ---------- Проверка запроса ---------- */
+  function lineOf(idx){return sql.value.slice(0, idx).split('\n').length;}
+  function validate(v){
+    var t = v.trim();
+    if(!t) return {ok:false, title:'Запрос пуст', text:'Введите SQL-запрос или соберите его из таблиц и функций.', line:1};
+    if(!/^\s*(select|with)\b/i.test(v)) return {ok:false, title:'Допустимы только запросы на чтение', text:'Запрос должен начинаться с SELECT или WITH.', line:1};
+    var opens = (v.match(/\(/g)||[]).length, closes = (v.match(/\)/g)||[]).length;
+    if(opens !== closes){ var i = v.lastIndexOf('('); return {ok:false, title:'Не закрыта скобка', text:'Количество открывающих и закрывающих скобок не совпадает.', line:lineOf(i>-1?i:0)}; }
+    var re = /\b(from|join)\s+([A-Za-z_][\w.]*)/gi, m, used = [];
+    var hasFrom = /\bfrom\b/i.test(v);
+    if(!hasFrom) return {ok:false, title:'Не указан источник данных', text:'Добавьте FROM и имя таблицы — его можно вставить из списка слева.', line:1};
+    var names = tableNames();
+    while((m = re.exec(v))){
+      var n = m[2].toLowerCase().split('.').pop();
+      if(names.indexOf(n) < 0) return {ok:false, title:'Таблица «'+m[2]+'» не найдена', text:'Проверьте имя таблицы или выберите её в списке слева.', line:lineOf(m.index)};
+      used.push(n);
+    }
+    return {ok:true, tables:used};
+  }
+  // Колонки результата определяются при проверке SQL; в шапке показываем только имя результата и его тип.
+  // Парсинг SELECT предназначен для демонстрации макета, реальный SQL выполняется на сервере.
+  function splitSelectList(src){
+    var parts=[],part='',depth=0,quote='',i=0;
+    for(;i<src.length;i++){
+      var ch=src[i],next=src[i+1];
+      if(quote){part+=ch;if(ch===quote){if(next===quote){part+=next;i++;}else quote='';}continue;}
+      if(ch==='\'' || ch==='"' || ch==='`'){quote=ch;part+=ch;continue;}
+      if(ch==='(')depth++;
+      else if(ch===')')depth=Math.max(0,depth-1);
+      if(ch===',' && depth===0){parts.push(part.trim());part='';}else part+=ch;
+    }
+    if(part.trim())parts.push(part.trim());
+    return parts;
+  }
+  function columnsFor(v, used){
+    var match=v.match(/\bselect\s+([\s\S]*?)\s+from\b/i);
+    var selected=(match?match[1]:'*').replace(/^distinct\s+/i,'');
+    var source=TABLES.find(function(t){return t.name.toLowerCase()===(used[0]||'');});
+    var base=source?source.fields:[];
+    var list=[];
+    splitSelectList(selected).forEach(function(expr){
+      if(expr==='*' || /^[\w.]+\.\*$/.test(expr)){
+        base.forEach(function(f){list.push({name:f.name,type:f.type,origin:f.name});});return;
+      }
+      var alias=expr.match(/\bas\s+(?:"([^"]+)"|`([^`]+)`|([\w]+))\s*$/i);
+      var raw=alias?expr.slice(0,alias.index).trim():expr.trim();
+      var direct=raw.match(/^(?:[\w]+\.)?(?:"([^"]+)"|`([^`]+)`|([\w]+))$/);
+      var fieldName=direct?(direct[1]||direct[2]||direct[3]):'';
+      var name=alias?(alias[1]||alias[2]||alias[3]):(fieldName||raw.slice(0,35));
+      var original=base.find(function(f){return f.name.toLowerCase()===fieldName.toLowerCase();});
+      var origin=fieldName || (raw.match(/\b(?:order_date|report_date|summa_rub|amount|month_name|month_num|manager_id)\b/i)||[])[0] || name;
+      var inferred=original?original.type:
+        (/\b(count|sum|avg|min|max)\s*\(/i.test(raw)||/\b(summa_rub|amount)\b/i.test(raw)?'dec':
+        /\b(date|_date|_at)\b/i.test(raw)?'date':
+        /^['"]/.test(raw)?'str':'str');
+      if(/^(?:count)\s*\(/i.test(raw))inferred='int';
+      if(/^\s*case\b/i.test(raw) && /\b(summa_rub|amount)\b/i.test(raw))inferred='dec';
+      list.push({name:name,type:inferred,origin:origin.toLowerCase()});
+    });
+    return list.length?list:base.map(function(f){return {name:f.name,type:f.type,origin:f.name};});
+  }
+  function cell(type, r){
+    switch(type){
+      case 'int':return 100+r*7;
+      case 'dec':return +(1250.5+r*317.25).toFixed(2);
+      case 'date':return dateDemo(r,0);
+      case 'time':return '09:'+('0'+(r*7)%60).slice(-2);
+      default:return 'Значение '+(r+1);
+    }
+  }
+
+  /* ---------- Единая сессия превью данных: глобальные выборка и сортировка ---------- */
+  var MAX_PREVIEW = 1000;
+  var fedFull=['Центральный федеральный округ','Северо-Западный федеральный округ','Приволжский федеральный округ','Уральский федеральный округ','Сибирский федеральный округ','Южный федеральный округ','Дальневосточный федеральный округ','Северо-Кавказский федеральный округ'];
+  var fedShort=['ЦФО','СЗФО','ПФО','УФО','СФО','ЮФО','ДФО','СКФО'];
+  var managers=[1052,1037,1089,1041,1073,1066];
+  function dateDemo(row,shift){var d=new Date(Date.UTC(2024,4,20+row+shift));return String(d.getUTCDate()).padStart(2,'0')+'.'+String(d.getUTCMonth()+1).padStart(2,'0')+'.'+d.getUTCFullYear();}
+  function previewCell(field,row,type){
+    var ix=row%fedFull.length;
+    switch(field){
+      case 'amount':return row<6?[125,340,215,480,175,290][row]:100+(row*37)%740;
+      case 'report_date': case 'change_date': case 'local_date':return dateDemo(row,1);
+      case 'fed_okrug_full_name':return fedFull[ix];
+      case 'fed_okrug_short_name':return fedShort[ix];
+      case 'order_date': case 'order_date_2':return dateDemo(row,0);
+      case 'manager_id':return row<6?managers[row]:1000+(row*43)%450;
+      case 'month_name':return ['Май','Июнь','Июль','Август'][Math.floor(row/28)%4];
+      case 'month_num':return 5+Math.floor(row/28)%4;
+      case 'summa_rub':case 'summa_rub_wnull':return +(12000+row*113.75).toFixed(2);
+      case 'variable_amount_summa':return row%2?100+(row*37)%740:+(12000+row*113.75).toFixed(2);
+      case 'test_for_delete2':return 'Удалить поле';
+      default:return cell(type,row);
+    }
+  }
+  function displayCell(value,type){
+    if(value===null||value===undefined)return '—';
+    if(typeof value==='number' && type==='dec')return value.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return String(value);
+  }
+  function sortKey(value,type){
+    if(value==null)return null;
+    if(type==='date' && typeof value==='string' && /^\d\d\.\d\d\.\d{4}$/.test(value)){
+      var a=value.split('.');return +(a[2]+a[1]+a[0]);
+    }
+    if(type==='int'||type==='dec')return Number(value);
+    return String(value).toLocaleLowerCase('ru-RU');
+  }
+  function sortedRowIds(){
+    var ids=Array.from({length:MAX_PREVIEW},function(_,i){return i;});
+    var sort=st.previewSession&&st.previewSession.sort;
+    if(!sort||sort.direction==='none')return ids;
+    var column=st.previewSession.columns[sort.index],direction=sort.direction==='asc'?1:-1;
+    if(!column)return ids;
+    var keys=ids.map(function(i){return sortKey(previewCell(column.origin,i,column.type),column.type);});
+    ids.sort(function(a,b){
+      var x=keys[a],y=keys[b];
+      if(x===y)return a-b;
+      if(x===null)return 1;
+      if(y===null)return -1;
+      var cmp=(typeof x==='number'&&typeof y==='number')?x-y:String(x).localeCompare(String(y),'ru',{numeric:true});
+      return direction*(cmp<0?-1:cmp>0?1:0);
+    });
+    return ids;
+  }
+  function sortIcon(mode){
+    var widths=mode==='asc'?[5,9,13]:mode==='desc'?[13,9,5]:[9,13,6];
+    return '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">'+
+      widths.map(function(w,i){return '<path d="M2 '+(4+i*4)+'h'+w+'"/>';}).join('')+'</svg>';
+  }
+  function typeIcon(type){
+    if(type==='int'||type==='dec')return {cls:'numbertype',symbol:"<svg aria-hidden=\"true\" width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' xmlns='http://www.w3.org/2000/svg' > <path d='M4.0874 9H20.9999' stroke-linecap='round' stroke-linejoin='round' /> <path d='M16.5 3.75L13.5 20.25' stroke-linecap='round' stroke-linejoin='round' /> <path d='M10.5 3.75L7.5 20.25' stroke-linecap='round' stroke-linejoin='round' /> <path d='M3 15H19.9125' stroke-linecap='round' stroke-linejoin='round' /> </svg>",title:'Число'};
+    if(type==='date')return {cls:'datetype',symbol:"<svg aria-hidden=\"true\" width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' xmlns='http://www.w3.org/2000/svg' > <path d='M19.5 3.75H4.5C4.08579 3.75 3.75 4.08579 3.75 4.5V19.5C3.75 19.9142 4.08579 20.25 4.5 20.25H19.5C19.9142 20.25 20.25 19.9142 20.25 19.5V4.5C20.25 4.08579 19.9142 3.75 19.5 3.75Z' stroke-linecap='round' stroke-linejoin='round' /> <path d='M16.5 2.25V5.25' stroke-linecap='round' stroke-linejoin='round' /> <path d='M7.5 2.25V5.25' stroke-linecap='round' stroke-linejoin='round' /> <path d='M3.75 8.25H20.25' stroke-linecap='round' stroke-linejoin='round' /> </svg>",title:'Дата'};
+    if(type==='time')return {cls:'datetype',symbol:"<svg aria-hidden=\"true\" width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' xmlns='http://www.w3.org/2000/svg' > <path d='M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z' stroke-miterlimit='10' /> <path d='M12 6.75V12H17.25' stroke-linecap='round' stroke-linejoin='round' /> </svg>",title:'Дата / время'};
+    return {cls:'strtype',symbol:"<svg aria-hidden=\"true\" width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' xmlns='http://www.w3.org/2000/svg' > <path d='M8.5 5V18.5' stroke-linecap='round' stroke-linejoin='round' /> <path d='M18 12V18' stroke-linecap='round' stroke-linejoin='round' /> <path d='M1 8V5H16V8' stroke-linecap='round' stroke-linejoin='round' /> <path d='M14 14V12H22V14' stroke-linecap='round' stroke-linejoin='round' /> <path d='M5.5 18.5H11.5' stroke-linecap='round' stroke-linejoin='round' /> <path d='M16 18H20' stroke-linecap='round' stroke-linejoin='round' /> </svg>",title:'Строка'};
+  }
+  function updatePreviewToggle(){
+    var b=$('btnPreviewToggle');
+    var ready=!!st.previewSession;
+    b.disabled=!ready;
+    b.setAttribute('aria-pressed',ready && st.previewVisible ? 'true':'false');
+    b.style.color=ready && st.previewVisible ? 'var(--primary)' : '';
+    $('normalCheck').disabled=!sql.value.trim();
+  }
+  function previewTableHtml(count){
+    var columns=st.previewSession.columns;
+    var sort=st.previewSession.sort;
+    var h='<table class="portal-data-table"><thead><tr>';
+    h+='<th scope="col" class="preview-rownum" title="Номер строки">№</th>';
+    columns.forEach(function(col,i){
+      var t=typeIcon(col.type),mode=sort&&sort.index===i?sort.direction:'none';
+      h+='<th scope="col" title="'+esc(col.name)+'"><div class="preview-th-inner">'+
+        '<span class="preview-type '+t.cls+'" title="Тип данных: '+t.title+'" aria-label="Тип данных: '+t.title+'">'+t.symbol+'</span>'+
+        '<span class="preview-field-name">'+esc(col.name)+'</span>'+
+        '<button type="button" class="preview-sort-trigger '+(mode!=='none'?'sorted':'')+'" data-sort-menu="'+i+'" aria-label="Сортировка поля '+esc(col.name)+'" aria-haspopup="menu" aria-expanded="false" title="Сортировка: '+(mode==='asc'?'по возрастанию':mode==='desc'?'по убыванию':'не задана')+'">'+sortIcon(mode)+'</button></div></th>';
+    });
+    h+='</tr></thead><tbody>';
+    var rows=sortedRowIds();
+    for(var j=0;j<count;j++){
+      var row=rows[j];h+='<tr>';
+      h+='<td class="preview-rownum">'+(j+1)+'</td>';
+      columns.forEach(function(col){h+='<td>'+esc(displayCell(previewCell(col.origin,row,col.type),col.type))+'</td>';});
+      h+='</tr>';
+    }
+    return h+'</tbody></table>';
+  }
+  function footerHtml(){
+    var count=st.previewSession ? st.previewSession.loaded : 0;
+    return '<span>Показаны первые '+count+' строк</span>'+(count<MAX_PREVIEW ? '<button class="portal-link" data-load-more="true">Показать ещё 100</button>':'');
+  }
+  function renderPreview(){
+    closeSortMenu();
+    var ready=!!st.previewSession;
+    var normal=$('normalPreview'), expanded=$('res');
+    normal.hidden=!ready;
+    expanded.hidden=!ready || !st.previewVisible;
+    $('expandedPreviewResize').hidden=!ready || !st.previewVisible;
+    if(!ready){$('normalAlert').hidden=st.result!=='error';$('normalPreviewContent').hidden=false;updatePreviewToggle();return;}
+    $('normalAlert').hidden=true;
+    $('normalPreviewContent').hidden=!st.previewVisible;
+    $('normalCollapse').title=st.previewVisible?'Свернуть превью данных':'Развернуть превью данных';
+    $('normalCollapse').setAttribute('aria-label',$('normalCollapse').title);
+    $('normalCollapse').style.transform=st.previewVisible?'':'rotate(180deg)';
+    var count=st.previewSession.loaded;
+    var table=previewTableHtml(count);
+    var normalScroll=$('normalDataScroll').scrollTop;
+    var normalX=$('normalDataScroll').scrollLeft;
+    var extendedScroll=expanded.querySelector('.portal-data-scroll');
+    var expY=extendedScroll?extendedScroll.scrollTop:0,expX=extendedScroll?extendedScroll.scrollLeft:0;
+    $('normalDataScroll').innerHTML=table;
+    $('normalPreviewFooter').innerHTML=footerHtml();
+    expanded.innerHTML='<div class="portal-preview-head"><strong>Превью данных</strong><span class="portal-success">✓ Запрос успешно проверен · Данные загружены</span><span class="right"><button class="portal-hide-link" data-hide-preview="true">Скрыть</button></span></div><div class="portal-data-scroll">'+table+'</div><div class="portal-preview-footer">'+footerHtml()+'</div>';
+    $('normalDataScroll').scrollTop=normalScroll;$('normalDataScroll').scrollLeft=normalX;
+    var expScroll=expanded.querySelector('.portal-data-scroll');if(expScroll){expScroll.scrollTop=expY;expScroll.scrollLeft=expX;}
+    updatePreviewToggle();
+  }
+  /* Меню сортировки в шапке: применяется ко всей тысяче строк до формирования превью. */
+  var currentSortTrigger=null;
+  function closeSortMenu(){
+    var menu=$('previewSortMenu');
+    if(currentSortTrigger)currentSortTrigger.setAttribute('aria-expanded','false');
+    currentSortTrigger=null;menu.hidden=true;
+  }
+  function openSortMenu(button){
+    if(!st.previewSession)return;
+    var index=Number(button.dataset.sortMenu),col=st.previewSession.columns[index];
+    if(!col)return;
+    if(currentSortTrigger===button && !$('previewSortMenu').hidden){closeSortMenu();return;}
+    closeSortMenu();currentSortTrigger=button;button.setAttribute('aria-expanded','true');
+    var menu=$('previewSortMenu'),sort=st.previewSession.sort;
+    menu.innerHTML=[['none','Без сортировки'],['asc','По возрастанию'],['desc','По убыванию']].map(function(item){
+      var active=sort.index===index?sort.direction===''+item[0]:item[0]==='none';
+      return '<button type="button" role="menuitemradio" aria-checked="'+active+'" class="'+(active?'active':'')+'" data-sort-index="'+index+'" data-sort-dir="'+item[0]+'">'+sortIcon(item[0])+item[1]+'</button>';
+    }).join('');
+    menu.hidden=false;
+    var r=button.getBoundingClientRect(),w=menu.offsetWidth,h=menu.offsetHeight;
+    menu.style.left=Math.max(8,Math.min(r.right-w+12,window.innerWidth-w-8))+'px';
+    menu.style.top=(r.bottom+6+h>window.innerHeight ? Math.max(8,r.top-h-6) : r.bottom+6)+'px';
+    menu.querySelector('[aria-checked="true"]').focus({preventScroll:true});
+  }
+  document.addEventListener('click',function(ev){
+    var btn=ev.target.closest('[data-sort-menu]');
+    if(btn){ev.stopPropagation();openSortMenu(btn);return;}
+    var choice=ev.target.closest('[data-sort-dir]');
+    if(choice && st.previewSession){
+      var dir=choice.dataset.sortDir,idx=Number(choice.dataset.sortIndex);
+      var sortOwner=currentSortTrigger && currentSortTrigger.closest('#res') ? '#res' : '#normalDataScroll';
+      st.previewSession.sort={index:dir==='none'?-1:idx,direction:dir};
+      // Новая сортировка — новый глобальный порядок выборки, не сортировка загруженного фрагмента.
+      st.previewSession.loaded=st.initialRows;
+      $('normalDataScroll').scrollTop=0;
+      var extendedDataScroll=$('res').querySelector('.portal-data-scroll');
+      if(extendedDataScroll)extendedDataScroll.scrollTop=0;
+      renderPreview();
+      var trigger=document.querySelector(sortOwner+' [data-sort-menu="'+idx+'"]');
+      if(trigger)trigger.focus({preventScroll:true});
+      toast(dir==='none'?'Сортировка сброшена':'Сортировка применена ко всему результату (демонстрация)');return;
+    }
+    if(currentSortTrigger && !ev.target.closest('#previewSortMenu'))closeSortMenu();
+  });
+  document.addEventListener('scroll',function(ev){if(currentSortTrigger && ev.target!==$('previewSortMenu'))closeSortMenu();},true);
+  window.addEventListener('resize',closeSortMenu);
+
+  function showResult(data){
+    var normalAlert=$('normalAlert');
+    if(st.result==='loading'){
+      // The pending state does not insert a temporary panel or move the SQL editor.
+      normalAlert.hidden=true;
+    } else if(st.result==='error'){
+      // A fixed notification does not resize the editor or the rows below it.
+      normalAlert.hidden=false;
+      normalAlert.style.color='#aa2424';
+      normalAlert.style.background='#fdf2f1';
+      normalAlert.textContent=data.title+' · строка '+data.line+'. '+data.text;
+      if(!st.previewSession){
+        $('res').hidden=true;
+        $('expandedPreviewResize').hidden=true;
+        $('normalPreview').hidden=true;
+      }
+    } else if(st.result==='none'){
+      normalAlert.hidden=true;
+      if(!st.previewSession){
+        $('res').hidden=true;
+        $('expandedPreviewResize').hidden=true;
+        $('normalPreview').hidden=true;
+        $('res').innerHTML='';
+      }
+    } else if(st.result==='success'){
+      normalAlert.hidden=true;
+      renderPreview();
+    }
+    updatePreviewToggle();
+    render();
+  }
+  function check(){
+    if(!sql.value.trim() || st.result==='loading')return;
+    var current=sql.value,seq=++st.checkSeq;
+    // Preserve the existing preview (and all dimensions) during verification.
+    st.result='loading';st.errLine=null;
+    showResult();
+    setTimeout(function(){
+      if(seq!==st.checkSeq || sql.value!==current)return;
+      var validation=validate(current);
+      st.lastChecked=current;
+      if(validation.ok){
+        st.result='success';st.errLine=null;st.previewVisible=true;
+        st.previewSession={query:current,loaded:st.initialRows,limit:MAX_PREVIEW,columns:columnsFor(current,validation.tables),sort:{index:-1,direction:'none'}};
+        if(editorEntry && !$('scrim').hidden)editorEntry.checkedInSession=true;
+        showResult();toast('Запрос успешно проверен');
+      } else {
+        st.result='error';st.errLine=validation.line;showResult(validation);
+      }
+    },420);
+  }
+  $('btnCheck').addEventListener('click',check);
+  $('normalCheck').addEventListener('click',check);
+  function loadMore(){
+    if(!st.previewSession || st.result!=='success')return;
+    st.previewSession.loaded=Math.min(MAX_PREVIEW,st.previewSession.loaded+100);
+    renderPreview();
+  }
+  document.addEventListener('click',function(ev){
+    if(ev.target.closest('[data-load-more]')){loadMore();return;}
+    if(ev.target.closest('[data-hide-preview]')){
+      if(!st.previewSession)return;
+      st.previewVisible=false;renderPreview();
+      return;
+    }
+  });
+  $('btnPreviewToggle').addEventListener('click',function(){
+    if(!st.previewSession)return;
+    st.previewVisible=!st.previewVisible;renderPreview();
+  });
+  $('normalCollapse').addEventListener('click',function(){
+    if(!st.previewSession)return;
+    st.previewVisible=!st.previewVisible;renderPreview();
+  });
+  var editorEntry=null,discardReturnFocus=null;
+  var settingsReturnFocus=null;
+  function syncModalState(){
+    var expanded=!$('scrim').hidden, settings=!$('settingsScrim').hidden, discard=!$('discardScrim').hidden;
+    $('portal').inert=expanded||settings||discard;
+    $('scrim').inert=settings||discard;
+    $('settingsScrim').inert=discard;
+    document.body.classList.toggle('modal-open',expanded||settings||discard);
+  }
+  function openSettings(){
+    settingsReturnFocus=document.activeElement;
+    closeSortMenu();
+    $('initialRows').value=String(st.initialRows);
+    $('settingsScrim').hidden=false;syncModalState();$('initialRows').focus();
+  }
+  function closeSettings(){
+    $('settingsScrim').hidden=true;syncModalState();
+    if(settingsReturnFocus && settingsReturnFocus.isConnected)settingsReturnFocus.focus();
+  }
+  $('normalSettings').addEventListener('click',openSettings);
+  $('btnPreviewSettings').addEventListener('click',openSettings);
+  $('cancelSettings').addEventListener('click',closeSettings);
+  $('saveSettings').addEventListener('click',function(){
+    st.initialRows=Number($('initialRows').value);
+    try{localStorage.setItem('modus-preview-initial',String(st.initialRows));}catch(e){}
+    closeSettings();toast('Настройки сохранены. Применятся при следующей проверке запроса.');
+  });
+  $('settingsScrim').addEventListener('mousedown',function(e){if(e.target===$('settingsScrim'))closeSettings();});
+  try{var pref=Number(localStorage.getItem('modus-preview-initial'));if([100,200,500,1000].indexOf(pref)>-1)st.initialRows=pref;}catch(e){}
+  function toast(t){
+    $('toastTx').textContent = t; var el = $('toast'); el.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(function(){el.classList.remove('show');}, 2400);
+  }
+
+  /* ---------- Редактор: события ---------- */
+  function onEdit(){
+    // A code edit invalidates the verification, not the size or presence of the preview.
+    // The last preview remains visible until another successful verification replaces it.
+    if(st.result==='loading'){
+      ++st.checkSeq;
+      st.result=st.previewSession?'success':'none';
+    } else if(st.result==='error'){
+      st.result=st.previewSession?'success':'none';
+      $('normalAlert').hidden=true;
+    }
+    st.errLine=null;
+    render();
+  }
+  sql.addEventListener('input', onEdit);
+  sql.addEventListener('scroll', syncScroll);
+  ['keyup','click','select'].forEach(function(e){ sql.addEventListener(e, render); });
+  sql.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); check(); }
+    else if(e.key==='Tab'){ e.preventDefault(); sql.setRangeText('  ', sql.selectionStart, sql.selectionEnd, 'end'); onEdit(); }
+
+  });
+
+
+  /* Разделитель SQL/превью в расширенном режиме: меняет пропорцию, не высоту окна. */
+  (function(){
+    var handle=$('expandedPreviewResize'),res=$('res'),center=document.querySelector('.dlg .center');
+    var dragging=false,startY=0,startHeight=0;
+    function changeHeight(value){
+      var limit=Math.max(115,center.clientHeight-175-handle.offsetHeight);
+      res.style.flex='0 0 '+Math.max(115,Math.min(limit,Math.round(value)))+'px';
+    }
+    function move(ev){if(!dragging)return;changeHeight(startHeight+(startY-ev.clientY));ev.preventDefault();}
+    function stop(){if(!dragging)return;dragging=false;handle.classList.remove('dragging');
+      window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop);window.removeEventListener('pointercancel',stop);}
+    handle.addEventListener('pointerdown',function(ev){
+      if(ev.button!==0 || handle.hidden)return;
+      ev.preventDefault();dragging=true;startY=ev.clientY;startHeight=res.getBoundingClientRect().height;
+      handle.classList.add('dragging');window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);window.addEventListener('pointercancel',stop);
+    });
+    handle.addEventListener('keydown',function(ev){
+      if(ev.key!=='ArrowUp'&&ev.key!=='ArrowDown')return;ev.preventDefault();
+      changeHeight(res.getBoundingClientRect().height+(ev.key==='ArrowUp'?(ev.shiftKey?40:16):-(ev.shiftKey?40:16)));
+    });
+  })();
+
+  /* ---------- Вертикальные разделители обычного SQL-редактора и превью ---------- */
+  function initVerticalResize(handleId, targetId, minimum){
+    var handle=$(handleId), target=$(targetId);
+    var initialY=0, initialHeight=0, active=false;
+    function setHeight(value){
+      target.style.height=Math.max(minimum, Math.round(value))+'px';
+    }
+    function move(ev){
+      if(!active)return;
+      setHeight(initialHeight+ev.clientY-initialY);
+      ev.preventDefault();
+    }
+    function stop(){
+      if(!active)return;
+      active=false;
+      handle.classList.remove('dragging');
+      window.removeEventListener('pointermove',move);
+      window.removeEventListener('pointerup',stop);
+      window.removeEventListener('pointercancel',stop);
+    }
+    handle.addEventListener('pointerdown',function(ev){
+      if(ev.button!==0 || active)return;
+      ev.preventDefault();
+      initialY=ev.clientY;
+      initialHeight=target.getBoundingClientRect().height;
+      active=true;
+      handle.classList.add('dragging');
+      window.addEventListener('pointermove',move);
+      window.addEventListener('pointerup',stop);
+      window.addEventListener('pointercancel',stop);
+    });
+    handle.addEventListener('keydown',function(ev){
+      if(ev.key!=='ArrowDown' && ev.key!=='ArrowUp')return;
+      ev.preventDefault();
+      var step=ev.shiftKey?40:16;
+      setHeight(target.getBoundingClientRect().height+(ev.key==='ArrowDown'?step:-step));
+    });
+  }
+  initVerticalResize('normalEditorResize','normalEditor',120);
+  initVerticalResize('normalPreviewResize','normalPreviewContent',115);
+
+  /* ---------- Обычный SQL-редактор и общий текст между режимами ---------- */
+  function renderNormalCode(){
+    var e=$('normalSql');
+    if(e.value!==sql.value){
+      var s=e.selectionStart, t=e.selectionEnd;
+      e.value=sql.value;
+      if(document.activeElement===e)e.setSelectionRange(Math.min(s,e.value.length),Math.min(t,e.value.length));
+    }
+    $('normalHighlight').innerHTML=highlight(e.value);
+    var count=e.value.split('\n').length,h='';
+    for(var i=1;i<=count;i++)h+='<div>'+i+'</div>';
+    $('normalGut').innerHTML=h;
+    syncNormalScroll();
+  }
+  function syncNormalScroll(){
+    var n=$('normalSql');$('normalHighlight').scrollTop=n.scrollTop;$('normalHighlight').scrollLeft=n.scrollLeft;
+    $('normalGut').scrollTop=n.scrollTop;
+  }
+  $('normalSql').addEventListener('input',function(){
+    sql.value=this.value;
+    onEdit();
+  });
+  $('normalSql').addEventListener('scroll',syncNormalScroll);
+  $('normalSql').addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){e.preventDefault();check();}
+    else if(e.key==='Tab'){e.preventDefault();this.setRangeText('  ',this.selectionStart,this.selectionEnd,'end');sql.value=this.value;onEdit();}
+  });
+  $('displayName').addEventListener('input',function(){$('saveStatus').textContent='Изменено';});
+  $('savePage').addEventListener('click',function(){$('saveStatus').textContent='Сохранено (макет)';toast('Изменения сохранены в макете');});
+  $('addDataset').addEventListener('click',function(){toast('В макете показано добавление набора данных');});
+  $('deleteDataset').addEventListener('click',function(){toast('Удаление набора данных в демонстрации не выполняется');});
+  document.querySelectorAll('.portal-navitem').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();});});
+
+  /* ---------- Открыть / свернуть / закрыть ---------- */
+  function openDlg(){
+    if(!$('scrim').hidden)return;
+    editorEntry={
+      query:sql.value,checkedInSession:false,lastChecked:st.lastChecked,result:st.result==='loading'?(st.previewSession?'success':'none'):st.result,
+      errLine:st.errLine,previewVisible:st.previewVisible,
+      previewSession:st.previewSession?JSON.parse(JSON.stringify(st.previewSession)):null,
+      alertHidden:$('normalAlert').hidden,alertText:$('normalAlert').textContent,
+      normalTop:$('normalSql').scrollTop,normalLeft:$('normalSql').scrollLeft
+    };
+    closeSortMenu();$('scrim').hidden=false;syncModalState();
+    if(!paneOpened){
+      if(work.clientWidth-40-2*DEF.l-2*SPLIT<500){pane.lOff=true;pane.rOff=true;}
+      paneOpened=true;applyPanes();
+    }
+    sql.focus();render();
+  }
+  function closeDlg(){ closeSortMenu();$('scrim').hidden=true;editorEntry=null;syncModalState();render();$('openEditor').focus(); }
+  function dismissDiscard(){
+    $('discardScrim').hidden=true;syncModalState();
+    if(discardReturnFocus && discardReturnFocus.isConnected)discardReturnFocus.focus({preventScroll:true});
+  }
+  function requestCancel(){
+    if(!$('discardScrim').hidden)return;
+    if(!editorEntry){closeDlg();return;}
+    if(sql.value===editorEntry.query){
+      if(editorEntry.checkedInSession)restoreEditorEntry();else closeDlg();
+      return;
+    }
+    closeSortMenu();discardReturnFocus=document.activeElement;
+    $('discardScrim').hidden=false;syncModalState();$('discardNo').focus();
+  }
+  $('btnCancel').addEventListener('click',requestCancel);
+  $('discardNo').addEventListener('click',dismissDiscard);
+  function restoreEditorEntry(){
+    if(!editorEntry)return;
+    var entry=editorEntry;
+    ++st.checkSeq;
+    sql.value=entry.query;
+    st.lastChecked=entry.lastChecked;st.result=entry.result;st.errLine=entry.errLine;
+    st.previewVisible=entry.previewVisible;st.previewSession=entry.previewSession;
+    $('discardScrim').hidden=true;
+    renderPreview();$('normalAlert').textContent=entry.alertText;$('normalAlert').hidden=entry.alertHidden;
+    closeDlg();
+    $('normalSql').scrollTop=entry.normalTop;$('normalSql').scrollLeft=entry.normalLeft;syncNormalScroll();
+  }
+  $('discardYes').addEventListener('click',restoreEditorEntry);
+  $('btnMin').addEventListener('click', closeDlg);
+  $('btnClose').addEventListener('click', requestCancel);
+  $('openEditor').addEventListener('click', openDlg);
+  document.addEventListener('keydown', function(e){
+    if(e.key==='Escape'){
+      if(e.repeat){e.preventDefault();return;}
+      if(!$('discardScrim').hidden){e.preventDefault();dismissDiscard();}
+      else if(!$('previewSortMenu').hidden){var trigger=currentSortTrigger;closeSortMenu();if(trigger)trigger.focus();}
+      else if(!$('settingsScrim').hidden)closeSettings();
+      else if(!$('scrim').hidden)requestCancel();
+      return;
+    }
+    if(!$('previewSortMenu').hidden && ['ArrowDown','ArrowUp','Home','End'].indexOf(e.key)>-1){
+      e.preventDefault();var items=Array.from($('previewSortMenu').querySelectorAll('button')),i=items.indexOf(document.activeElement);
+      items[e.key==='Home'?0:e.key==='End'?items.length-1:(i+(e.key==='ArrowDown'?1:items.length-1))%items.length].focus();return;
+    }
+    if(e.key!=='Tab')return;
+    var modal=!$('discardScrim').hidden?$('discardScrim'):!$('settingsScrim').hidden?$('settingsScrim'):!$('scrim').hidden?$('scrim'):null;
+    if(!modal)return;
+    if(!$('previewSortMenu').hidden){var anchor=currentSortTrigger;closeSortMenu();if(anchor)anchor.focus();}
+    var focusable=Array.from(modal.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea,[tabindex="0"]')).filter(function(el){return el.getClientRects().length && !el.closest('[hidden]');});
+    var first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey && document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey && document.activeElement===last){e.preventDefault();first.focus();}
+  });
+
+  /* ---------- Старт ---------- */
+  applyPanes();
+  ['l','r'].forEach(function(s){ if(!pane[s+'Off']) pane[s] = Math.min(pane[s], maxFor(s)); });
+  applyPanes();
+  renderTables(); renderFns(); render(); showResult();
+  sql.setSelectionRange(0,0); render();
+  $('normalSql').setSelectionRange(0,0);
+})();
+</script>
+</body>
+</html>

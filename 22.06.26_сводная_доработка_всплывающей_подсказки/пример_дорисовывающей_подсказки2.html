@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modus BI · Референс дорисовывающей подсказки</title>
+  <style>
+    :root {
+      --mbi-bg: #f4f7fb;
+      --mbi-surface: #ffffff;
+      --mbi-surface-2: #f8fbff;
+      --mbi-ink: #162033;
+      --mbi-muted: #657084;
+      --mbi-line: #dce3ef;
+      --mbi-line-strong: #bcc9da;
+      --mbi-primary: #355cff;
+      --mbi-primary-2: #7b5cff;
+      --mbi-accent: #00b3c7;
+      --mbi-good: #0d9f67;
+      --mbi-warn: #d98b00;
+      --mbi-shadow: 0 16px 44px rgba(28, 44, 74, 0.12);
+      --mbi-shadow-soft: 0 10px 26px rgba(28, 44, 74, 0.08);
+      --mbi-radius-lg: 24px;
+      --mbi-radius-md: 16px;
+      --mbi-radius-sm: 10px;
+      --text-left: 14px;
+      --text-top: 50%;
+      --text-pad-x: 8px;
+      --text-height: 30px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--mbi-ink);
+      background:
+        radial-gradient(circle at 15% 8%, rgba(53, 92, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 84% 0%, rgba(0, 179, 199, 0.16), transparent 26%),
+        linear-gradient(180deg, #fbfdff 0%, var(--mbi-bg) 48%, #eef3fb 100%);
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-card,
+    .rules-card,
+    .table-card,
+    .notes-card {
+      border: 1px solid rgba(220, 227, 239, 0.92);
+      background: rgba(255, 255, 255, 0.86);
+      border-radius: var(--mbi-radius-lg);
+      box-shadow: var(--mbi-shadow-soft);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      padding: 32px;
+    }
+
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(53, 92, 255, 0.08), transparent 42%),
+        linear-gradient(320deg, rgba(0, 179, 199, 0.08), transparent 46%);
+    }
+
+    .brand-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 34px;
+      color: #42506a;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--mbi-primary), var(--mbi-primary-2) 55%, var(--mbi-accent));
+      box-shadow: 0 10px 24px rgba(53, 92, 255, 0.28);
+      font-weight: 800;
+    }
+
+    h1 {
+      position: relative;
+      max-width: 760px;
+      margin: 0 0 14px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 0.96;
+      letter-spacing: -0.055em;
+    }
+
+    .lead {
+      position: relative;
+      max-width: 760px;
+      margin: 0;
+      color: var(--mbi-muted);
+      font-size: 18px;
+      line-height: 1.55;
+    }
+
+    .rules-card {
+      padding: 26px;
+    }
+
+    .rules-card h2,
+    .table-card h2,
+    .notes-card h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .rules-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rules-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: var(--mbi-muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .rule-dot {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      color: var(--mbi-primary);
+      background: rgba(53, 92, 255, 0.1);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .table-card {
+      position: relative;
+      z-index: 1;
+      overflow: visible;
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar-title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .toolbar-title strong {
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .toolbar-title span {
+      color: var(--mbi-muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(53, 92, 255, 0.18);
+      border-radius: 999px;
+      color: #2946c8;
+      background: rgba(53, 92, 255, 0.08);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mbi-good);
+      box-shadow: 0 0 0 5px rgba(13, 159, 103, 0.12);
+    }
+
+    .data-grid {
+      position: relative;
+      overflow: visible;
+      border: 1px solid var(--mbi-line);
+      border-radius: 18px;
+      background: var(--mbi-surface);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .grid-row {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 250px 250px 210px 250px;
+      min-width: 960px;
+    }
+
+    .grid-row:hover {
+      z-index: 5;
+    }
+
+    .grid-row + .grid-row {
+      border-top: 1px solid var(--mbi-line);
+    }
+
+    .grid-head {
+      z-index: 6;
+      min-height: 44px;
+      color: #5c6880;
+      background: linear-gradient(180deg, #f9fbfe, #f3f7fc);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .grid-cell {
+      position: relative;
+      min-height: 58px;
+      padding: 0 var(--text-left);
+      border-right: 1px solid var(--mbi-line);
+      overflow: visible;
+      background: var(--mbi-surface);
+    }
+
+    .grid-head .grid-cell {
+      display: flex;
+      align-items: center;
+      background: transparent;
+    }
+
+    .grid-cell:last-child {
+      border-right: 0;
+    }
+
+    .grid-row:not(.grid-head):hover .grid-cell {
+      background: #fbfdff;
+    }
+
+    .expand-cell {
+      cursor: default;
+    }
+
+    .expand-cell:hover,
+    .expand-cell:focus-within {
+      z-index: 40;
+    }
+
+    .plain-text,
+    .expand-text {
+      position: absolute;
+      left: var(--text-left);
+      top: var(--text-top);
+      transform: translateY(-50%);
+      display: block;
+      max-width: calc(100% - (var(--text-left) * 2));
+      height: var(--text-height);
+      line-height: var(--text-height);
+      font-size: 14px;
+      letter-spacing: -0.012em;
+      color: var(--mbi-ink);
+      white-space: nowrap;
+    }
+
+    .plain-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .expand-text {
+      width: calc(100% - (var(--text-left) * 2));
+      padding: 0 var(--text-pad-x);
+      margin-left: calc(var(--text-pad-x) * -1);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-radius: 9px;
+      outline: 1px solid transparent;
+      background: transparent;
+      box-shadow: none;
+      transition:
+        width 170ms cubic-bezier(.2,.85,.2,1),
+        background 140ms ease,
+        color 140ms ease,
+        box-shadow 140ms ease,
+        outline-color 140ms ease;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .expand-text::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(90deg, rgba(53, 92, 255, 0.10), rgba(0, 179, 199, 0.08));
+      opacity: 0;
+      transition: opacity 140ms ease;
+      z-index: -1;
+    }
+
+    .expand-cell.is-overflowing .expand-text {
+      cursor: default;
+    }
+
+    .expand-cell.is-overflowing:hover .expand-text,
+    .expand-cell.is-overflowing:focus-within .expand-text {
+      width: var(--expanded-width);
+      max-width: var(--expanded-width);
+      overflow: visible;
+      text-overflow: clip;
+      color: #0c1630;
+      background: rgba(255, 255, 255, 0.96);
+      outline-color: rgba(53, 92, 255, 0.28);
+      box-shadow:
+        0 12px 26px rgba(29, 44, 76, 0.18),
+        0 2px 7px rgba(29, 44, 76, 0.10);
+      z-index: 80;
+    }
+
+    .expand-cell.is-overflowing:hover .expand-text::after,
+    .expand-cell.is-overflowing:focus-within .expand-text::after {
+      opacity: 1;
+    }
+
+    .expand-text:focus-visible {
+      outline-color: rgba(53, 92, 255, 0.52);
+      box-shadow: 0 0 0 4px rgba(53, 92, 255, 0.12), 0 12px 26px rgba(29, 44, 76, 0.16);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 28px;
+      margin-top: 15px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status.good {
+      color: #087a51;
+      background: rgba(13, 159, 103, 0.11);
+    }
+
+    .status.warn {
+      color: #a96800;
+      background: rgba(217, 139, 0, 0.12);
+    }
+
+    .status.neutral {
+      color: #47556f;
+      background: rgba(101, 112, 132, 0.12);
+    }
+
+    .hover-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .state-card {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      border: 1px solid var(--mbi-line);
+      border-radius: var(--mbi-radius-md);
+      background: var(--mbi-surface-2);
+    }
+
+    .state-card h3 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: #44506a;
+    }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: 180px 180px;
+      width: 360px;
+      border: 1px solid var(--mbi-line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .mini-cell {
+      position: relative;
+      min-height: 48px;
+      overflow: visible;
+      border-right: 1px solid var(--mbi-line);
+      background: #fff;
+    }
+
+    .mini-cell:last-child {
+      border-right: 0;
+    }
+
+    .mini-text {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 150px;
+      height: 28px;
+      line-height: 28px;
+      padding: 0 7px;
+      margin-left: -7px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .mini-text.expanded {
+      width: 365px;
+      overflow: visible;
+      text-overflow: clip;
+      background: rgba(255, 255, 255, 0.97);
+      outline: 1px solid rgba(53, 92, 255, 0.25);
+      box-shadow: 0 10px 22px rgba(29, 44, 76, 0.16);
+      z-index: 20;
+    }
+
+    .notes-card {
+      padding: 24px;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .note {
+      padding: 16px;
+      border: 1px solid var(--mbi-line);
+      border-radius: var(--mbi-radius-md);
+      background: #fff;
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .note p {
+      margin: 0;
+      color: var(--mbi-muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    code {
+      padding: 2px 6px;
+      border: 1px solid rgba(53, 92, 255, 0.16);
+      border-radius: 7px;
+      color: #2946c8;
+      background: rgba(53, 92, 255, 0.07);
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .hover-demo,
+      .notes-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .table-card {
+        overflow-x: auto;
+      }
+
+      .data-grid {
+        width: max-content;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-card">
+        <div class="brand-row" aria-label="Modus BI reference">
+          <div class="brand-mark">M</div>
+          <span>Modus BI · UX reference</span>
+        </div>
+        <h1 id="page-title">Дорисовывающая подсказка для обрезанного текста</h1>
+        <p class="lead">
+          Референс показывает поведение, при котором при наведении не создаётся отдельная tooltip-карточка.
+          Исходный текстовый элемент остаётся на прежней координате, мягко подсвечивается, выходит поверх соседних
+          ячеек и продолжает отрисовку полной строки.
+        </p>
+      </div>
+
+      <aside class="rules-card" aria-labelledby="rules-title">
+        <h2 id="rules-title">Критерии корректного поведения</h2>
+        <ul class="rules-list">
+          <li><span class="rule-dot">1</span><span>Видимая часть текста до наведения не смещается: те же <code>left</code>, <code>top</code>, <code>padding</code>, <code>line-height</code>.</span></li>
+          <li><span class="rule-dot">2</span><span>На hover/focus меняются только ширина, обрезка, контрастная подложка и слой отрисовки.</span></li>
+          <li><span class="rule-dot">3</span><span>Полная строка перекрывает соседние ячейки, но не меняет сетку и не двигает контент.</span></li>
+          <li><span class="rule-dot">4</span><span>Для клавиатуры используется тот же сценарий через <code>focus-visible</code>, без отдельного поповера.</span></li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="table-card" aria-labelledby="table-title">
+      <div class="table-toolbar">
+        <div class="toolbar-title">
+          <strong id="table-title">Демонстрационная BI-таблица</strong>
+          <span>Наведите курсор на обрезанные значения в первой, второй и четвёртой колонках.</span>
+        </div>
+        <span class="pill"><span class="pulse"></span> same text layer</span>
+      </div>
+
+      <div class="data-grid" role="table" aria-label="Референсная таблица с дорисовывающимся текстом">
+        <div class="grid-row grid-head" role="row">
+          <div class="grid-cell" role="columnheader">Клиент / проект</div>
+          <div class="grid-cell" role="columnheader">Сценарий</div>
+          <div class="grid-cell" role="columnheader">Статус</div>
+          <div class="grid-cell" role="columnheader">Ответственный</div>
+        </div>
+
+        <div class="grid-row" role="row">
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Финансовый мониторинг филиальной сети Центрального региона</span>
+          </div>
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Проверка качества данных и контроль расхождений в витринах</span>
+          </div>
+          <div class="grid-cell" role="cell"><span class="status good">Готово</span></div>
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Аналитическая команда Modus BI / Data Quality stream</span>
+          </div>
+        </div>
+
+        <div class="grid-row" role="row">
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Короткое название</span>
+          </div>
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Расчёт SLA с учётом исключений и календаря производственных смен</span>
+          </div>
+          <div class="grid-cell" role="cell"><span class="status warn">На проверке</span></div>
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Системный аналитик</span>
+          </div>
+        </div>
+
+        <div class="grid-row" role="row">
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Дашборд операционной эффективности и раннего обнаружения отклонений</span>
+          </div>
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Ежедневная сверка статусов загрузки, ошибок и бизнес-правил</span>
+          </div>
+          <div class="grid-cell" role="cell"><span class="status neutral">В работе</span></div>
+          <div class="grid-cell expand-cell" role="cell">
+            <span class="expand-text" tabindex="0">Product analytics / BI delivery</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hover-demo" aria-label="Сравнение состояния текста">
+        <div class="state-card">
+          <h3>До наведения: элемент обрезан внутри ячейки</h3>
+          <div class="mini-row">
+            <div class="mini-cell">
+              <span class="mini-text">Длинный текст, который визуально обрезан внутри ячейки</span>
+            </div>
+            <div class="mini-cell"></div>
+          </div>
+        </div>
+        <div class="state-card">
+          <h3>При наведении: тот же элемент продолжает отрисовку</h3>
+          <div class="mini-row">
+            <div class="mini-cell">
+              <span class="mini-text expanded">Длинный текст, который визуально обрезан внутри ячейки</span>
+            </div>
+            <div class="mini-cell"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="notes-card" aria-labelledby="notes-title">
+      <h2 id="notes-title">Техническая модель</h2>
+      <div class="notes-grid">
+        <article class="note">
+          <strong>Один текстовый слой</strong>
+          <p>В DOM нет отдельного tooltip с дублирующим текстом. Раскрывается тот же <code>.expand-text</code>, который был обрезан.</p>
+        </article>
+        <article class="note">
+          <strong>Без сдвига</strong>
+          <p>Координаты и внутренние отступы не меняются на hover. Поэтому первые символы остаются визуально на той же позиции.</p>
+        </article>
+        <article class="note">
+          <strong>Перекрытие соседей</strong>
+          <p>Родительская ячейка и строка получают повышенный <code>z-index</code>, а таблица оставляет <code>overflow: visible</code>.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const updateOverflowState = () => {
+      document.querySelectorAll('.expand-cell').forEach((cell) => {
+        const text = cell.querySelector('.expand-text');
+        if (!text) return;
+
+        text.style.removeProperty('--expanded-width');
+        const naturalWidth = Math.ceil(text.scrollWidth + 2);
+        const baseWidth = Math.ceil(cell.clientWidth - 28);
+        const expandedWidth = Math.max(naturalWidth, baseWidth);
+
+        text.style.setProperty('--expanded-width', `${expandedWidth}px`);
+        text.setAttribute('aria-label', text.textContent.trim());
+        cell.classList.toggle('is-overflowing', naturalWidth > baseWidth + 1);
+      });
+    };
+
+    window.addEventListener('load', updateOverflowState);
+    window.addEventListener('resize', updateOverflowState);
+  </script>
+</body>
+</html>

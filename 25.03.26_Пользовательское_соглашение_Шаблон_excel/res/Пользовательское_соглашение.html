@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Аналитический портал — пользовательское соглашение</title>
+  <style>
+    :root {
+      --page-bg: #eef2f6;
+      --modal-bg: #ffffff;
+      --sheet-side-bg: #f3f5f8;
+      --text: #202734;
+      --muted: #5d6675;
+      --primary: #256fd0;
+      --primary-hover: #1f61b8;
+      --secondary-bg: #f4f6f9;
+      --secondary-border: #cfd6e0;
+      --shadow: 0 16px 44px rgba(22, 34, 51, 0.18), 0 3px 10px rgba(22, 34, 51, 0.08);
+      --soft-shadow: 0 2px 14px rgba(22, 34, 51, 0.07);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: Arial, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f7f9fc 0%, var(--page-bg) 100%);
+      color: var(--text);
+    }
+
+    .page {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .agreement-modal {
+      width: min(960px, calc(100vw - 64px));
+      height: min(872px, calc(100vh - 64px));
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--modal-bg);
+      border-radius: 7px;
+      box-shadow: var(--shadow);
+    }
+
+    .document-area {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      background: #ffffff;
+      padding: 28px 28px 20px;
+      scrollbar-gutter: stable;
+    }
+
+    .document-area::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .document-area::-webkit-scrollbar-track {
+      background: #f3f5f8;
+    }
+
+    .document-area::-webkit-scrollbar-thumb {
+      background: #b9c2cd;
+      border-radius: 8px;
+      border: 2px solid #f3f5f8;
+    }
+
+    .agreement-sheet {
+      width: min(780px, 100%);
+      margin: 0 auto;
+      padding: 30px 38px 42px;
+      background: #ffffff;
+      box-shadow: none;
+    }
+
+    .agreement-text {
+      font-size: 12px;
+      line-height: 1.55;
+      letter-spacing: 0.01em;
+    }
+
+    .agreement-text p {
+      margin: 0;
+    }
+
+    .agreement-title,
+    .agreement-subtitle,
+    .agreement-product {
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.28;
+      letter-spacing: 0.015em;
+    }
+
+    .agreement-title {
+      margin-top: 0;
+      text-transform: uppercase;
+      white-space: normal;
+    }
+
+    .agreement-subtitle {
+      margin-top: 7px;
+      text-transform: uppercase;
+      white-space: normal;
+    }
+
+    .agreement-product {
+      margin-top: 7px;
+      white-space: normal;
+    }
+
+    .city {
+      margin: 18px 0 14px;
+      font-weight: 700;
+    }
+
+    .preamble {
+      margin: 0 0 12px;
+      text-align: justify;
+      text-indent: 28px;
+    }
+
+    .clause {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      margin: 7px 0;
+      text-align: justify;
+    }
+
+    .clause-number {
+      font-weight: 700;
+      text-align: right;
+      padding-top: 0.02em;
+      white-space: nowrap;
+    }
+
+    .clause-content {
+      min-width: 0;
+    }
+
+    .clause-content > p:first-child {
+      margin-top: 0;
+    }
+
+    .definitions {
+      display: grid;
+      row-gap: 5px;
+      margin-top: 7px;
+    }
+
+    .definition {
+      display: grid;
+      grid-template-columns: minmax(130px, 190px) minmax(0, 1fr);
+      column-gap: 10px;
+      align-items: baseline;
+    }
+
+    .definition-term {
+      font-weight: 700;
+      white-space: normal;
+    }
+
+    .definition-text {
+      min-width: 0;
+    }
+
+    .subclauses {
+      display: grid;
+      row-gap: 4px;
+      margin-top: 6px;
+    }
+
+    .subclause {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      column-gap: 8px;
+      align-items: baseline;
+    }
+
+    .subclause-number {
+      font-weight: 400;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .dash-list {
+      list-style: none;
+      margin: 7px 0 0;
+      padding: 0;
+      display: grid;
+      row-gap: 4px;
+    }
+
+    .dash-list li {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      column-gap: 8px;
+      align-items: baseline;
+      text-align: justify;
+    }
+
+    .dash-list li::before {
+      content: "–";
+      text-align: right;
+      color: var(--muted);
+    }
+
+    .rights-holder {
+      margin-top: 20px;
+      line-height: 1.55;
+    }
+
+    .rights-holder p {
+      margin: 2px 0;
+    }
+
+    .rights-title {
+      margin-bottom: 7px !important;
+      font-weight: 700;
+    }
+
+    .actions {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 24px 20px;
+      background: #fff;
+      box-shadow: 0 -10px 22px rgba(22, 34, 51, 0.06);
+    }
+
+    .button {
+      min-width: 112px;
+      height: 38px;
+      padding: 0 22px;
+      border-radius: 6px;
+      font: 600 14px/1 Arial, "Segoe UI", sans-serif;
+      cursor: pointer;
+      transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+    }
+
+    .button:focus-visible {
+      outline: 3px solid rgba(37, 111, 208, 0.28);
+      outline-offset: 2px;
+    }
+
+    .button-secondary {
+      color: #303947;
+      background: var(--secondary-bg);
+      border: 1px solid var(--secondary-border);
+      box-shadow: 0 1px 2px rgba(22, 34, 51, 0.05);
+    }
+
+    .button-secondary:hover {
+      background: #e8edf4;
+      border-color: #b9c2cf;
+    }
+
+    .button-primary {
+      color: #fff;
+      background: var(--primary);
+      border: 1px solid var(--primary);
+      box-shadow: 0 5px 14px rgba(37, 111, 208, 0.28);
+    }
+
+    .button-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 7px 18px rgba(31, 97, 184, 0.32);
+    }
+
+    .button:active {
+      transform: translateY(1px);
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 16px;
+      }
+
+      .agreement-modal {
+        width: 100%;
+        height: calc(100vh - 32px);
+      }
+
+      .document-area {
+        padding: 16px;
+      }
+
+      .agreement-sheet {
+        padding: 24px 22px 34px;
+      }
+
+      .clause {
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: 8px;
+      }
+
+      .definition {
+        grid-template-columns: 1fr;
+        row-gap: 1px;
+      }
+
+      .subclause {
+        grid-template-columns: 38px minmax(0, 1fr);
+      }
+
+      .actions {
+        padding: 14px 16px 16px;
+      }
+
+      .button {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .page {
+        padding: 0;
+      }
+
+      .agreement-modal {
+        width: auto;
+        height: auto;
+        box-shadow: none;
+        border-radius: 0;
+      }
+
+      .document-area {
+        overflow: visible;
+        background: #fff;
+        padding: 0;
+      }
+
+      .agreement-sheet {
+        width: auto;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .actions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="agreement-modal" aria-label="Пользовательское соглашение">
+      <div class="document-area">
+        <article class="agreement-sheet agreement-text">
+          <p class="agreement-title">ПОЛЬЗОВАТЕЛЬСКОЕ ЛИЦЕНЗИОННОЕ СОГЛАШЕНИЕ (ПУБЛИЧНАЯ ОФЕРТА)</p><p class="agreement-subtitle">НА ПРЕДОСТАВЛЕНИЕ НЕИСКЛЮЧИТЕЛЬНОГО ПРАВА ИСПОЛЬЗОВАНИЯ ПРОГРАММНОГО ПРОДУКТА</p><p class="agreement-product">«Модус:Аналитический портал»</p>
+          <p class="city">город Москва</p>
+          <p class="preamble">Настоящее электронное пользовательское соглашение (далее – «Соглашение») в соответствии со статьями 428 и 437 ГК РФ является соглашением между лицом, выразившим согласие с изложенными в настоящем Соглашении условиями указанным способом, (далее – «Пользователь») и Обществом с ограниченной ответственностью «БиАй Продакшн» (ИНН 7725495427, ОГРН 1187746698204).</p>
+          <section class="clause">
+    <div class="clause-number">1.</div>
+    <div class="clause-content"><p>Совершение Пользователем действий, направленных на использование Программного продукта при первом запуске, считается безусловным принятием (акцептом) данного Соглашения. Продолжая использование Программного продукта, Пользователь выражает свое полное согласие с условиями настоящего Соглашения и с тем, что настоящее Соглашение имеет юридическую силу, аналогичную юридической силе любого письменного соглашения, подписанного Пользователем.</p></div>
+</section><section class="clause">
+    <div class="clause-number">2.</div>
+    <div class="clause-content"><p>Стороны договорились, что следующие ниже термины и определения для целей настоящего Соглашения будут иметь следующее значение:</p><div class="definitions"><div class="definition"><span class="definition-term">«ПП»</span><span class="definition-text">— программный продукт «Модус:Аналитический портал», регистрационный номер 5496 в Едином реестре российских программ для ЭВМ и БД,</span></div>
+<div class="definition"><span class="definition-term">«Лицензия»</span><span class="definition-text">— неисключительное право использования ПП, предоставляемое на условиях согласно виду и версии предоставленной лицензии.</span></div>
+<div class="definition"><span class="definition-term">«Лицензиар»/«Правообладатель»</span><span class="definition-text">— ООО «БиАй Про», ИНН 7725495427, ОГРН 1187746698204, являющееся правообладателем исключительного права на ПП (Свидетельство о государственной регистрации программы для ЭВМ № 2019613417 от 18.03.2019 г.).</span></div>
+<div class="definition"><span class="definition-term">«Пользователь»</span><span class="definition-text">— юридическое лицо (или индивидуальный предприниматель), в интересах, от имени и по поручению которого была осуществлена активация Лицензии на ПП и выражено согласие с изложенными в настоящем Соглашении условиями путем совершения указанных выше конклюдентных действий, направленных на использование ПП.</span></div>
+<div class="definition"><span class="definition-term">Демо-лицензия</span><span class="definition-text">— вид Лицензии, предоставляемый Пользователю по настоящему Соглашению в целях демонстрации и тестирования функциональных возможностей ПП.</span></div></div></div>
+</section><section class="clause">
+    <div class="clause-number">3.</div>
+    <div class="clause-content"><p>В соответствии с настоящим Соглашением Пользователю предоставляется право использования ПП на условиях Демо-лицензии следующими способами:</p><div class="subclauses"><div class="subclause"><span class="subclause-number">3.1.</span><span class="subclause-text">воспроизведение в виде записи ПП в память ЭВМ (одном сервере - физическом или виртуальном);</span></div>
+<div class="subclause"><span class="subclause-number">3.2.</span><span class="subclause-text">настройка (адаптация) ПП в виде внесения изменений, осуществляемых исключительно в целях функционирования на технических средствах Пользователя;</span></div>
+<div class="subclause"><span class="subclause-number">3.3.</span><span class="subclause-text">использование ПП по его функциональному назначению в соответствии с обозначенной в настоящем Соглашении целью.</span></div></div></div>
+</section><section class="clause">
+    <div class="clause-number">4.</div>
+    <div class="clause-content"><p>Пределы предоставляемых неисключительных прав на использование ПП в рамках Демо-лицензии:</p><div class="subclauses"><div class="subclause"><span class="subclause-number">4.1.</span><span class="subclause-text"><strong>Срок</strong>, на который предоставляется право на использование, – 3 (три) месяца с даты активации, если меньший срок не определен Правообладателем путем установления ограничений техническими и/или программными средствами защиты.</span></div>
+<div class="subclause"><span class="subclause-number">4.2.</span><span class="subclause-text"><strong>Территория</strong>, на которой допускается использование - территория Российской Федерации, Содружества Независимых Государств (СНГ).</span></div>
+<div class="subclause"><span class="subclause-number">4.3.</span><span class="subclause-text"><strong>Цель:</strong> Пользователь вправе использовать ПП исключительно в целях демонстрации и тестирования функциональных возможностей ПП.</span></div>
+<div class="subclause"><span class="subclause-number">4.4.</span><span class="subclause-text">Функциональные возможности ПП ограничены по усмотрению Правообладателя (по количеству пользователей, наборов данных, отчетов; по функционалу).</span></div></div></div>
+</section><section class="clause">
+    <div class="clause-number">5.</div>
+    <div class="clause-content"><p>Предоставление Демо-лицензии является безвозмездным.</p></div>
+</section><section class="clause">
+    <div class="clause-number">6.</div>
+    <div class="clause-content"><p>Ограничения:</p><div class="subclauses"><div class="subclause"><span class="subclause-number">6.1.</span><span class="subclause-text">Передача третьему лицу прав и/или обязанностей Пользователя возможна исключительно с письменного согласия Правообладателя. Использование ПП путем временного или постоянного предоставления и/или передачи доступа к ПП, выполнения работ и/или оказания услуг с использованием ПП третьим лицам как в целях извлечения прибыли, так и на безвозмездной основе запрещаются и признаются существенным нарушением настоящего Соглашения.</span></div>
+<div class="subclause"><span class="subclause-number">6.2.</span><span class="subclause-text">Пользователь не вправе (как самостоятельно, так и с привлечением третьих лиц) вносить изменения (улучшения, усовершенствования), осуществлять переработку (модификацию), создавать производные и/или составные произведения, изготавливать копии, разбирать ПП на составляющие коды, декомпилировать или иным образом пытаться получить исходный текст ПП или любой его части, за исключением случаев, когда есть письменное разрешения Правообладателя на совершение таких действий или когда такие действия прямо и императивно разрешены действующим законодательством Российской Федерации Пользователю. В противном случае Пользователь несет полную ответственность за подобные действия, предусмотренную законодательством Российской Федерации.</span></div>
+<div class="subclause"><span class="subclause-number">6.3.</span><span class="subclause-text">Пользователь не вправе совершать действия, результатом которых является устранение или снижение эффективности технических и/или программных средств защиты Программного продукта, авторских и иных прав Правообладателя.</span></div></div></div>
+</section><section class="clause">
+    <div class="clause-number">7.</div>
+    <div class="clause-content"><p>ПП предоставляется Пользователю по принципу «как есть». Базовые (заводские) настройки ПП не являются индивидуальными.</p></div>
+</section><section class="clause">
+    <div class="clause-number">8.</div>
+    <div class="clause-content"><p>Ограничение ответственности. Правообладатель:</p><ul class="dash-list"><li>не несет ответственность за бесперебойную работу ПП и его совместимость с программным обеспечением и техническими средствами Пользователя и иных лиц;</li>
+<li>не берет на себя обязательств по консультированию Пользователей по использованию ПП и/или результатов работы ПП;</li>
+<li>не несет ответственность за причинение любых убытков, которые возникли или могут возникнуть при использовании ПП;</li>
+<li>не несет ответственность за неисполнение либо ненадлежащее исполнение своих обязательств вследствие сбоев в телекоммуникационных и энергетических сетях.</li></ul></div>
+</section><section class="clause">
+    <div class="clause-number">9.</div>
+    <div class="clause-content"><p>В случае наличия спора/разногласий, возникших из и/или в связи с настоящим Соглашением, срок рассмотрения претензии – 10 (десять) рабочих дней с момента получения. Место судебного разбирательства в случае спора – суд по месту нахождения Правообладателя.</p></div>
+</section><section class="clause">
+    <div class="clause-number">10.</div>
+    <div class="clause-content"><p>Пользователь подтверждает, что ознакомился со всеми положениями Соглашения, понимает и принимает их. Пользователь вправе получить копию настоящего Соглашению, обратившись к Правообладателю по адресу электронной почты, указанному ниже.</p></div>
+</section><section class="clause">
+    <div class="clause-number">11.</div>
+    <div class="clause-content"><p>Настоящее Соглашение является полным и исчерпывающим. Все, что не урегулировано в настоящем Соглашении регулируется, соответствующим (суб)лицензионным договором (контрактом) (при наличии), а также действующим законодательством Российской Федерации.</p></div>
+</section>
+          <div class="rights-holder"><p class="rights-title">ПРАВООБЛАДАТЕЛЬ:</p><p>Общество с ограниченной ответственностью «БиАй Продакшн»</p><p>127473, г. Москва, ул. Селезневская, д. 34, стр. 4.</p><p>ОГРН 1187746698204           ИНН 7725495427</p><p>Тел. +7 495 118 28 14</p><p>post@modusbi.ru   www.modusbi.ru</p></div>
+        </article>
+      </div>
+      <div class="actions" aria-label="Действия с соглашением">
+        <button class="button button-secondary" type="button">Отказаться</button>
+        <button class="button button-primary" type="button">Принять</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

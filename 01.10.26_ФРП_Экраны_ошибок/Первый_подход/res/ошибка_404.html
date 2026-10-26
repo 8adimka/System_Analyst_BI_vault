@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ФРП / ГИСП — Ошибка 404</title>
+<style>
+  :root{
+    --page-bg:#ffffff;
+    --text:#050817;
+    --muted:#313745;
+    --divider:#e5e7ec;
+    --banner:#e0eefe;
+    --accent:#f47a55;
+    --accent-hover:#e96f4c;
+    --secondary:#eaf4ff;
+    --icon-blue-1:#7ea7e2;
+    --icon-blue-2:#4775c6;
+    --icon-blue-3:#294f9f;
+    --shadow:rgba(35,62,110,.25);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--page-bg);color:var(--text)}
+  body{
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .gisp-header{
+    height:80px;
+    display:flex;
+    align-items:center;
+    border-bottom:1px solid var(--divider);
+    background:#fff;
+    padding:0 28px;
+    gap:36px;
+  }
+  .gisp-logo{
+    width:52px;
+    height:52px;
+    object-fit:contain;
+    flex:0 0 auto;
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    gap:40px;
+    min-width:0;
+    font-size:18px;
+    line-height:1;
+    white-space:nowrap;
+  }
+  .nav a{
+    color:#080b18;
+    text-decoration:none;
+    font-weight:400;
+  }
+  .nav .support{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .chevron{
+    width:9px;height:9px;
+    border-right:2px solid #465063;
+    border-bottom:2px solid #465063;
+    transform:rotate(45deg) translateY(-2px);
+    transform-origin:center;
+  }
+  .user-area{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .avatar{
+    width:40px;height:40px;border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 37%, #f5d5c6 0 16%, transparent 17%),
+      radial-gradient(circle at 49% 35%, #68483b 0 29%, transparent 30%),
+      linear-gradient(135deg,#d7e6f4 0 48%,#8fb2d1 49% 100%);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+  }
+  .user-chevron{
+    width:10px;height:10px;
+    border-right:2px solid #526079;
+    border-bottom:2px solid #526079;
+    transform:rotate(45deg) translateY(-2px);
+  }
+
+  main{
+    width:min(1394px, calc(100% - 64px));
+    margin:48px auto 80px;
+  }
+
+  .error-banner{
+    position:relative;
+    height:254px;
+    border-radius:8px;
+    overflow:hidden;
+    background:var(--banner);
+    padding:60px 62px 44px;
+  }
+  .error-copy{
+    position:relative;
+    z-index:2;
+    max-width:780px;
+  }
+  h1{
+    margin:0;
+    font-size:70px;
+    line-height:1.04;
+    letter-spacing:-2.5px;
+    font-weight:800;
+  }
+  .subtitle{
+    margin-top:24px;
+    font-size:34px;
+    line-height:1.2;
+    font-weight:400;
+    letter-spacing:-.4px;
+  }
+
+  .hero-icon{
+    position:absolute;
+    right:50px;
+    bottom:-76px;
+    width:342px;
+    height:342px;
+    z-index:1;
+    pointer-events:none;
+    filter:drop-shadow(0 16px 18px rgba(30,64,126,.15));
+  }
+
+  .description{
+    margin:36px 0 0;
+    font-size:20px;
+    line-height:1.5;
+    color:#171b26;
+    max-width:950px;
+  }
+  .actions{
+    margin-top:34px;
+    display:flex;
+    gap:20px;
+    align-items:center;
+  }
+  .btn{
+    min-height:56px;
+    padding:0 22px;
+    border:0;
+    border-radius:9px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font:inherit;
+    font-size:20px;
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .btn-primary{
+    color:#fff;
+    background:var(--accent);
+    box-shadow:0 1px 0 rgba(0,0,0,.03);
+  }
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn:focus-visible{outline:3px solid #1f5fad;outline-offset:3px}
+
+  @media (max-width: 1120px){
+    .nav{gap:24px;font-size:16px}
+    .hero-icon{right:16px;width:300px;height:300px}
+    .error-copy{max-width:690px}
+  }
+
+  @media (max-width: 860px){
+    .gisp-header{height:68px;padding:0 18px;gap:16px}
+    .gisp-logo{width:44px;height:44px}
+    .nav{display:none}
+    .avatar{width:36px;height:36px}
+    main{width:calc(100% - 32px);margin:24px auto 48px}
+    .error-banner{height:360px;padding:34px 28px 28px}
+    .error-copy{max-width:100%}
+    h1{font-size:48px;letter-spacing:-1.5px}
+    .subtitle{font-size:25px;max-width:90%;margin-top:18px}
+    .hero-icon{width:190px;height:190px;right:10px;bottom:-36px}
+    .description{font-size:18px;line-height:1.5;margin-top:28px}
+    .actions{margin-top:24px}
+    .btn{width:100%;min-height:54px;font-size:18px}
+  }
+
+  @media (max-width: 430px){
+    .error-banner{height:342px;padding:30px 24px 24px}
+    h1{font-size:44px}
+    .subtitle{font-size:23px;max-width:100%}
+    .hero-icon{width:170px;height:170px;right:0;bottom:-38px}
+  }
+</style>
+</head>
+<body>
+  <header class="gisp-header" aria-label="Хедер ГИСП — контекст объемлющей системы">
+    <img class="gisp-logo" alt="ГИСП" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAA8CAYAAADbl8wjAAABJ2lDQ1BJQ0MgUHJvZmlsZQAAeJxjYGB8wAAELA4MDLl5JUVB7k4KEZFRCgxIIDG5uIABL/h2jYERRF/WDSxh48avFgNwFQEtBNJ/gFgkHcxmFACxkyBsFRC7vKSgBMi2ALGTC4pAbB8gWyk5IzEFyAa5T6coJMgZyJ4DZCukI7GTkNgpqcXJQPYeIFsF4c/8+QwMFl8YGJgnIsSSpjEwbG9nYJC4gxBTWcjAwN/KwLDtMkLssz/Y74xih3JzSpOhfgKJ8KTmhQYDaTYglmHwY9BncGRgKE4zNoKo4HFgYGC9+///Zy0GBvZJDAx/+////73o//+/i4HuuMXAcKC9ILEoEayWGYiZ0tIYGD4tZ2DgjWRgEL4ADLZoHPZxgO0rZghicGdwAgB7LE511UgBAwAAA51JREFUeJztm0Fo01AYgP+JbGC39CDrmPBwHlSw2UUpzJ4K2yUoCAMJeHJIe3Cw7dCLt9EKgjyQXjzk0pu4HQrKWIp40UMuAy9tdhH0EJjM4WEZLayXelposv5JXtJkGbwPenhN3vtfPt7/8l6TjvX7/T5wznHlojuQVLgYBC4GgYtBuOp1wo/tD2Ae/fXd4N3CIsxm50N1yo1/v39Ba/czU53C6gZzHE8xB/st+LPf8t3gjew8zDJ3wz+n3Q78/PaVqU4QMTyVELgYBM9UcnKnsAST0xn0+PW5W6E65MXUdAbuP32GHu91OtDe/RQ6TgAxizB7L7rJ1YupzAw8cBFzcnQ4EjE8lRC4GATmVHKiqirous5cT5ZlIIRY5Xa7Dc1m0ypLkgTZbPZcPdM0QVEUq5xOp6FYLDLH9yK0mGazCVtbW8z18vm8TYyu60AptcqEkKFi1tbWbAIJIZGIuVSpRCm1SYmSSyOGUmobUVHjmUpzuQWYzMxY5fFUyvX8SqUC6XTaM/BgGnmhaZpvKRPXJuF2Ycl32xieYsRHT5galCSJ6aK9MAwD1tfXfZ8/nkpB4eVG6LiJTiXDMGB5eRkMw7C+E0VxpOIxEi1mZWXFJoUQAvV6PZbYoW/XUUEptUkBAKjX67GMFoAEjxinlHK5DKIoxhY/sWIGkWUZyuVyrDETL4YQAtVqNfa4iRYjCAI0Gg0QBCH22IkWU61WY5tsnYS+KxFCIJ/PW2U/q95hCIJga0eSJJBleei5g2uZqMSN8WfXw0l0Kl0kXAxC6DnGMIxzizE/iKJou9uYpgntdjtQHwbnplERWgylNNAveI1Gw3ZBqqoy7aLPIITA3t4ecz0veCohcDEII99dS5I0dKWq6zrTHOL8sXwQVVXBNM3AffTDyMVUKpWhF6QoChwfH/tuR5ZldIGnadrlE4NRKpWgVCrFFS40fI5B4GIQYksl0zRtc8xF7Zr9EtuIURQFcrmc9dE0La7QgfAcMTubr2zv4D3efOP6fgy2eg2ybQjCydEhfFx9YfuuuL3D3M7IUynpI8EvfPJF4GIQQqdSrVaDWq0WuiNuK10nUeymnfARg8DFIHAxCMxzzJe3r2HC5eWhh89LcDO3EKpTbhzoLfj+/l1k7Z/BLKbX7UCv20GPn3bwY6PihOHfMEHhqYTAxSB4PonsdTtM6TGRSsH4NfcXGMPCmkpTLn8KweCPaBF4KiFwMQhcDAIXg/Afn4ILCwf7e98AAAAASUVORK5CYII=" />
+    <nav class="nav" aria-label="Навигация ГИСП">
+      <a href="#">Все сервисы</a>
+      <a href="#">Новости</a>
+      <a href="#">База знаний</a>
+      <a href="#" class="support">Помощь и техподдержка <span class="chevron" aria-hidden="true"></span></a>
+      <a href="#">Меры поддержки</a>
+      <a href="#">Поиск по ГИСП</a>
+    </nav>
+    <div class="user-area" aria-hidden="true">
+      <div class="avatar"></div>
+      <span class="user-chevron"></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="error-banner" aria-labelledby="error-title">
+      <div class="error-copy">
+        <h1 id="error-title">Ошибка 404</h1>
+        <div class="subtitle">Запрашиваемая страница не найдена</div>
+      </div>
+
+      <svg class="hero-icon" viewBox="0 0 360 360" role="img" aria-label="Синяя иконка с восклицательным знаком">
+        <defs>
+          <radialGradient id="orb" cx="32%" cy="24%" r="78%">
+            <stop offset="0%" stop-color="#8db4ea"/>
+            <stop offset="42%" stop-color="#5a87d1"/>
+            <stop offset="76%" stop-color="#3f6fc0"/>
+            <stop offset="100%" stop-color="#3158a9"/>
+          </radialGradient>
+          <linearGradient id="mark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="58%" stop-color="#f8f8f8"/>
+            <stop offset="100%" stop-color="#e1e1e1"/>
+          </linearGradient>
+          <filter id="markShadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="8" dy="8" stdDeviation="6" flood-color="#234b96" flood-opacity=".34"/>
+          </filter>
+          <filter id="softShadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="10" dy="16" stdDeviation="11" flood-color="#173a7d" flood-opacity=".22"/>
+          </filter>
+        </defs>
+
+        <circle cx="174" cy="174" r="126" fill="url(#orb)" filter="url(#softShadow)"/>
+        <path d="M254 64c28 14 49 38 63 68" fill="none" stroke="#6d95d6" stroke-width="5" stroke-linecap="round" opacity=".95"/>
+        <path d="M262 73c24 13 42 32 55 56" fill="none" stroke="#3d67b4" stroke-width="4" stroke-linecap="round" opacity=".75"/>
+        <ellipse cx="135" cy="111" rx="79" ry="48" fill="#b8d0f1" opacity=".16" transform="rotate(-21 135 111)"/>
+
+        <g filter="url(#markShadow)">
+          <rect x="151" y="91" width="46" height="142" rx="18" fill="url(#mark)"/>
+          <circle cx="174" cy="268" r="26" fill="url(#mark)"/>
+        </g>
+      </svg>
+    </section>
+
+    <p class="description">Вероятно, она была удалена или перенесена на другой адрес.</p>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="/">Вернуться на главную</a>
+    </div>
+  </main>
+</body>
+</html>
