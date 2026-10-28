@@ -25,7 +25,6 @@
 !*.txt
 !*.xlsx
 !*.docx
-!*.html
 
 # --------------------------------------------------
 # Ignore temporary Office files
