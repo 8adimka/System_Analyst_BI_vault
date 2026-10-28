@@ -1,7 +1,10 @@
-# Standalone roles are discovered from .codex/agents/*.toml.
-# SDK coordinator sets these permissions explicitly for every start/resume/turn.
-sandbox_mode = "read-only"
-approval_policy = "never"
+# Interactive default is the full-stack developer defined in root AGENTS.md.
+# Analyst/reviewer SDK calls set read_only/deny_all explicitly in their isolated view.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+
+[sandbox_workspace_write]
+network_access = false
 
 [agents]
 enabled = true
