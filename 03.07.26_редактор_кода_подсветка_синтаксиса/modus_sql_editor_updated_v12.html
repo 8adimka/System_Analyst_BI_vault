@@ -1593,7 +1593,7 @@ body.modal-open{overflow:hidden}
       var status=$(id);
       if(!status)return;
       status.hidden=!stale;
-      status.textContent=stale?'🛈 Проверьте запрос · Данные могли устареть':'';
+      status.textContent=stale?'⚠ Проверьте запрос · Данные могли устареть':'';
     });
   }
   function updatePreviewToggle(){

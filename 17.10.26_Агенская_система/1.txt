@@ -133,7 +133,7 @@ Python-координатор при этом обязан самостояте�
 │   │   ├── jira-style.md
 │   │   └── requirements-quality.md
 │   │
-│   └── orchestrator/          # Реализуем позднее
+│   └── orchestrator/          # Оркестратор для агентов
 │       ├── main.py
 │       └── ...
 │
