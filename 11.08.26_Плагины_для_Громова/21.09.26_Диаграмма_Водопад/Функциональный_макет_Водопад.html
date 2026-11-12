@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Диаграмма водопад — функциональный макет</title>
+<style>
+  :root{--shell:#484848;--panel:#4b4b4b;--section:#333;--panel-text:#d5d5d5;--accent:#ffab00;--blue:#5294de;--shelf:#f2f2f4;--shelf-line:#bdbfc3;--line:#dce0e4;--ink:#333;--muted:#777;--focus:#78b5f2;--up:#55a966;--down:#d66a63;--total:#898989;--white:#fff;--control:#454545;--control-line:#929292}
+  *{box-sizing:border-box}html,body{height:100%;margin:0}body{font:14px/1.3 Arial,Verdana,"Helvetica CY",sans-serif;color:var(--ink);background:#fff}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.5}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}button,select,input{accent-color:var(--accent)}[hidden]{display:none!important}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .app{display:grid;grid-template-rows:44px minmax(0,1fr);height:100dvh;min-height:620px;overflow:hidden}.topbar{display:flex;align-items:center;height:44px;background:var(--shell);color:#eee;min-width:0}.brand{height:44px;width:260px;flex:none;display:flex;align-items:center;padding:0 12px;background:#343434;color:#4a9ded;font-size:17px;letter-spacing:-1px}.brand-mark{display:inline-block;width:21px;height:19px;margin-right:4px;background:linear-gradient(116deg,transparent 0 19%,#55bbd4 20% 33%,transparent 34% 44%,#647adf 45% 59%,transparent 60%);transform:skewX(-8deg)}.crumb{padding-left:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}.crumb .arrow{padding:0 11px;color:#cfcfcf}.top-actions{display:flex;gap:8px;margin-left:auto;align-items:center;padding:0 12px}.top-actions button{height:30px;border:1px solid #777;border-radius:4px;padding:0 16px;background:#888;color:#fff;min-width:90px}.top-actions .primary{background:var(--accent);border-color:#e69900;color:#101010}.top-actions button:hover{filter:brightness(1.08)}.toolbar-icons{display:flex;align-items:center;gap:22px;margin-left:clamp(20px,8vw,150px);font-size:18px}.toolbar-icons .active{color:var(--accent)}
+  .editor{display:grid;grid-template-columns:260px minmax(0,1fr) 324px;min-height:0}.data-panel{background:var(--panel);border-right:9px solid #bbb;color:#ddd;overflow:auto;min-width:0}.data-title{font-size:11px;color:var(--accent);padding:13px 7px 9px;display:flex;justify-content:space-between}.data-select{height:26px;margin:0 8px 12px;border:1px solid #858585;color:#9dd1fa;padding:4px 7px;background:#444;font-size:13px;display:flex;justify-content:space-between}.data-select:after{content:"⌄";color:var(--accent)}.data-group{padding:0 8px 7px;margin-bottom:5px;border-bottom:1px dotted #777}.data-field{height:30px;background:#414141;display:flex;align-items:center;margin-bottom:4px;font-size:12px;color:#dedede}.data-field .kind{width:31px;align-self:stretch;display:flex;align-items:center;justify-content:center;border-right:1px solid #555;font-size:11px;color:#f2f2f2;margin-right:8px}.data-hint{font-size:11px;color:#bcbcbc;margin:12px 9px;line-height:1.45}
+  .work{display:flex;flex-direction:column;min-width:0;min-height:0;background:#fff}.shelves{background:var(--shelf);flex:none}.shelf{height:38px;display:flex;align-items:center;border-bottom:1px solid var(--shelf-line);position:relative;min-width:0}.shelf-icon{width:37px;align-self:stretch;flex:none;border-right:1px solid #ccc;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;color:#222}.shelf-content{display:flex;align-items:center;gap:4px;min-width:0;flex:1;padding:2px 3px;overflow:auto}.pill{height:34px;min-width:83px;max-width:235px;background:#41516f;color:#fff;border:0;padding:3px 10px 3px 20px;position:relative;text-align:left;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}.pill:before{content:"Aa";position:absolute;left:3px;top:4px;font-size:9px;color:#f1f1f1}.pill.numeric:before{content:"#";font-size:12px}.pill:after{content:"▾";position:absolute;left:3px;bottom:0;font-size:12px}.pill small{display:block;color:#cad2e0;font-size:10px}.pill.filter-pill{background:#83a25f}.pill.filter-pill small{color:#e4f2d8}.shelf-add{height:24px;width:24px;flex:none;border:1px dashed #aab0ba;border-radius:3px;color:#89919a;background:transparent;font-size:18px;line-height:18px}.shelf-add:hover{color:#333;border-color:#777}.shelf-ghost{color:#c4c4c8;font-size:17px;margin-left:auto;padding-right:14px;white-space:nowrap;pointer-events:none}.shelf-tail{width:69px;flex:none;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.mode-button{font-size:9px;background:none;border:0;padding:0;color:var(--accent);text-transform:uppercase}.mode-button:hover{text-decoration:underline}.shelf-tail small{font-size:9px;color:#a8a8aa;text-transform:uppercase}.shelf-tail .switch{transform:scale(.8)}
+  .preview{min-height:0;min-width:0;flex:1;display:flex;flex-direction:column;padding:4px;background:#fff}.debug-row{height:19px;color:#aaa;font-size:9px;display:flex;align-items:center;gap:8px}.debug-dot{width:20px;height:7px;border-radius:9px;background:#bcbcbc;display:inline-block}.viz-card{border:1px dashed #c3c3c3;min-height:0;min-width:0;flex:1;display:flex;flex-direction:column}.viz-heading{height:39px;min-height:39px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 14px;color:#666}.viz-heading strong{font-size:14px;font-weight:400}.viz-heading button{margin-left:auto;border:1px solid #c7c7c7;border-radius:50%;height:24px;width:24px;background:#ddd;color:#444;font-size:15px}.viz-shell{display:flex;flex-direction:column;min-height:0;min-width:0;flex:1}.chart-stage{position:relative;flex:1;min-height:360px;min-width:0;overflow:auto;background:#fff}.chart-stage svg{display:block}.chart-tooltip{position:fixed;z-index:40;max-width:260px;min-width:170px;padding:9px 11px;background:#333;color:#fff;border:1px solid #777;box-shadow:0 5px 16px #0004;font-size:12px;pointer-events:none;line-height:1.5}.chart-tooltip b{display:block;color:#ffca59;font-weight:400;margin-bottom:2px}.chart-tooltip span{display:block}.legend{display:flex;justify-content:center;flex-wrap:wrap;gap:16px;align-items:center;min-height:30px;padding:4px 12px;background:#fff;font-size:11px;color:#333}.legend.top{order:-1;border-bottom:1px solid #eee}.legend-item{display:flex;align-items:center;gap:6px}.legend-swatch{width:13px;height:13px;border-radius:50%}.chart-note{height:24px;min-height:24px;padding:4px 12px;color:#777;font-size:11px;border-top:1px solid #eee}.empty-state{display:flex;flex-direction:column;gap:7px;align-items:center;justify-content:center;height:100%;color:#666;text-align:center;padding:20px}.empty-state strong{font-weight:400;font-size:17px;color:#444}.empty-state small{font-size:12px}.axis-text{font-family:Arial,Verdana,sans-serif;fill:#555;font-size:11px}.gridline{stroke:#ddd;stroke-width:1}.zero-line{stroke:#909090;stroke-width:1.2}.connector{stroke:#9b9b9b;stroke-width:1.2;fill:none}.ref-line{stroke-dasharray:6 4;stroke-width:1.3}.chart-bar{cursor:help}.chart-bar:focus-visible{outline:none;stroke:#222!important;stroke-width:2!important}.bar-label{font-family:Arial,Verdana,sans-serif;fill:#333;font-size:11px}.stage-label{font-family:Arial,Verdana,sans-serif;fill:#444;font-size:10px}.series-label{font-family:Arial,Verdana,sans-serif;fill:#777;font-size:9px}.delta-label{font-family:Arial,Verdana,sans-serif;fill:#555;font-size:10px}.group-bracket{stroke:#aaa;fill:none;stroke-width:1}
+  .settings{background:var(--panel);color:var(--panel-text);overflow:auto;min-height:0}.settings-heading{padding:8px 15px 7px;font-size:11px;line-height:1.2;color:var(--accent)}.settings-heading small{display:block;color:#eee;font-size:11px}.settings-status{height:28px;padding:0 15px 7px;display:flex;align-items:center;justify-content:space-between;font-size:13px}.setting-section{border-top:1px solid #555}.section-bar{height:38px;background:var(--section);display:flex;align-items:center}.section-button{height:100%;border:0;background:none;color:var(--accent);display:flex;align-items:center;text-align:left;gap:9px;flex:1;padding:0 14px;font-size:11px;text-transform:uppercase;min-width:0}.section-button:hover{background:#3b3b3b}.section-button .chevron{font-size:17px;color:#ddd;transition:transform .15s;line-height:1}.section-button[aria-expanded="true"] .chevron{transform:rotate(90deg)}.section-master{padding-right:15px}.section-body{padding:5px 0 12px;background:var(--panel)}.setting-row{min-height:30px;margin:5px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}.setting-row.wrap{flex-wrap:wrap}.setting-row>label:first-child,.setting-row>.setting-label{flex:1;min-width:0}.setting-row .label-small{font-size:12px}.field-stack{margin:4px 15px 10px}.field-stack>label,.field-stack>.field-label{display:block;font-size:12px;margin-bottom:5px;color:#dedede}.field-stack input[type=text],.field-stack input[type=number],.field-stack select,.setting-row select,.setting-row input[type=number]{width:100%;height:26px;color:#9fd0ff;background:var(--control);border:1px solid var(--control-line);border-radius:2px;padding:2px 8px;min-width:0}.setting-row select{width:130px;flex:none}.setting-row input[type=number]{width:66px;flex:none;color:#9bdd72;text-align:right}.field-stack input[type=text]{color:#f1c75f}.field-stack input::placeholder{color:#aaa}.field-stack select{color:#9fd0ff}.settings option,.settings optgroup{background:#444;color:#eee}.helper{font-size:11px;color:#bcbcbc;line-height:1.35;margin:3px 15px 10px}.settings .accent-note{color:#e6b848}.mini-title{margin:11px 15px 7px;text-align:center;color:var(--accent);font-style:italic;font-size:12px}.rule{height:1px;background:#666;margin:10px 15px}.color-row input[type=color]{width:48px;height:24px;padding:0;border:1px solid #999;background:none;cursor:pointer;flex:none}.color-row button{border:0;background:none;color:var(--accent);font-size:11px;padding:2px}.color-row .color-meta{font-size:10px;color:#aaa;display:block}.setting-row input[type=range]{width:112px;flex:none;accent-color:var(--accent)}.range-wrap{display:flex;align-items:center;gap:6px}.range-wrap output{width:25px;text-align:right;font-size:12px;color:#9bdd72}.switch{appearance:none;position:relative;width:21px;height:13px;background:transparent;border:0;margin:0;cursor:pointer;flex:none}.switch:before{content:"";position:absolute;top:4px;left:0;width:21px;height:6px;border-radius:9px;background:#858585}.switch:after{content:"";position:absolute;top:2px;left:0;width:9px;height:9px;border-radius:50%;background:#aaa;transition:transform .13s}.switch:checked:after{transform:translateX(12px);background:var(--accent)}.switch:checked:before{background:#a38343}.subconfig{padding-top:4px}.subconfig.is-off{opacity:.58}.soft-box{margin:8px 15px;padding:9px;border:1px solid #696969;background:#434343;color:#d7d7d7;font-size:11px;line-height:1.4}.soft-box strong{color:#f5bc4c;font-weight:400}.text-action{background:none;border:0;color:var(--accent);padding:2px 0;text-decoration:underline;font-size:11px}.small-button{height:27px;padding:0 9px;border:1px solid #8b8b8b;border-radius:2px;background:#444;color:#e0e0e0;font-size:12px}.small-button:hover{border-color:var(--accent)}.line-card{margin:9px 15px;padding:7px 0;border-top:1px solid #686868}.line-card .setting-row,.line-card .field-stack{margin-left:0;margin-right:0}.line-card-head{display:flex;justify-content:space-between;align-items:center;color:#f1c25e;font-size:12px}.line-card-head button{border:0;background:none;color:#ddd;font-size:19px}.inline-actions{display:flex;gap:8px;align-items:center;margin:10px 15px}.note-tag{font-size:10px;color:#bfbfbf}
+  .popover{position:fixed;z-index:30;width:235px;padding:12px;background:#3d3d3d;border:1px solid #8a8a8a;box-shadow:0 6px 18px #0006;color:#eee}.popover label{font-size:12px;display:block;margin-bottom:5px}.popover select{width:100%;height:28px;color:#9bd0fa;background:#444;border:1px solid #999;padding:2px 7px}.popover p{font-size:11px;line-height:1.35;color:#ccc;margin:9px 0 0}.popover-close{position:absolute;right:4px;top:4px;background:none;border:0;color:#eee;font-size:17px}.toast{position:fixed;z-index:60;bottom:22px;left:50%;transform:translateX(-50%);padding:10px 16px;background:#333;color:#fff;border:1px solid #666;box-shadow:0 6px 16px #0004;font-size:13px}.modal{border:1px solid #777;padding:0;max-width:min(480px,calc(100vw - 26px));width:100%;box-shadow:0 15px 40px #0006;color:#333}.modal::backdrop{background:#0008}.modal h2{margin:0;padding:13px 18px;border-bottom:1px solid #ddd;font-size:17px;font-weight:400}.modal-body{padding:14px 18px;line-height:1.45}.modal-body p{margin:0 0 10px}.modal-body ul{padding-left:19px;margin:0 0 13px}.modal-body label{display:flex;gap:8px;align-items:center;margin:8px 0}.modal-actions{padding:9px 18px 14px;display:flex;gap:8px;justify-content:flex-end}.modal-actions button{height:30px;padding:0 15px;border:1px solid #aaa;background:#f5f5f5;border-radius:3px}.modal-actions .primary{background:var(--accent);border-color:#e79c00;color:#111}
+  @media(max-width:1100px){.editor{grid-template-columns:200px minmax(0,1fr) 300px}.brand{width:200px}.toolbar-icons{gap:10px;margin-left:20px}.data-panel{border-right-width:5px}}
+  @media(max-width:980px){.app{display:block;width:auto;min-width:0;min-height:0;height:auto;overflow:visible}.topbar{position:sticky;top:0;z-index:20}.brand{width:110px}.crumb{font-size:12px}.crumb span:last-child{display:none}.top-actions{padding:0 5px}.top-actions button{min-width:0;padding:0 7px;font-size:12px}.toolbar-icons{display:none}.editor{display:flex;flex-direction:column;width:100%;max-width:100%;min-width:0}.data-panel{display:none}.work{min-height:600px;width:100%}.settings{overflow:visible;width:100%}.viz-card,.viz-shell,.chart-stage{width:100%}.chart-stage{min-height:430px}.shelf-ghost{font-size:13px}.setting-row{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>modus</div>
+    <div class="crumb">Демо-отчёт<span class="arrow">→</span><span>Диаграмма водопад</span></div>
+    <div class="top-actions"><button type="button" class="primary" id="save-settings" title="Сохранить настройки в текущем сеансе макета">Сохранить</button><button type="button" id="cancel-settings" title="Вернуть последние сохранённые настройки макета">Отмена</button><div class="toolbar-icons" aria-hidden="true"><span>▥</span><span class="active">☷</span><span>⚑</span><span>ⓘ</span></div></div>
+  </header>
+  <div class="editor">
+    <aside class="data-panel" aria-label="Структура данных">
+      <div class="data-title"><span>СТРУКТУРА ДАННЫХ</span><span>[НД]</span></div>
+      <div class="data-select">Демо: движение показателя</div>
+      <div class="data-group"><div class="data-field"><span class="kind">Aa</span>Этап</div><div class="data-field"><span class="kind">Aa</span>Регион</div><div class="data-field"><span class="kind">Aa</span>Комментарий</div></div>
+      <div class="data-group"><div class="data-field"><span class="kind">#</span>Изменение</div><div class="data-field"><span class="kind">#</span>План</div></div>
+      <div class="data-hint">Демонстрационные данные: первый уровень 100, затем +40, −25, +18, −9. Все изменения и подытоги пересчитываются в браузере.</div>
+    </aside>
+    <main class="work" aria-label="Редактор диаграммы">
+      <div class="shelves">
+        <div class="shelf"><span class="shelf-icon" aria-hidden="true">▥</span><div class="shelf-content" id="values-content"></div><span class="shelf-ghost">Значения</span><div class="shelf-tail"><button id="values-mode" class="mode-button" type="button" title="Переключить режим полки Значения">ПЕРВОЕ</button><span class="debug-dot" aria-hidden="true"></span></div></div>
+        <div class="shelf"><span class="shelf-icon" aria-hidden="true">☰</span><div class="shelf-content"><button class="pill" id="category-pill" type="button" aria-label="Настройки пилюли Этап">Этап<small>Категория · по порядку</small></button></div><span class="shelf-ghost">Категории</span></div>
+        <div class="shelf"><span class="shelf-icon" aria-hidden="true">▦</span><div class="shelf-content"><button class="pill" id="series-pill" type="button" aria-label="Настройки пилюли Регион">Регион<small>Серия</small></button></div><span class="shelf-ghost">Серии</span><div class="shelf-tail"><small id="series-mode-caption">ВЫКЛ</small><input id="series-switch" class="switch" type="checkbox" aria-label="Обрабатывать полку Серии"></div></div>
+        <div class="shelf"><span class="shelf-icon" aria-hidden="true">⚑</span><div class="shelf-content"><button class="pill filter-pill" id="region-filter-pill" type="button" aria-label="Фильтр по регионам">Регион<small id="filter-pill-caption">Все</small></button></div><span class="shelf-ghost">Фильтры</span></div>
+      </div>
+      <div class="preview"><div class="debug-row">ОТЛАДКА <span class="debug-dot" aria-hidden="true"></span></div><section class="viz-card" aria-label="Предпросмотр диаграммы"><div class="viz-heading"><strong id="chart-title">Диаграмма водопад</strong><button id="about-button" type="button" aria-label="О сценарии макета" title="О сценарии макета">ⓘ</button></div><div class="viz-shell"><div class="chart-stage" id="chart-stage"><svg id="chart" role="img" aria-label="Диаграмма водопад"></svg><div class="chart-tooltip" id="chart-tooltip" hidden></div></div><div class="legend" id="chart-legend"></div></div><div class="chart-note" id="chart-note" aria-live="polite"></div></section></div>
+    </main>
+    <aside class="settings" aria-label="Настройки компонента" id="settings-panel">
+      <div class="settings-heading">НАСТРОЙКИ КОМПОНЕНТА<small>«ДИАГРАММА ВОДОПАД»</small></div>
+      <div class="settings-status"><span>Автообновление</span><button class="small-button" id="refresh-preview" type="button" hidden>Обновить</button><input class="switch" type="checkbox" checked id="auto-update" aria-label="Автообновление предпросмотра"></div>
+
+      <section class="setting-section" data-section="general"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="general-body"><span class="chevron">›</span>Общие настройки</button></div><div class="section-body" id="general-body" hidden>
+        <div class="setting-row"><label for="show-title">Заголовок</label><input class="switch" id="show-title" type="checkbox" checked></div><div class="field-stack"><label for="title-input">Название диаграммы</label><input id="title-input" type="text" value="Диаграмма водопад" maxlength="80"></div>
+        <div class="setting-row"><label for="orientation">Ориентация</label><select id="orientation"><option value="vertical">Вертикальная</option><option value="horizontal">Горизонтальная</option></select></div>
+        <div class="setting-row" id="first-delta-row"><label for="first-delta">Первый столбец — изменение</label><input class="switch" id="first-delta" type="checkbox"></div><p class="helper" id="first-delta-hint">Начинается от нуля в обоих режимах. В режиме «изменение» окрашивается по знаку и получает метку дельты.</p>
+        <div class="setting-row"><label for="final-total">Показывать конечный итог</label><input class="switch" id="final-total" type="checkbox" checked></div>
+        <div class="setting-row"><label for="connectors">Соединительные линии</label><input class="switch" id="connectors" type="checkbox" checked></div>
+      </div></section>
+
+      <section class="setting-section" data-section="data"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="data-body"><span class="chevron">›</span>Данные</button></div><div class="section-body" id="data-body" hidden>
+        <div class="setting-row"><label for="sort-order">Порядок категорий</label><select id="sort-order"><option value="source">Из набора данных</option><option value="alpha">По названию А–Я</option><option value="reverse">Обратный порядок</option></select></div>
+        <p class="helper">Одна пилюля «Категории» задаёт шаги. Числа из первой пилюли «Значения» являются дельтами; накопленный уровень рассчитывает диаграмма. Первая категория может выполнять роль начального уровня.</p>
+      </div></section>
+
+      <section class="setting-section" data-section="category-axis"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="category-axis-body"><span class="chevron">›</span>Ось категорий</button></div><div class="section-body" id="category-axis-body" hidden>
+        <div class="setting-row"><label for="show-category-labels">Подписи категорий</label><input class="switch" id="show-category-labels" type="checkbox" checked></div>
+        <div class="setting-row"><label for="axis-category-title">Заголовок</label><input class="switch" id="axis-category-title" type="checkbox" checked></div><div class="field-stack"><label for="category-title-input">Название оси</label><input id="category-title-input" type="text" value="Этапы"></div>
+        <div class="setting-row"><label for="label-angle">Наклон подписей</label><select id="label-angle"><option value="0">0°</option><option value="30">30°</option><option value="45">45°</option></select></div>
+      </div></section>
+
+      <section class="setting-section" data-section="value-axis"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="value-axis-body"><span class="chevron">›</span>Ось значений</button></div><div class="section-body" id="value-axis-body" hidden>
+        <div class="setting-row"><label for="show-grid">Сетка</label><input class="switch" id="show-grid" type="checkbox" checked></div><div class="setting-row"><label for="show-zero">Нулевая линия</label><input class="switch" id="show-zero" type="checkbox" checked></div><div class="setting-row"><label for="axis-value-title">Заголовок</label><input class="switch" id="axis-value-title" type="checkbox" checked></div><div class="field-stack"><label for="value-title-input">Название оси</label><input id="value-title-input" type="text" value="Значение"></div>
+      </div></section>
+
+      <section class="setting-section" data-section="series" id="series-section" hidden><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="series-body"><span class="chevron">›</span>Серии</button></div><div class="section-body" id="series-body" hidden>
+        <div class="setting-row"><label for="top-n">Максимум серий на шаг</label><input id="top-n" type="number" min="1" step="1" value="5"></div>
+        <p class="helper">В каждом этапе показываются крупнейшие вклады по модулю; остальные объединяются в «Прочие». После вкладов этапа показывается его подытог.</p>
+      </div></section>
+
+      <section class="setting-section" data-section="labels"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="labels-body"><span class="chevron">›</span>Подписи данных</button><div class="section-master"><input class="switch" id="labels-master" type="checkbox" checked aria-label="Показывать подписи данных"></div></div><div class="section-body" id="labels-body" hidden>
+        <div class="setting-row"><label for="label-precision">Знаков после запятой</label><input id="label-precision" type="number" min="0" max="3" step="1" value="0"></div><div class="setting-row"><label for="label-plus">Плюс для увеличения</label><input class="switch" id="label-plus" type="checkbox" checked></div>
+        <p class="helper">Обычные столбцы подписываются дельтой. Подытоги и конечный итог показывают накопленное значение.</p>
+      </div></section>
+
+      <section class="setting-section" data-section="tooltip"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="tooltip-body"><span class="chevron">›</span>Всплывающая подсказка</button><div class="section-master"><input class="switch" id="tooltip-master" type="checkbox" checked aria-label="Показывать всплывающую подсказку"></div></div><div class="section-body" id="tooltip-body" hidden><p class="helper">При наведении показаны категория, вклад серии, изменение и накопленный уровень. Дополнительное поле «Подсказка» учитывается в режиме полки «Значения: все».</p></div></section>
+
+      <section class="setting-section" data-section="legend"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="legend-body"><span class="chevron">›</span>Легенда</button><div class="section-master"><input class="switch" id="legend-master" type="checkbox" checked aria-label="Показывать легенду"></div></div><div class="section-body" id="legend-body" hidden><div class="setting-row"><label for="legend-position">Положение</label><select id="legend-position"><option value="bottom">Снизу</option><option value="top">Сверху</option></select></div></div></section>
+
+      <section class="setting-section" data-section="main-style"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="main-style-body"><span class="chevron">›</span>Основной стиль</button></div><div class="section-body" id="main-style-body" hidden>
+        <div class="mini-title">Цвета столбцов</div>
+        <div class="setting-row color-row"><label for="color-up">Увеличение</label><input id="color-up" type="color" value="#55a966"></div>
+        <div class="setting-row color-row"><label for="color-down">Уменьшение</label><input id="color-down" type="color" value="#d66a63"></div>
+        <div class="setting-row color-row"><label for="color-total">Итог и подытоги</label><input id="color-total" type="color" value="#898989"></div>
+        <div class="rule"></div><div class="setting-row"><label for="bar-width">Ширина столбцов</label><div class="range-wrap"><input id="bar-width" type="range" min="24" max="76" value="52"><output id="bar-width-value">52</output></div></div>
+        <div class="setting-row color-row"><label for="color-connector">Соединительные линии</label><input id="color-connector" type="color" value="#9b9b9b"></div>
+      </div></section>
+
+      <section class="setting-section" data-section="element-style"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="element-style-body"><span class="chevron">›</span>Стиль элементов</button></div><div class="section-body" id="element-style-body" hidden>
+        <div class="mini-title">Объект данных</div><div class="field-stack"><label for="element-target" class="sr-only">Объект данных</label><select id="element-target"></select></div>
+        <div class="setting-row"><label for="element-override">Индивидуальный цвет</label><input class="switch" id="element-override" type="checkbox"></div>
+        <div class="setting-row color-row" id="element-color-row" hidden><label for="element-color">Цвет столбца</label><input id="element-color" type="color" value="#55a966"></div>
+        <p class="helper" id="element-help">Переопределение относится к обычному столбцу этапа. Цвет его подытога настраивается отдельно в разделе «Подытоги».</p>
+      </div></section>
+
+      <section class="setting-section" data-section="subtotals"><div class="section-bar"><button class="section-button" type="button" aria-expanded="true" aria-controls="subtotals-body"><span class="chevron">›</span>Подытоги</button><div class="section-master"><input class="switch" id="subtotals-master" type="checkbox" checked aria-label="Показывать все подытоги"></div></div><div class="section-body" id="subtotals-body">
+        <div class="mini-title">Объект данных</div><div class="field-stack"><label for="subtotal-target" class="sr-only">Категория или серия для подытога</label><select id="subtotal-target"></select></div>
+        <div class="setting-row"><label for="show-subtotal">Показывать подытог</label><input class="switch" id="show-subtotal" type="checkbox"></div>
+        <div class="subconfig" id="subtotal-config" hidden><div class="field-stack"><label for="subtotal-name">Наименование столбца подытога</label><input id="subtotal-name" type="text" maxlength="80"></div><div class="setting-row color-row"><label for="subtotal-color">Цвет подытога <span class="color-meta" id="subtotal-color-status">Общий цвет</span></label><input id="subtotal-color" type="color" value="#898989"></div><div class="field-stack"><button type="button" class="text-action" id="reset-subtotal-color">Использовать общий цвет</button></div></div>
+        <div class="soft-box" id="subtotal-help"><strong>Расходы:</strong> после столбца −25 появится отдельный столбец с накопленным значением 115. Дальнейшие шаги продолжатся от 115.</div>
+      </div></section>
+
+      <section class="setting-section" data-section="deltas"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="deltas-body"><span class="chevron">›</span>Дельты</button></div><div class="section-body" id="deltas-body" hidden>
+        <div class="setting-row"><label for="delta-mode">Показывать</label><select id="delta-mode"><option value="none">Не показывать</option><option value="absolute">Абсолютные</option><option value="relative">Относительные</option><option value="both">Оба вида</option></select></div>
+        <div class="setting-row"><label for="delta-precision">Точность числа</label><input id="delta-precision" type="number" min="0" max="3" step="1" value="0"></div>
+        <div class="setting-row"><label for="percent-precision">Точность процента</label><input id="percent-precision" type="number" min="0" max="3" step="1" value="2"></div>
+        <div class="setting-row"><label for="delta-plus">Плюс для положительной дельты</label><input class="switch" id="delta-plus" type="checkbox" checked></div>
+        <p class="helper">Относительная дельта = изменение / накопленный уровень до шага × 100%. При нулевой базе процент не выводится.</p>
+      </div></section>
+
+      <section class="setting-section" data-section="reference"><div class="section-bar"><button class="section-button" type="button" aria-expanded="false" aria-controls="reference-body"><span class="chevron">›</span>Опорные линии</button></div><div class="section-body" id="reference-body" hidden><p class="helper">Отсечки используют вспомогательную пилюлю на полке «Значения» в режиме «Все». Значение пересчитывается после фильтрации.</p><div id="reference-list"></div><div class="inline-actions"><button class="small-button" id="add-reference" type="button">+ Добавить отсечку</button></div></div></section>
+    </aside>
+  </div>
+</div>
+
+<div class="popover" id="pill-popover" hidden></div><div class="toast" id="toast" role="status" hidden></div>
+<dialog class="modal" id="filter-dialog" aria-labelledby="filter-title"><h2 id="filter-title">Фильтр по регионам</h2><div class="modal-body"><p>Выберите данные, участвующие в расчёте всех этапов и подытогов.</p><div id="filter-options"></div></div><div class="modal-actions"><button type="button" id="filter-reset">Все</button><button type="button" id="filter-cancel">Отмена</button><button type="button" class="primary" id="filter-apply">Применить</button></div></dialog>
+<dialog class="modal" id="about-dialog" aria-labelledby="about-title"><h2 id="about-title">Сценарий макета</h2><div class="modal-body"><p>Это локальный интерактивный предпросмотр обновлённой диаграммы. Данные вымышлены; сохранение действует только до закрытия страницы.</p><ul><li>Настройте подытог после выбранной категории и его название.</li><li>Включите «Серии», затем выберите вклад серии в разделе «Подытоги».</li><li>Измените фильтр, порядок этапов, цвета, подписи, ориентацию и дельты.</li><li>Для отсечки переключите полку «Значения» в режим «Все».</li></ul><p>При активных сериях категория отображается отдельным подытогом после вкладов. Выбранная серия получает подытог после каждого своего вклада.</p></div><div class="modal-actions"><button type="button" class="primary" id="about-close">Понятно</button></div></dialog>
+
+<script>
+"use strict";
+// Демо-данные синтетические. Реальных запросов и зависимостей у макета нет.
+const CATEGORIES = ["Начало периода","Поступления","Расходы","Корректировка","Возвраты"];
+const SERIES = ["Север","Юг","Восток","Запад","Центр"];
+const ROWS = [
+  ["Начало периода","Север",60,72],["Начало периода","Юг",40,48],
+  ["Поступления","Север",25,0],["Поступления","Юг",15,0],
+  ["Расходы","Север",-15,0],["Расходы","Юг",-10,0],
+  ["Корректировка","Север",20,0],["Корректировка","Юг",4,0],["Корректировка","Восток",-5,0],["Корректировка","Запад",-1,0],
+  ["Возвраты","Север",-4,0],["Возвраты","Юг",-2,0],["Возвраты","Восток",-1,0],["Возвраты","Запад",-1,0],["Возвраты","Центр",-1,0]
+];
+const DEFAULT_STATE = {
+  title:"Диаграмма водопад",showTitle:true,autoUpdate:true,orientation:"vertical",firstDelta:false,finalTotal:true,connectors:true,
+  valueMode:"first",firstValueType:"Значение",auxTooltip:false,auxValue:false,seriesOn:false,topN:5,sort:"source",filter:[...SERIES],
+  showCategoryLabels:true,categoryAxisTitle:true,categoryTitle:"Этапы",labelAngle:0,showGrid:true,showZero:true,valueAxisTitle:true,valueTitle:"Значение",
+  labels:true,labelPrecision:0,labelPlus:true,tooltip:true,legend:true,legendPosition:"bottom",colorUp:"#55a966",colorDown:"#d66a63",colorTotal:"#898989",connectorColor:"#9b9b9b",barWidth:52,
+  subtotalsMaster:true,selectedSubtotal:"cat:Расходы",subtotals:{"cat:Расходы":{enabled:true,name:"Расходы (подытог)",color:null}},
+  selectedElement:"cat:Начало периода",elementColors:{},deltaMode:"none",deltaPrecision:0,percentPrecision:2,deltaPlus:true,references:[]
+};
+let state=structuredClone(DEFAULT_STATE),savedState=structuredClone(DEFAULT_STATE),renderedBars=[],toastTimer=null,refCounter=0;
+let popoverAnchor=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const num=(v,d=0)=>new Intl.NumberFormat("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d}).format(v);
+const signed=(v,d=0,plus=true)=>`${v>0&&plus?"+":""}${num(v,d)}`;
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const distinct=a=>[...new Set(a)];
+function toast(message){const el=$("toast");el.textContent=message;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.hidden=true,3500)}
+function activeRows(){return ROWS.filter(r=>state.filter.includes(r[1]))}
+function orderedCategories(){let cats=distinct(activeRows().map(r=>r[0]));if(state.sort==="alpha")cats.sort((a,b)=>a.localeCompare(b,"ru"));else if(state.sort==="reverse")cats.reverse();return cats}
+function steps(){return orderedCategories().map(name=>{const entries=activeRows().filter(r=>r[0]===name).map(r=>({name:r[1],value:r[2],plan:r[3]}));return {name,value:entries.reduce((s,r)=>s+r.value,0),entries}})}
+function breakdown(step){const all=[...step.entries].sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)||a.name.localeCompare(b.name,"ru"));const shown=all.slice(0,state.topN),rest=all.slice(state.topN);if(rest.length)shown.push({name:"Прочие",value:rest.reduce((s,r)=>s+r.value,0),other:true});return shown}
+function availableSeries(){return distinct(steps().flatMap(step=>breakdown(step).filter(x=>!x.other).map(x=>x.name))).sort((a,b)=>SERIES.indexOf(a)-SERIES.indexOf(b))}
+function defaultSubtotalName(key){return `${key.slice(key.indexOf(":")+1)} (подытог)`}
+function subtotalConfig(key){return state.subtotals[key]||{enabled:state.seriesOn&&key.startsWith("cat:"),name:defaultSubtotalName(key),color:null}}
+function subtotalEnabled(key){return state.subtotalsMaster&&subtotalConfig(key).enabled}
+function makeSubtotal(key,level,category,series){const cfg=subtotalConfig(key);return {kind:"subtotal",category,series:series||null,label:cfg.name||defaultSubtotalName(key),value:level,start:0,end:level,levelAfter:level,targetKey:key,color:cfg.color||state.colorTotal}}
+function buildBars(){const arr=[],allSteps=steps();let level=0;allSteps.forEach((step,i)=>{
+    const beforeCategory=level;
+    if(state.seriesOn){
+      breakdown(step).forEach(part=>{const before=level;level+=part.value;arr.push({kind:"series",category:step.name,series:part.name,label:part.name,value:part.value,start:before,end:level,levelBefore:before,levelAfter:level,stageIndex:i,other:part.other,color:state.elementColors[`series:${part.name}`]||(part.value>=0?state.colorUp:state.colorDown)});
+        const key=`series:${part.name}`;if(subtotalEnabled(key))arr.push(makeSubtotal(key,level,step.name,part.name));
+      });
+      const catKey=`cat:${step.name}`;if(subtotalEnabled(catKey))arr.push(makeSubtotal(catKey,level,step.name,null));
+    }else{
+      level+=step.value;
+      const isInitial=i===0&&!state.firstDelta;
+      arr.push({kind:isInitial?"initial":"change",category:step.name,series:null,label:step.name,value:step.value,start:isInitial?0:beforeCategory,end:level,levelBefore:beforeCategory,levelAfter:level,stageIndex:i,color:state.elementColors[`cat:${step.name}`]||(isInitial?state.colorTotal:(step.value>=0?state.colorUp:state.colorDown))});
+      const key=`cat:${step.name}`;if(subtotalEnabled(key))arr.push(makeSubtotal(key,level,step.name,null));
+    }
+  });
+  if(state.finalTotal&&allSteps.length)arr.push({kind:"final",category:"Итог",series:null,label:"Итог",value:level,start:0,end:level,levelAfter:level,color:state.colorTotal});
+  return arr;
+}
+function effectiveReferences(){if(state.valueMode!=="all")return[];const all=activeRows(),ss=steps();const plan=all.filter(r=>r[0]==="Начало периода").reduce((s,r)=>s+r[3],0);const end=ss.reduce((s,r)=>s+r.value,0);return state.references.filter(r=>r.enabled).map(r=>({...r,value:r.source==="plan"?plan:end})).filter(r=>Number.isFinite(r.value))}
+function percentFor(bar){let denominator=bar.levelBefore;if(!Number.isFinite(denominator)||denominator===0)return null;return bar.value/denominator*100}
+function deltaText(bar){const parts=[];if(state.deltaMode==="absolute"||state.deltaMode==="both")parts.push(signed(bar.value,state.deltaPrecision,state.deltaPlus));if(state.deltaMode==="relative"||state.deltaMode==="both"){const p=percentFor(bar);if(p!==null)parts.push(`${signed(p,state.percentPrecision,state.deltaPlus)}%`)}return parts}
+function isDeltaBar(bar){return bar.kind==="change"||bar.kind==="series"}
+function axisExtent(bars,refs){const values=[0,...bars.flatMap(b=>[b.start,b.end]),...refs.map(r=>r.value)];let min=Math.min(...values),max=Math.max(...values);if(min===max){min-=10;max+=10}const padding=(max-min)*.12;return [min-padding,max+padding]}
+function niceStep(raw){const pow=10**Math.floor(Math.log10(raw));const x=raw/pow;return (x<=1?1:x<=2?2:x<=5?5:10)*pow}
+function ticks(min,max){const step=niceStep((max-min)/5),out=[];for(let v=Math.ceil(min/step)*step;v<=max+step*.001;v+=step)out.push(Math.abs(v)<step*.0001?0:+v.toFixed(8));return out}
+function labelLines(s,max=14){if(s.length<=max)return[s];const words=s.split(" "),lines=[""];words.forEach(word=>{const i=lines.length-1;if((lines[i]+" "+word).trim().length>max&&lines[i])lines.push(word);else lines[i]=(lines[i]+" "+word).trim()});return lines.slice(0,3)}
+function titleForBar(bar){let lines=[bar.category];if(bar.series)lines.push(`Серия: ${bar.series}`);lines.push(`Роль: ${bar.kind==="subtotal"?"подытог":bar.kind==="final"?"конечный итог":bar.kind==="initial"?"начальный уровень":"изменение"}`);lines.push(`${bar.kind==="subtotal"||bar.kind==="final"?"Накопленный уровень":"Изменение"}: ${signed(bar.value,state.labelPrecision,true)}`);lines.push(`Уровень после шага: ${num(bar.levelAfter,state.labelPrecision)}`);return lines.join("; ")}
+function renderLegend(){const root=$("chart-legend");root.hidden=!state.legend;root.className=`legend ${state.legendPosition==="top"?"top":""}`;root.innerHTML=[
+  ["Увеличение",state.colorUp],["Уменьшение",state.colorDown],["Итог / подытог",state.colorTotal]
+].map(([name,color])=>`<span class="legend-item"><span class="legend-swatch" style="background:${color}"></span>${esc(name)}</span>`).join("")}
+function showEmpty(title,description){const stage=$("chart-stage");$("chart").hidden=true;let empty=$("chart-empty");if(!empty){empty=document.createElement("div");empty.id="chart-empty";empty.className="empty-state";stage.append(empty)}empty.hidden=false;empty.innerHTML=`<strong>${esc(title)}</strong><small>${esc(description)}</small>`;$("chart-note").textContent="";renderLegend()}
+function showChart(){const empty=$("chart-empty");if(empty)empty.hidden=true;$("chart").hidden=false}
+function renderChart(){
+  $("chart-title").textContent=state.showTitle?state.title:"";
+  if(state.firstValueType==="Подсказка"){showEmpty("Что-то пошло не так, но мы обязательно разберёмся","Первая пилюля «Значения» имеет тип «Подсказка». Выберите другой тип для построения диаграммы.");return}
+  const ss=steps();if(!ss.length){showEmpty("Нет данных","Выбранный фильтр не вернул этапов.");return}
+  showChart();renderLegend();const bars=buildBars(),refs=effectiveReferences();renderedBars=bars;
+  const [lo,hi]=axisExtent(bars,refs),tickValues=ticks(lo,hi),stage=$("chart-stage");
+  const svg=state.orientation==="vertical"?renderVertical(bars,refs,lo,hi,tickValues,stage):renderHorizontal(bars,refs,lo,hi,tickValues,stage);
+  $("chart").setAttribute("width",svg.width);$("chart").setAttribute("height",svg.height);$("chart").setAttribute("viewBox",`0 0 ${svg.width} ${svg.height}`);$("chart").setAttribute("aria-label",`Диаграмма водопад. ${ss.length} этапов. Итог ${num(ss.reduce((s,x)=>s+x.value,0))}.`);$("chart").innerHTML=svg.markup;
+  const final=ss.reduce((s,x)=>s+x.value,0),subCount=bars.filter(x=>x.kind==="subtotal").length;
+  $("chart-note").textContent=`Этапов: ${ss.length} · Подытогов: ${subCount} · Конечный уровень: ${num(final)}${state.seriesOn?" · Серии: включены":""}${state.valueMode==="first"&&state.references.length?" · Для опорных линий выберите «Значения: все»":""}`;
+}
+function renderVertical(bars,refs,lo,hi,tickValues,stage){
+  const left=65,right=28,top=43,bottom=state.seriesOn?91:84,slotMin=state.seriesOn?84:124;
+  const width=Math.max(740,stage.clientWidth-2,left+right+bars.length*slotMin),height=Math.max(425,stage.clientHeight-2);
+  const pw=width-left-right,ph=height-top-bottom,slot=pw/bars.length,bw=Math.min(state.barWidth,slot*.74),map=v=>top+(hi-v)/(hi-lo)*ph;
+  const xs=bars.map((_,i)=>left+slot*(i+.5)),axisY=map(0),parts=[];
+  if(state.showGrid)tickValues.forEach(v=>{const y=map(v);parts.push(`<line class="gridline" x1="${left}" x2="${width-right}" y1="${y}" y2="${y}"/><text class="axis-text" x="${left-8}" y="${y+4}" text-anchor="end">${esc(num(v))}</text>`)});
+  if(state.showZero)parts.push(`<line class="zero-line" x1="${left}" x2="${width-right}" y1="${axisY}" y2="${axisY}"/>`);
+  if(state.valueAxisTitle)parts.push(`<text class="axis-text" x="${left}" y="20">${esc(state.valueTitle)}</text>`);
+  refs.forEach(ref=>{const y=map(ref.value);parts.push(`<line class="ref-line" x1="${left}" x2="${width-right}" y1="${y}" y2="${y}" stroke="${ref.color}"/>`);if(ref.showLabel)parts.push(`<text class="axis-text" x="${left+3}" y="${y-5}" text-anchor="start" fill="${ref.color}">${esc(ref.name)} · ${esc(num(ref.value))}</text>`)});
+  if(state.connectors)bars.forEach((b,i)=>{if(i===0)return;const prev=bars[i-1],y=map(prev.levelAfter);parts.push(`<line class="connector" x1="${xs[i-1]+bw/2}" x2="${xs[i]-bw/2}" y1="${y}" y2="${y}" stroke="${state.connectorColor}"/>`)});
+  bars.forEach((b,i)=>{
+    const x=xs[i]-bw/2,y=Math.min(map(b.start),map(b.end)),h=Math.max(2,Math.abs(map(b.end)-map(b.start)));
+    parts.push(`<rect class="chart-bar" data-bar="${i}" tabindex="0" role="img" aria-label="${esc(titleForBar(b))}" x="${x}" y="${y}" width="${bw}" height="${h}" fill="${b.color}" rx="1">${state.tooltip?`<title>${esc(titleForBar(b))}</title>`:""}</rect>`);
+    if(state.labels){const text=b.kind==="subtotal"||b.kind==="final"||b.kind==="initial"?num(b.value,state.labelPrecision):signed(b.value,state.labelPrecision,state.labelPlus);const isNeg=b.value<0;parts.push(`<text class="bar-label" x="${xs[i]}" y="${isNeg?y+h+15:y-7}" text-anchor="middle">${esc(text)}</text>`)}
+    if(state.deltaMode!=="none"&&isDeltaBar(b)){const lines=deltaText(b);if(lines.length){const yy=map(b.levelBefore)+(b.value>=0?15:-8);parts.push(`<text class="delta-label" x="${xs[i]}" y="${yy}" text-anchor="middle">${lines.map((t,k)=>`<tspan x="${xs[i]}" dy="${k?11:0}">${esc(t)}</tspan>`).join("")}</text>`)}}
+    if(state.showCategoryLabels){const label=state.seriesOn?b.kind==="subtotal"?b.label:b.kind==="final"?"Итог":b.series:b.label;const lines=labelLines(label,state.seriesOn?11:17);const baseY=height-bottom+17;const angle=state.seriesOn?0:state.labelAngle;const transform=angle?` transform="rotate(-${angle} ${xs[i]} ${baseY})"`:"";parts.push(`<text class="${state.seriesOn?"series-label":"stage-label"}" x="${xs[i]}" y="${baseY}" text-anchor="middle"${transform}>${lines.map((t,k)=>`<tspan x="${xs[i]}" dy="${k?11:0}">${esc(t)}</tspan>`).join("")}</text>`)}
+  });
+  if(state.seriesOn&&state.showCategoryLabels){ssGroupRanges(bars).forEach(g=>{const x1=xs[g.first]-slot*.42,x2=xs[g.last]+slot*.42,y=height-30;parts.push(`<path class="group-bracket" d="M ${x1} ${y-5} V ${y} H ${x2} V ${y-5}"/><text class="stage-label" x="${(x1+x2)/2}" y="${y+14}" text-anchor="middle">${esc(g.name)}</text>`)})}
+  if(state.categoryAxisTitle)parts.push(`<text class="axis-text" x="${width-right}" y="${height-5}" text-anchor="end">${esc(state.categoryTitle)}</text>`);
+  return {width,height,markup:parts.join("")};
+}
+function ssGroupRanges(bars){const groups=[];bars.forEach((b,i)=>{if(b.kind==="final")return;const g=groups[groups.length-1];if(g&&g.name===b.category)g.last=i;else groups.push({name:b.category,first:i,last:i})});return groups}
+function renderHorizontal(bars,refs,lo,hi,tickValues,stage){
+  const left=191,right=68,top=42,bottom=43,slot=47;
+  const width=Math.max(740,stage.clientWidth-2),height=Math.max(425,stage.clientHeight-2,top+bottom+bars.length*slot);
+  const pw=width-left-right,map=v=>left+(v-lo)/(hi-lo)*pw,bh=Math.min(30,state.barWidth*.56),ys=bars.map((_,i)=>top+i*slot+slot/2),parts=[];
+  if(state.showGrid)tickValues.forEach(v=>{const x=map(v);parts.push(`<line class="gridline" x1="${x}" x2="${x}" y1="${top}" y2="${height-bottom}"/><text class="axis-text" x="${x}" y="${height-bottom+17}" text-anchor="middle">${esc(num(v))}</text>`)});
+  if(state.showZero){const x=map(0);parts.push(`<line class="zero-line" x1="${x}" x2="${x}" y1="${top}" y2="${height-bottom}"/>`)}
+  if(state.valueAxisTitle)parts.push(`<text class="axis-text" x="${left}" y="20">${esc(state.valueTitle)}</text>`);
+  refs.forEach(ref=>{const x=map(ref.value);parts.push(`<line class="ref-line" x1="${x}" x2="${x}" y1="${top}" y2="${height-bottom}" stroke="${ref.color}"/>`);if(ref.showLabel)parts.push(`<text class="axis-text" x="${x+4}" y="${top-8}" fill="${ref.color}">${esc(ref.name)} · ${esc(num(ref.value))}</text>`)});
+  if(state.connectors)bars.forEach((b,i)=>{if(i===0)return;const x=map(bars[i-1].levelAfter);parts.push(`<line class="connector" x1="${x}" x2="${x}" y1="${ys[i-1]+bh/2}" y2="${ys[i]-bh/2}" stroke="${state.connectorColor}"/>`)});
+  bars.forEach((b,i)=>{
+    const x=Math.min(map(b.start),map(b.end)),w=Math.max(2,Math.abs(map(b.end)-map(b.start))),y=ys[i]-bh/2;
+    parts.push(`<rect class="chart-bar" data-bar="${i}" tabindex="0" role="img" aria-label="${esc(titleForBar(b))}" x="${x}" y="${y}" width="${w}" height="${bh}" fill="${b.color}" rx="1">${state.tooltip?`<title>${esc(titleForBar(b))}</title>`:""}</rect>`);
+    if(state.labels){const label=b.kind==="subtotal"||b.kind==="final"||b.kind==="initial"?num(b.value,state.labelPrecision):signed(b.value,state.labelPrecision,state.labelPlus);const negative=b.value<0,tx=negative?x-6:x+w+6;parts.push(`<text class="bar-label" x="${tx}" y="${ys[i]+4}" text-anchor="${negative?"end":"start"}">${esc(label)}</text>`)}
+    if(state.showCategoryLabels){let label=b.kind==="final"?"Итог":state.seriesOn?`${b.category} · ${b.kind==="subtotal"?b.label:b.series}`:b.label;if(label.length>27)label=label.slice(0,26)+"…";parts.push(`<text class="stage-label" x="${left-12}" y="${ys[i]+4}" text-anchor="end">${esc(label)}</text>`)}
+    if(state.deltaMode!=="none"&&isDeltaBar(b)){const lines=deltaText(b);if(lines.length)parts.push(`<text class="delta-label" x="${map(b.levelBefore)+5}" y="${y-4}" text-anchor="start">${esc(lines.join(" / "))}</text>`)}
+  });
+  if(state.categoryAxisTitle)parts.push(`<text class="axis-text" x="${left-12}" y="${height-8}" text-anchor="end">${esc(state.categoryTitle)}</text>`);
+  return {width,height,markup:parts.join("")};
+}
+function showTooltipFor(bar,target,clientX,clientY){if(!state.tooltip||!bar)return;const tip=$("chart-tooltip");const bits=[`<b>${esc(bar.label)}</b>`,`<span>Категория: ${esc(bar.category)}</span>`];if(bar.series)bits.push(`<span>Серия: ${esc(bar.series)}</span>`);bits.push(`<span>${bar.kind==="subtotal"||bar.kind==="final"?"Накопленный подытог":"Изменение"}: ${esc(signed(bar.value,state.labelPrecision,true))}</span>`,`<span>Уровень после шага: ${esc(num(bar.levelAfter,state.labelPrecision))}</span>`);if(isDeltaBar(bar)&&state.deltaMode!=="none"){const dt=deltaText(bar);if(dt.length)bits.push(`<span>Дельта: ${esc(dt.join(" / "))}</span>`)}if(state.auxTooltip&&state.valueMode==="all")bits.push(`<span>Комментарий: демонстрационная запись</span>`);tip.innerHTML=bits.join("");tip.hidden=false;const x=clamp(clientX+12,8,window.innerWidth-tip.offsetWidth-8),y=clamp(clientY+12,8,window.innerHeight-tip.offsetHeight-8);tip.style.left=x+"px";tip.style.top=y+"px"}
+function hideTooltip(){$("chart-tooltip").hidden=true}
+$("chart").addEventListener("pointermove",e=>{const barEl=e.target.closest("[data-bar]");if(barEl)showTooltipFor(renderedBars[+barEl.dataset.bar],barEl,e.clientX,e.clientY);else hideTooltip()});
+$("chart").addEventListener("pointerleave",hideTooltip);
+$("chart").addEventListener("focusin",e=>{const barEl=e.target.closest("[data-bar]");if(barEl){const r=barEl.getBoundingClientRect();showTooltipFor(renderedBars[+barEl.dataset.bar],barEl,r.left+r.width/2,r.top+r.height/2)}});
+$("chart").addEventListener("focusout",hideTooltip);
+function renderPills(){
+  const bits=[`<button class="pill numeric" type="button" data-pill="main" aria-label="Настройки первой пилюли Изменение">Изменение<small>${esc(state.firstValueType)} · SUM</small></button>`];
+  if(state.auxValue)bits.push(`<button class="pill numeric" type="button" data-pill="value" aria-label="Дополнительная пилюля Значение">Доп. показатель<small>Значение · не строится</small></button>`);
+  if(state.auxTooltip)bits.push(`<button class="pill" type="button" data-pill="tooltip" aria-label="Настройки вспомогательной пилюли Комментарий">Комментарий<small>Подсказка</small></button>`);
+  if(state.references.length)bits.push(`<button class="pill numeric" type="button" data-pill="cutoff" aria-label="Настройки пилюли План">План<small>Отсечка · ${state.references.length}</small></button>`);
+  bits.push(`<button class="shelf-add" type="button" data-pill="add" title="Добавить вспомогательную пилюлю" aria-label="Добавить вспомогательную пилюлю">+</button>`);
+  $("values-content").innerHTML=bits.join("");$("values-mode").textContent=state.valueMode==="first"?"ПЕРВОЕ":"ВСЕ";
+  $("series-switch").checked=state.seriesOn;$("series-mode-caption").textContent=state.seriesOn?"ВКЛ":"ВЫКЛ";$("series-section").hidden=!state.seriesOn;
+  $("first-delta-row").hidden=state.seriesOn;$("first-delta-hint").textContent=state.seriesOn?"При активных сериях каждый вклад является изменением от текущего уровня, а категория показывает подытог.":"Начинается от нуля в обоих режимах. В режиме «изменение» окрашивается по знаку и получает метку дельты.";
+  $("category-pill").querySelector("small").textContent=`Категория · ${state.sort==="source"?"по порядку":state.sort==="alpha"?"А–Я":"обратно"}`;
+  $("filter-pill-caption").textContent=state.filter.length===SERIES.length?"Все":state.filter.length?`${state.filter.length} из ${SERIES.length}`:"Нет значений";
+}
+function renderTargets(){
+  const cats=orderedCategories(),series=state.seriesOn?availableSeries():[];
+  const sub=$("subtotal-target");sub.innerHTML=`<optgroup label="Категории">${cats.map(c=>`<option value="cat:${esc(c)}">${esc(c)}</option>`).join("")}</optgroup>${series.length?`<optgroup label="Серии">${series.map(s=>`<option value="series:${esc(s)}">${esc(s)}</option>`).join("")}</optgroup>`:""}`;
+  const choices=[...cats.map(x=>`cat:${x}`),...series.map(x=>`series:${x}`)];if(!choices.includes(state.selectedSubtotal))state.selectedSubtotal=choices[0]||"";sub.value=state.selectedSubtotal;sub.disabled=!choices.length;
+  const el=$("element-target"),objects=state.seriesOn?series.map(x=>({key:`series:${x}`,name:x})):cats.map(x=>({key:`cat:${x}`,name:x}));el.innerHTML=objects.map(o=>`<option value="${esc(o.key)}">${esc(o.name)}</option>`).join("");if(!objects.some(o=>o.key===state.selectedElement))state.selectedElement=objects[0]?.key||"";el.value=state.selectedElement;el.disabled=!objects.length;
+  renderSubtotalSettings();renderElementSettings();
+}
+function renderSubtotalSettings(){
+  const key=state.selectedSubtotal,cfg=key?subtotalConfig(key):{enabled:false,name:"",color:null};$("subtotals-master").checked=state.subtotalsMaster;
+  $("show-subtotal").checked=cfg.enabled;$("show-subtotal").disabled=!key;
+  $("subtotal-config").hidden=!cfg.enabled||!key;$("subtotal-config").classList.toggle("is-off",!state.subtotalsMaster);
+  $("subtotal-name").value=cfg.name||defaultSubtotalName(key);$("subtotal-color").value=cfg.color||state.colorTotal;
+  $("subtotal-color-status").textContent=cfg.color?"Индивидуальный цвет":"Общий цвет";$("reset-subtotal-color").disabled=!cfg.color;
+  let help="Выберите категорию или серию из текущих данных.";
+  if(key.startsWith("cat:")){const name=key.slice(4),ss=steps(),i=ss.findIndex(s=>s.name===name),level=i<0?0:ss.slice(0,i+1).reduce((sum,s)=>sum+s.value,0);help=`После вкладов «${name}» добавляется отдельный столбец от нуля до ${num(level)}. Следующий этап продолжает накопление от ${num(level)}.${state.seriesOn?" При активных сериях каждая категория имеет свой подытог по умолчанию.":""}`}
+  else if(key.startsWith("series:"))help=`После каждого вклада серии «${key.slice(7)}» в каждом этапе добавляется подытог текущего накопленного уровня. Повторное включение не создаёт дубликаты.`;
+  $("subtotal-help").textContent=help;
+}
+function renderElementSettings(){const key=state.selectedElement,color=state.elementColors[key];$("element-override").checked=!!color;$("element-override").disabled=!key;$("element-color-row").hidden=!color;let value=0;if(key.startsWith("cat:"))value=steps().find(s=>s.name===key.slice(4))?.value||0;else value=activeRows().filter(r=>r[1]===key.slice(7)).reduce((sum,r)=>sum+r[2],0);$("element-color").value=color||(value>=0?state.colorUp:state.colorDown);$("element-help").textContent=state.seriesOn?"Переопределение относится ко всем видимым вкладам выбранной серии. Цвет её подытогов настраивается отдельно в разделе «Подытоги».":"Переопределение относится к обычному столбцу этапа. Цвет его подытога настраивается отдельно в разделе «Подытоги»."}
+function renderReferences(){
+  $("reference-list").innerHTML=state.references.map(ref=>`<div class="line-card" data-ref="${ref.id}"><div class="line-card-head"><span>Отсечка ${ref.id}</span><button type="button" data-remove-ref="${ref.id}" aria-label="Удалить отсечку ${ref.id}">×</button></div><div class="field-stack"><label for="ref-name-${ref.id}">Подпись</label><input id="ref-name-${ref.id}" type="text" data-ref-field="name" value="${esc(ref.name)}" maxlength="60"></div><div class="setting-row"><label for="ref-source-${ref.id}">Значение</label><select id="ref-source-${ref.id}" data-ref-field="source"><option value="plan" ${ref.source==="plan"?"selected":""}>План</option><option value="end" ${ref.source==="end"?"selected":""}>Конечный уровень</option></select></div><div class="setting-row"><label for="ref-enabled-${ref.id}">Показывать линию</label><input class="switch" id="ref-enabled-${ref.id}" data-ref-field="enabled" type="checkbox" ${ref.enabled?"checked":""}></div><div class="setting-row"><label for="ref-label-${ref.id}">Показывать подпись</label><input class="switch" id="ref-label-${ref.id}" data-ref-field="showLabel" type="checkbox" ${ref.showLabel?"checked":""}></div><div class="setting-row color-row"><label for="ref-color-${ref.id}">Цвет линии</label><input id="ref-color-${ref.id}" data-ref-field="color" type="color" value="${ref.color}"></div></div>`).join("");
+}
+function syncControls(){
+  const values={"auto-update":state.autoUpdate,"show-title":state.showTitle,"title-input":state.title,"orientation":state.orientation,"first-delta":state.firstDelta,"final-total":state.finalTotal,"connectors":state.connectors,"sort-order":state.sort,"show-category-labels":state.showCategoryLabels,"axis-category-title":state.categoryAxisTitle,"category-title-input":state.categoryTitle,"label-angle":String(state.labelAngle),"show-grid":state.showGrid,"show-zero":state.showZero,"axis-value-title":state.valueAxisTitle,"value-title-input":state.valueTitle,"top-n":state.topN,"labels-master":state.labels,"label-precision":state.labelPrecision,"label-plus":state.labelPlus,"tooltip-master":state.tooltip,"legend-master":state.legend,"legend-position":state.legendPosition,"color-up":state.colorUp,"color-down":state.colorDown,"color-total":state.colorTotal,"bar-width":state.barWidth,"color-connector":state.connectorColor,"delta-mode":state.deltaMode,"delta-precision":state.deltaPrecision,"percent-precision":state.percentPrecision,"delta-plus":state.deltaPlus};
+  Object.entries(values).forEach(([id,value])=>{const el=$(id);if(el.type==="checkbox")el.checked=value;else el.value=value});$("bar-width-value").textContent=state.barWidth;$("refresh-preview").hidden=state.autoUpdate;
+  renderPills();renderTargets();renderReferences();
+}
+function requestRender(force=false){if(state.autoUpdate||force)renderChart();else $("chart-note").textContent="Настройки изменены · нажмите «Обновить» для предпросмотра"}
+function ensureConfig(key){if(!state.subtotals[key])state.subtotals[key]=structuredClone(subtotalConfig(key));return state.subtotals[key]}
+function updateSubtotal(key,field,value){if(!key)return;ensureConfig(key)[field]=value;renderSubtotalSettings();requestRender()}
+function addReference(){refCounter++;state.references.push({id:refCounter,name:refCounter===1?"План":`Отсечка ${refCounter}`,source:refCounter===1?"plan":"end",enabled:true,showLabel:true,color:refCounter===1?"#e5a21c":"#8566b4"});state.valueMode="all";renderPills();renderReferences();requestRender();toast("Отсечка добавлена; полка «Значения» переключена в режим «Все»")}
+function placePopover(anchor,html){const pop=$("pill-popover");popoverAnchor=anchor;pop.innerHTML=`<button type="button" class="popover-close" data-pop-close aria-label="Закрыть меню">×</button>${html}`;pop.hidden=false;const r=anchor.getBoundingClientRect();pop.style.left=clamp(r.left,8,window.innerWidth-245)+"px";pop.style.top=clamp(r.bottom+3,8,window.innerHeight-pop.offsetHeight-8)+"px";requestAnimationFrame(()=>pop.querySelector("select,button:not(.popover-close)")?.focus())}
+function openPillMenu(kind,anchor){
+  if(kind==="main")placePopover(anchor,`<label for="pill-type">Тип первой пилюли</label><select id="pill-type"><option value="Значение">Значение</option><option value="Цвет">Цвет</option><option value="Подзаголовок">Подзаголовок</option><option value="Подсказка">Подсказка</option></select><p>Для первой пилюли «Цвет» и «Подзаголовок» диаграмма сохраняет текущую геометрию. Тип «Подсказка» показывает ошибочное состояние.</p>`),$("pill-type").value=state.firstValueType;
+  else if(kind==="add")placePopover(anchor,`<label>Добавить поле на полку</label><button class="small-button" type="button" data-add-aux="value">Дополнительное значение</button><p></p><button class="small-button" type="button" data-add-aux="tooltip">Комментарий · Подсказка</button><p></p><button class="small-button" type="button" data-add-aux="cutoff">План · Отсечка</button>`);
+  else if(kind==="value")placePopover(anchor,`<label>Дополнительное значение</label><button class="small-button" type="button" data-remove-aux="value">Удалить с полки</button><p>В режиме «Все» дополнительные пилюли типа «Значение» не создают новый каскад.</p>`);
+  else if(kind==="tooltip")placePopover(anchor,`<label>Комментарий · Подсказка</label><button class="small-button" type="button" data-remove-aux="tooltip">Удалить с полки</button><p>Пилюля действует в режиме «Значения: все».</p>`);
+  else if(kind==="cutoff")placePopover(anchor,`<label>План · Отсечка</label><p>Управление линиями — в разделе «Опорные линии». В режиме «Первое» вспомогательная пилюля не обрабатывается.</p>`);
+  else if(kind==="category")placePopover(anchor,`<label for="pill-sort">Сортировка категории</label><select id="pill-sort"><option value="source">По порядку из данных</option><option value="alpha">По названию А–Я</option><option value="reverse">Обратный порядок</option></select><p>После изменения порядка накопление и положения подытогов пересчитываются.</p>`),$("pill-sort").value=state.sort;
+  else if(kind==="series")placePopover(anchor,`<label for="pill-series-switch">Полка «Серии»</label><select id="pill-series-switch"><option value="off">Не обрабатывать</option><option value="on">Разбить этапы по регионам</option></select><p>Категория показывает суммарный подытог после вкладов серии.</p>`),$("pill-series-switch").value=state.seriesOn?"on":"off";
+}
+function closePopover(restoreFocus=false){$("pill-popover").hidden=true;if(restoreFocus){const anchor=document.contains(popoverAnchor)?popoverAnchor:$("values-content").querySelector("[data-pill=main]");anchor?.focus()}popoverAnchor=null}
+$("values-content").addEventListener("click",e=>{const el=e.target.closest("[data-pill]");if(el)openPillMenu(el.dataset.pill,el)});
+$("category-pill").addEventListener("click",e=>openPillMenu("category",e.currentTarget));
+$("series-pill").addEventListener("click",e=>openPillMenu("series",e.currentTarget));
+$("pill-popover").addEventListener("click",e=>{if(e.target.closest("[data-pop-close]"))closePopover(true);const add=e.target.closest("[data-add-aux]");if(add){if(add.dataset.addAux==="tooltip")state.auxTooltip=true;else if(add.dataset.addAux==="value")state.auxValue=true;else addReference();state.valueMode="all";renderPills();requestRender();closePopover(true)}const rm=e.target.closest("[data-remove-aux]");if(rm){if(rm.dataset.removeAux==="value")state.auxValue=false;else state.auxTooltip=false;renderPills();requestRender();closePopover(true)}});
+$("pill-popover").addEventListener("change",e=>{if(e.target.id==="pill-type")state.firstValueType=e.target.value;else if(e.target.id==="pill-sort")state.sort=e.target.value;else if(e.target.id==="pill-series-switch")state.seriesOn=e.target.value==="on";renderPills();renderTargets();requestRender()});
+document.addEventListener("pointerdown",e=>{if(!$("pill-popover").hidden&&!e.target.closest("#pill-popover")&&!e.target.closest(".pill")&&!e.target.closest(".shelf-add"))closePopover()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("pill-popover").hidden){e.preventDefault();closePopover(true)}hideTooltip()}});
+$("values-mode").addEventListener("click",()=>{state.valueMode=state.valueMode==="first"?"all":"first";renderPills();requestRender()});
+$("series-switch").addEventListener("change",e=>{state.seriesOn=e.target.checked;renderPills();renderTargets();requestRender()});
+$("settings-panel").addEventListener("click",e=>{const button=e.target.closest(".section-button");if(button){const expanded=button.getAttribute("aria-expanded")==="true";button.setAttribute("aria-expanded",String(!expanded));$(button.getAttribute("aria-controls")).hidden=expanded}});
+const BINDS={
+  "show-title":"showTitle","title-input":"title","orientation":"orientation","first-delta":"firstDelta","final-total":"finalTotal","connectors":"connectors",
+  "show-category-labels":"showCategoryLabels","axis-category-title":"categoryAxisTitle","category-title-input":"categoryTitle","label-angle":"labelAngle","show-grid":"showGrid","show-zero":"showZero","axis-value-title":"valueAxisTitle","value-title-input":"valueTitle",
+  "labels-master":"labels","label-precision":"labelPrecision","label-plus":"labelPlus","tooltip-master":"tooltip","legend-master":"legend","legend-position":"legendPosition",
+  "color-up":"colorUp","color-down":"colorDown","color-total":"colorTotal","bar-width":"barWidth","color-connector":"connectorColor",
+  "delta-mode":"deltaMode","delta-precision":"deltaPrecision","percent-precision":"percentPrecision","delta-plus":"deltaPlus"
+};
+Object.entries(BINDS).forEach(([id,key])=>{const el=$(id),event=el.type==="text"||el.type==="color"||el.type==="range"?"input":"change";el.addEventListener(event,()=>{
+    let value=el.type==="checkbox"?el.checked:el.value;
+    if(el.type==="number"||el.type==="range"||id==="label-angle"){value=Number(value);const valid=Number.isInteger(value)&&value>=0&&(id==="bar-width"||id==="label-angle"||value<=3);if(!valid){el.value=state[key];toast("Укажите целое допустимое значение");return}}
+    state[key]=value;if(id==="bar-width")$("bar-width-value").textContent=value;if(id==="color-total")renderSubtotalSettings();if(id==="color-up"||id==="color-down")renderElementSettings();requestRender();
+  })});
+$("top-n").addEventListener("change",e=>{const value=Number(e.target.value);if(!Number.isInteger(value)||value<1){e.target.value=state.topN;toast("Укажите целое положительное число");return}state.topN=value;renderTargets();requestRender()});
+$("sort-order").addEventListener("change",e=>{state.sort=e.target.value;renderPills();renderTargets();requestRender()});
+$("auto-update").addEventListener("change",e=>{state.autoUpdate=e.target.checked;$("refresh-preview").hidden=state.autoUpdate;if(state.autoUpdate)renderChart()});
+$("refresh-preview").addEventListener("click",()=>requestRender(true));
+$("subtotal-target").addEventListener("change",e=>{state.selectedSubtotal=e.target.value;renderSubtotalSettings()});
+$("subtotals-master").addEventListener("change",e=>{state.subtotalsMaster=e.target.checked;renderSubtotalSettings();requestRender()});
+$("show-subtotal").addEventListener("change",e=>updateSubtotal(state.selectedSubtotal,"enabled",e.target.checked));
+$("subtotal-name").addEventListener("input",e=>{if(!state.selectedSubtotal)return;ensureConfig(state.selectedSubtotal).name=e.target.value;requestRender()});
+$("subtotal-name").addEventListener("blur",e=>{if(!e.target.value.trim()){const name=defaultSubtotalName(state.selectedSubtotal);e.target.value=name;updateSubtotal(state.selectedSubtotal,"name",name)}});
+$("subtotal-color").addEventListener("input",e=>updateSubtotal(state.selectedSubtotal,"color",e.target.value));
+$("reset-subtotal-color").addEventListener("click",()=>updateSubtotal(state.selectedSubtotal,"color",null));
+$("element-target").addEventListener("change",e=>{state.selectedElement=e.target.value;renderElementSettings()});
+$("element-override").addEventListener("change",e=>{const key=state.selectedElement;if(!key)return;if(e.target.checked){let value=0;if(key.startsWith("cat:"))value=steps().find(s=>s.name===key.slice(4))?.value||0;else value=activeRows().filter(r=>r[1]===key.slice(7)).reduce((sum,r)=>sum+r[2],0);state.elementColors[key]=value<0?state.colorDown:state.colorUp}else delete state.elementColors[key];renderElementSettings();requestRender()});
+$("element-color").addEventListener("input",e=>{state.elementColors[state.selectedElement]=e.target.value;requestRender()});
+$("add-reference").addEventListener("click",addReference);
+$("reference-list").addEventListener("click",e=>{const btn=e.target.closest("[data-remove-ref]");if(!btn)return;state.references=state.references.filter(r=>r.id!==+btn.dataset.removeRef);renderReferences();renderPills();requestRender()});
+$("reference-list").addEventListener("input",e=>{const field=e.target.dataset.refField;if(field!=="name"&&field!=="color")return;const line=state.references.find(r=>r.id===+e.target.closest("[data-ref]").dataset.ref);line[field]=e.target.value;requestRender()});
+$("reference-list").addEventListener("change",e=>{const field=e.target.dataset.refField;if(!field||field==="name"||field==="color")return;const line=state.references.find(r=>r.id===+e.target.closest("[data-ref]").dataset.ref);line[field]=e.target.type==="checkbox"?e.target.checked:e.target.value;requestRender()});
+$("region-filter-pill").addEventListener("click",()=>{const root=$("filter-options");root.innerHTML=SERIES.map(name=>`<label><input type="checkbox" value="${esc(name)}" ${state.filter.includes(name)?"checked":""}>${esc(name)}</label>`).join("");$("filter-dialog").showModal()});
+$("filter-reset").addEventListener("click",()=>{$("filter-options").querySelectorAll("input").forEach(el=>el.checked=true)});
+$("filter-cancel").addEventListener("click",()=>$("filter-dialog").close());
+$("filter-apply").addEventListener("click",()=>{state.filter=[...$("filter-options").querySelectorAll("input:checked")].map(el=>el.value);$("filter-dialog").close();renderPills();renderTargets();requestRender()});
+$("about-button").addEventListener("click",()=>$("about-dialog").showModal());$("about-close").addEventListener("click",()=>$("about-dialog").close());
+$("save-settings").addEventListener("click",()=>{savedState=structuredClone(state);toast("Настройки сохранены в текущем сеансе макета")});
+$("cancel-settings").addEventListener("click",()=>{state=structuredClone(savedState);syncControls();renderChart();toast("Возвращены последние сохранённые настройки макета")});
+let resizeFrame=0;window.addEventListener("resize",()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(renderChart)});
+syncControls();requestAnimationFrame(renderChart);
+</script>
+</body>
+</html>
