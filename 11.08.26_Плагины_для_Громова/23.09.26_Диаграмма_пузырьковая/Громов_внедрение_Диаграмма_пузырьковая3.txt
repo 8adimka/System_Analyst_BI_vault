@@ -471,7 +471,7 @@ h3. 12. Открытые вопросы и необходимая сверка �
 h3. 13. Материалы:
 
 * Критерии Громова — [[https://docs.google.com/spreadsheets/d/1gnBliHfa_z8oWTW8W5hkeCtI3Q2O15vwiAmJtzrqddA/edit?gid=1929191824#gid=1929191824]].
-* Отчёт для воспроизведения — [[https://dev.modusbi.ru/report/891]].
+* Отчёт для воспроизведения — [https://dev.modusbi.ru/report/892].
 
 ----
 
